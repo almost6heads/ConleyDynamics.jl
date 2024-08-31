@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Example Functions · ConleyDynamics.jl</title><meta name="title" content="Example Functions · ConleyDynamics.jl"/><meta property="og:title" content="Example Functions · ConleyDynamics.jl"/><meta property="twitter:title" content="Example Functions · ConleyDynamics.jl"/><meta name="description" content="Documentation for ConleyDynamics.jl."/><meta property="og:description" content="Documentation for ConleyDynamics.jl."/><meta property="twitter:description" content="Documentation for ConleyDynamics.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/citations.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="ConleyDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">ConleyDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Overview</a></li><li><span class="tocitem">Manual</span><ul><li><a class="tocitem" href="../../man/tutorial/">Tutorial</a></li><li><a class="tocitem" href="../../man/lefschetz/">Lefschetz Complexes</a></li><li><a class="tocitem" href="../../man/homology/">Homology</a></li><li><a class="tocitem" href="../../man/conley/">Conley Theory</a></li><li><a class="tocitem" href="../../man/examples/">Examples</a></li><li><a class="tocitem" href="../../man/sparse/">Sparse Matrices</a></li><li><a class="tocitem" href="../../man/references/">References</a></li></ul></li><li><span class="tocitem">Core API</span><ul><li><a class="tocitem" href="../datastruct/">Composite Data Structures</a></li><li><a class="tocitem" href="../lefschetz/">Lefschetz Complex Functions</a></li><li><a class="tocitem" href="../homology/">Homology Functions</a></li><li><a class="tocitem" href="../conley/">Conley Theory Functions</a></li><li class="is-active"><a class="tocitem" href>Example Functions</a><ul class="internal"><li><a class="tocitem" href="#General-Examples"><span>General Examples</span></a></li><li><a class="tocitem" href="#Examples-from-Mrozek-and-Wanner"><span>Examples from Mrozek &amp; Wanner</span></a></li><li><a class="tocitem" href="#Examples-from-Batko-et-al."><span>Examples from Batko et al.</span></a></li></ul></li><li><a class="tocitem" href="../plots/">Plotting Functions</a></li><li><a class="tocitem" href="../sparse/">Sparse Matrix Functions</a></li><li><a class="tocitem" href="../apiindex/">Complete API Index</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Core API</a></li><li class="is-active"><a href>Example Functions</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Example Functions</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/almost6heads/ConleyDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/main/docs/src/apicore/examples.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Example-Functions"><a class="docs-heading-anchor" href="#Example-Functions">Example Functions</a><a id="Example-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Example-Functions" title="Permalink"></a></h1><h2 id="General-Examples"><a class="docs-heading-anchor" href="#General-Examples">General Examples</a><a id="General-Examples-1"></a><a class="docs-heading-anchor-permalink" href="#General-Examples" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ConleyDynamics.example_critical_simplex" href="#ConleyDynamics.example_critical_simplex"><code>ConleyDynamics.example_critical_simplex</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">lc, mvf = example_critical_simplex(dim)</code></pre><p>Create a simplicial complex of dimension <code>dim</code> as well as a multivector field on it in which every cell is critical.</p><p>The function returns the Lefschetz complex <code>lc</code> over GF(2) and the multivector field <code>mvf</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; lc, mvf = example_critical_simplex(2);
+
+julia&gt; cm = connection_matrix(lc, mvf);
+
+julia&gt; sparse_show(cm.matrix)
+[0   0   0   1   1   0   0]
+[0   0   0   1   0   1   0]
+[0   0   0   0   1   1   0]
+[0   0   0   0   0   0   1]
+[0   0   0   0   0   0   1]
+[0   0   0   0   0   0   1]
+[0   0   0   0   0   0   0]
+
+julia&gt; print(cm.labels)
+[&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;AB&quot;, &quot;AC&quot;, &quot;BC&quot;, &quot;ABC&quot;]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/b0982a128fb757b21413bdf5cd3f76f3a347bed3/src/examples/example_critical_simplex.jl#L3-L30">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ConleyDynamics.example_moebius" href="#ConleyDynamics.example_moebius"><code>ConleyDynamics.example_moebius</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">lc1, mvf1, lc2, mvf2 = example_moebius(p)</code></pre><p>Create two simplicial complexes for a cylinder and Moebius strip, respectively, together with associated multivector fields on them.</p><p>The function returns the Lefschetz complexes <code>lc1</code> and <code>lc2</code>, as well as the multivector fields <code>mvf1</code> and <code>mvf2</code>. Both complexes are over a field with characteristic <code>p</code>. Positive  prime characteristic uses the finite field GF(p), while zero characteristic gives the rationals.</p><p>The multivector field is the same, and it has one critical  cell each in dimension 1 and 2 in the interior of the strip. The boundary consists of two periodic orbits for <code>lc1</code> and <code>mvf1</code>, and of one periodic orbit in the Moebius case <code>lc2</code> and <code>mvf2</code>. The latter case leads to different connection matrices for the fields GF(2) and GF(7), for example.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; lc1, mvf1, lc2, mvf2 = example_moebius(0);
+
+julia&gt; lc2p2 = lefschetz_gfp_conversion(lc2,2);
+
+julia&gt; lc2p7 = lefschetz_gfp_conversion(lc2,7);
+
+julia&gt; cmp2 = connection_matrix(lc2p2, mvf2);
+
+julia&gt; cmp7 = connection_matrix(lc2p7, mvf2);
+
+julia&gt; sparse_show(cmp2.matrix)
+[0   0   0   0]
+[0   0   0   1]
+[0   0   0   0]
+[0   0   0   0]
+
+julia&gt; sparse_show(cmp7.matrix)
+[0   0   0   0]
+[0   0   0   1]
+[0   0   0   2]
+[0   0   0   0]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/b0982a128fb757b21413bdf5cd3f76f3a347bed3/src/examples/example_moebius.jl#L3-L47">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ConleyDynamics.example_nonunique" href="#ConleyDynamics.example_nonunique"><code>ConleyDynamics.example_nonunique</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">lc1, lc2, mvf, coords1, coords2 = example_nonunique()</code></pre><p>Create two representations of a simplicial complex and one multivector field which illustrates nonunique connection matrices.</p><p>The two complexes <code>lc1</code> and <code>lc2</code> represent the same simplicial complex over GF(2), but differ in the ordering of the labels.</p><p>The function returns the Lefschetz complexes <code>lc1</code> and <code>lc2</code>, as well as the multivector field <code>mvf</code>. If desired for plotting, the fourth and fifth return values <code>coords1</code> and <code>coords2</code> give vectors of coordinates for the vertices of the two complexes.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; lc1, lc2, mvf = example_nonunique();
+
+julia&gt; cm1 = connection_matrix(lc1, mvf);
+
+julia&gt; cm2 = connection_matrix(lc2, mvf);
+
+julia&gt; sparse_show(cm1.matrix)
+[0   0   0   1   0   1   0   0   0]
+[0   0   0   1   0   1   0   0   0]
+[0   0   0   0   0   0   0   1   1]
+[0   0   0   0   0   0   1   1   0]
+[0   0   0   0   0   0   0   1   0]
+[0   0   0   0   0   0   1   1   0]
+[0   0   0   0   0   0   0   0   0]
+[0   0   0   0   0   0   0   0   0]
+[0   0   0   0   0   0   0   0   0]
+
+julia&gt; print(cm1.labels)
+[&quot;1&quot;, &quot;6&quot;, &quot;68&quot;, &quot;18&quot;, &quot;34&quot;, &quot;56&quot;, &quot;057&quot;, &quot;238&quot;, &quot;678&quot;]
+julia&gt; sparse_show(cm2.matrix)
+[0   0   0   1   0   1   0   0   0]
+[0   0   0   1   0   1   0   0   0]
+[0   0   0   0   0   0   1   0   1]
+[0   0   0   0   0   0   1   1   0]
+[0   0   0   0   0   0   0   1   0]
+[0   0   0   0   0   0   1   1   0]
+[0   0   0   0   0   0   0   0   0]
+[0   0   0   0   0   0   0   0   0]
+[0   0   0   0   0   0   0   0   0]
+
+julia&gt; print(cm2.labels)
+[&quot;1&quot;, &quot;7&quot;, &quot;67&quot;, &quot;18&quot;, &quot;34&quot;, &quot;56&quot;, &quot;057&quot;, &quot;238&quot;, &quot;678&quot;]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/b0982a128fb757b21413bdf5cd3f76f3a347bed3/src/examples/example_nonunique.jl#L3-L52">source</a></section></article><h2 id="Examples-from-Mrozek-and-Wanner"><a class="docs-heading-anchor" href="#Examples-from-Mrozek-and-Wanner">Examples from Mrozek &amp; Wanner</a><a id="Examples-from-Mrozek-and-Wanner-1"></a><a class="docs-heading-anchor-permalink" href="#Examples-from-Mrozek-and-Wanner" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ConleyDynamics.example_MW_fig01-Tuple{}" href="#ConleyDynamics.example_MW_fig01-Tuple{}"><code>ConleyDynamics.example_MW_fig01</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">lc, mvf = example_MW_fig01()</code></pre><p>Create the simplicial complex and multivector field for the example from Figure 1 in the connection matrix paper by <em>Mrozek &amp; Wanner</em>.</p><p>The function returns the Lefschetz complex <code>lc</code> over GF(2) and the multivector field <code>mvf</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; lc, mvf = example_MW_fig01();
+
+julia&gt; cm = connection_matrix(lc, mvf);
+
+julia&gt; sparse_show(cm.matrix)
+[0   0   0]
+[0   0   1]
+[0   0   0]
+
+julia&gt; print(cm.labels)
+[&quot;D&quot;, &quot;AC&quot;, &quot;ABC&quot;]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/b0982a128fb757b21413bdf5cd3f76f3a347bed3/src/examples/example_MW_fig01.jl#L3-L27">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ConleyDynamics.example_MW_fig02-Tuple{}" href="#ConleyDynamics.example_MW_fig02-Tuple{}"><code>ConleyDynamics.example_MW_fig02</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">lc, mvf, coords = example_MW_fig02(mvftype)</code></pre><p>Create the simplicial complex and multivector field for the example from Figure 2 in the connection matrix paper by <em>Mrozek &amp; Wanner</em>.</p><p>Depending on the value of <code>mvftype</code>, return the periodic orbit (0=default) or one of the three gradient (1,2,3) examples.</p><p>The function returns the Lefschetz complex <code>lc</code> over the rational field and the multivector field <code>mvf</code>. If desired for plotting, the third return value <code>coords</code> gives a vector of coordinates for the vertices.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; lc, mvf = example_MW_fig02(0);
+
+julia&gt; cm = connection_matrix(lc, mvf);
+
+julia&gt; print(cm.labels)
+[&quot;A&quot;, &quot;C&quot;, &quot;CE&quot;, &quot;AC&quot;, &quot;BD&quot;, &quot;DF&quot;, &quot;ABC&quot;, &quot;EFG&quot;]
+
+julia&gt; full_from_sparse(cm.matrix)
+8×8 Matrix{Rational{Int64}}:
+ 0  0  0  -1  -1  0   0  0
+ 0  0  0   1   1  0   0  0
+ 0  0  0   0   0  0   0  0
+ 0  0  0   0   0  0  -1  0
+ 0  0  0   0   0  0   1  0
+ 0  0  0   0   0  0   0  1
+ 0  0  0   0   0  0   0  0
+ 0  0  0   0   0  0   0  0</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/b0982a128fb757b21413bdf5cd3f76f3a347bed3/src/examples/example_MW_fig02.jl#L3-L36">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ConleyDynamics.example_MW_fig03-Tuple{}" href="#ConleyDynamics.example_MW_fig03-Tuple{}"><code>ConleyDynamics.example_MW_fig03</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">lc, mvf = example_MW_fig03()</code></pre><p>Create the Lefschetz complex and multivector field for the example from Figure 3 in the connection matrix paper by <em>Mrozek &amp; Wanner</em>.</p><p>The function returns the Lefschetz complex <code>lc</code> over GF(2) and the multivector field <code>mvf</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; lc, mvf = example_MW_fig03();
+
+julia&gt; cm = connection_matrix(lc, mvf);
+
+julia&gt; sparse_show(cm.matrix)
+[0   0   0   0]
+[0   0   0   0]
+[0   0   0   0]
+[0   0   0   0]
+
+julia&gt; print(cm.labels)
+[&quot;BD&quot;, &quot;DF&quot;, &quot;AC&quot;, &quot;CE&quot;]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/b0982a128fb757b21413bdf5cd3f76f3a347bed3/src/examples/example_MW_fig03.jl#L3-L27">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ConleyDynamics.example_MW_fig04-Tuple{}" href="#ConleyDynamics.example_MW_fig04-Tuple{}"><code>ConleyDynamics.example_MW_fig04</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">lc1, lc2, mvf = example_MW_fig04()</code></pre><p>Create two representations of the Lefschetz complex and the multivector field for the example from Figure 4 in the connection matrix paper by <em>Mrozek &amp; Wanner</em>.</p><p>The complexes <code>lc1</code> and <code>lc2</code> are just two representations of the same complex, but they lead to different connection matrices. Both Lefschetz complexes are defined over the finite field GF(2).</p><p>The function returns the Lefschetz complexes <code>lc1</code> and <code>lc2</code>, as well as the multivector field <code>mvf</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; lc1, lc2, mvf = example_MW_fig04();
+
+julia&gt; cm1 = connection_matrix(lc1, mvf);
+
+julia&gt; cm2 = connection_matrix(lc2, mvf);
+
+julia&gt; full_from_sparse(cm1.matrix)
+4×4 Matrix{Int64}:
+ 0  0  0  0
+ 0  0  0  1
+ 0  0  0  1
+ 0  0  0  0
+
+julia&gt; full_from_sparse(cm2.matrix)
+4×4 Matrix{Int64}:
+ 0  0  0  0
+ 0  0  0  0
+ 0  0  0  1
+ 0  0  0  0</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/b0982a128fb757b21413bdf5cd3f76f3a347bed3/src/examples/example_MW_fig04.jl#L3-L40">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ConleyDynamics.example_MW_fig11-Tuple{}" href="#ConleyDynamics.example_MW_fig11-Tuple{}"><code>ConleyDynamics.example_MW_fig11</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">lc, mvf = example_MW_fig11(mvftype)</code></pre><p>Create the Lefschetz complex and multivector field for the example from Figure 11 in the connection matrix paper by <em>Mrozek &amp; Wanner</em>.</p><p>Depending on the value of <code>mvftype</code>, return the multivector (0=default) or one of the two combinatorial vector field (1,2) examples.</p><p>The function returns the Lefschetz complex <code>lc</code> over the rationals and the multivector field <code>mvf</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; lc, mvf = example_MW_fig11(1);
+
+julia&gt; cm = connection_matrix(lc, mvf);
+
+julia&gt; full_from_sparse(cm.matrix)
+5×5 Matrix{Rational{Int64}}:
+ 0  0  1  -1  -1
+ 0  0  1   0   0
+ 0  0  0   0   0
+ 0  0  0   0   0
+ 0  0  0   0   0</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/b0982a128fb757b21413bdf5cd3f76f3a347bed3/src/examples/example_MW_fig11.jl#L3-L29">source</a></section></article><h2 id="Examples-from-Batko-et-al."><a class="docs-heading-anchor" href="#Examples-from-Batko-et-al.">Examples from Batko et al.</a><a id="Examples-from-Batko-et-al.-1"></a><a class="docs-heading-anchor-permalink" href="#Examples-from-Batko-et-al." title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ConleyDynamics.example_BKMW20_fig1-Tuple{}" href="#ConleyDynamics.example_BKMW20_fig1-Tuple{}"><code>ConleyDynamics.example_BKMW20_fig1</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">lc, mvf, coords = example_BKMW20_fig1()</code></pre><p>Create the simplicial complex and multivector field for the example from Figure 1 in the FoCM 2020 paper by <em>Batko, Kaczynski, Mrozek, and Wanner</em>.</p><p>The function returns the Lefschetz complex <code>lc</code> and the  multivector field <code>mvf</code>. If desired for plotting, the third return value <code>coords</code> gives a vector of coordinates for the vertices. The Lefschetz complex is defined over the finite field GF(2).</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; lc, mvf = example_BKMW20_fig1();
+
+julia&gt; cm = connection_matrix(lc, mvf);
+
+julia&gt; sparse_show(cm.matrix)
+[0   0   0   0   1]
+[0   0   0   0   0]
+[0   0   0   0   1]
+[0   0   0   0   0]
+[0   0   0   0   0]
+
+julia&gt; print(cm.labels)
+[&quot;A&quot;, &quot;AD&quot;, &quot;F&quot;, &quot;BF&quot;, &quot;DE&quot;]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/b0982a128fb757b21413bdf5cd3f76f3a347bed3/src/examples/example_BKMW20_fig1.jl#L3-L32">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ConleyDynamics.example_BKMW20_fig3-Tuple{}" href="#ConleyDynamics.example_BKMW20_fig3-Tuple{}"><code>ConleyDynamics.example_BKMW20_fig3</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">lc, mvf, coords = example_BKMW20_fig3()</code></pre><p>Create the simplicial complex and multivector field for the example from Figure 3 in the FoCM 2020 paper by <em>Batko, Kaczynski, Mrozek, and Wanner</em>.</p><p>The function returns the Lefschetz complex <code>lc</code> over the finite field GF(2) and the multivector field <code>mvf</code>. If desired for plotting, the third return value <code>coords</code> gives a vector of coordinates for the vertices.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; lc, mvf = example_BKMW20_fig3();
+
+julia&gt; cm = connection_matrix(lc, mvf);
+
+julia&gt; sparse_show(cm.matrix)
+[0   0   0   0   1   0   1   0   0]
+[0   0   0   0   0   1   0   0   0]
+[0   0   0   0   1   1   1   0   0]
+[0   0   0   0   0   0   0   0   1]
+[0   0   0   0   0   0   0   1   0]
+[0   0   0   0   0   0   0   0   0]
+[0   0   0   0   0   0   0   1   0]
+[0   0   0   0   0   0   0   0   0]
+[0   0   0   0   0   0   0   0   0]
+
+julia&gt; print(cm.labels)
+[&quot;D&quot;, &quot;E&quot;, &quot;F&quot;, &quot;GJ&quot;, &quot;BF&quot;, &quot;EF&quot;, &quot;HI&quot;, &quot;ADE&quot;, &quot;FGJ&quot;]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/b0982a128fb757b21413bdf5cd3f76f3a347bed3/src/examples/example_BKMW20_fig3.jl#L3-L35">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../conley/">« Conley Theory Functions</a><a class="docs-footer-nextpage" href="../plots/">Plotting Functions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.6.0 on <span class="colophon-date" title="Saturday 31 August 2024 13:25">Saturday 31 August 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
