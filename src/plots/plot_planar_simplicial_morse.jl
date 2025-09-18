@@ -9,7 +9,7 @@ export plot_planar_simplicial_morse
                                  [vfac::Real=1.2,]
                                  [sfac::Real=0,]
                                  [pdim::Vector{Bool}=[false,true,true],]
-                                 [pv::Bool=false]
+                                 [pv::Bool=false,]
                                  [ci::Bool=false])
 
 Create an image of a planar simplicial complex, together with
@@ -29,8 +29,9 @@ vertical scale vectors for the margins, while `sfac` describes a uniform
 scale. If `sfac=0` the latter is automatically determined. The vector `pdim`
 specifies in which dimensions cells are drawn; the default only shows edges
 and triangles. If one passes the argument `pv=true`, then in addition
-to saving the file a preview is displayed. Lastly, passing the argument 'ci=true' will 
-color code the Morse sets according to their respective Conley indices.
+to saving the file a preview is displayed. Lastly, passing the argument
+`ci=true` will color code the Morse sets according to their respective
+Conley indices.
 """
 function plot_planar_simplicial_morse(sc::LefschetzComplex,
                                        coords::Vector{<:Vector{<:Real}},

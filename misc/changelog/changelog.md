@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.3.9 (September 18, 2025)
+
+- Added extensions to `plot_planar_simplicial_morse` by Frank Pryor.
+
 ## v0.3.8 (September 13, 2025)
 
 - Added `chain_vector` to create a sparse matrix representation of a
