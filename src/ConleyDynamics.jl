@@ -93,6 +93,7 @@ include("./sparse/sparse_subtract.jl")
 include("./sparse/sparse_multiply.jl")
 include("./sparse/sparse_scale.jl")
 include("./sparse/sparse_inverse.jl")
+include("./sparse/sparse_show_nice.jl")
 
 include("./examples/example_julia_logo.jl")
 include("./examples/example_three_cm.jl")
