@@ -18,6 +18,19 @@ julia> lc, mvf = example_forman2d();
 
 julia> cm = connection_matrix(lc, mvf);
 
+julia> sparse_show(cm)
+   ┆   D   E   F  GJ  BF  EF  HI ADE FGJ
+---┆------------------------------------
+  D┆   0   0   0   0   1   0   1   0   0
+  E┆   0   0   0   0   0   1   0   0   0
+  F┆   0   0   0   0   1   1   1   0   0
+ GJ┆   0   0   0   0   0   0   0   0   1
+ BF┆   0   0   0   0   0   0   0   1   0
+ EF┆   0   0   0   0   0   0   0   0   0
+ HI┆   0   0   0   0   0   0   0   1   0
+ADE┆   0   0   0   0   0   0   0   0   0
+FGJ┆   0   0   0   0   0   0   0   0   0
+
 julia> sparse_show(cm.matrix)
  0 0 0 0 1 0 1 0 0
  0 0 0 0 0 1 0 0 0

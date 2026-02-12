@@ -277,6 +277,10 @@ for quickly extracting certain information from sparse matrices:
 - [`sparse_nz_count`](@ref) determines the number of nonzero
   matrix entries.
 - [`sparse_show`](@ref) can be used to display a sparse matrix
-  in traditional matrix form at the Julia REPL prompt.
-
+  in traditional matrix form at the Julia REPL prompt. This function
+  has additional methods which allow the user to display 
+  row and column labels, which have to be specified as second and third
+  arguments. In addition, if `cm` is a connection matrix, then the
+  command `sparse_show(cm)` shows the connection matrix including the
+  Conley index labels.
 

@@ -15,12 +15,13 @@ julia> lc, mvf = example_forman1d();
 julia> cm = connection_matrix(lc, mvf);
 
 julia> sparse_show(cm.matrix, cm.labels, cm.labels)
-     A AD  F BF DE
- A│  0  0  0  0  1
-AD│  0  0  0  0  0
- F│  0  0  0  0  1
-BF│  0  0  0  0  0
-DE│  0  0  0  0  0
+  ┆  A AD  F BF DE
+--┆---------------
+ A┆  0  0  0  0  1
+AD┆  0  0  0  0  0
+ F┆  0  0  0  0  1
+BF┆  0  0  0  0  0
+DE┆  0  0  0  0  0
 ```
 """
 function sparse_show(sm::SparseMatrix, rlabels::Vector{String}, clabels::Vector{String})
@@ -48,18 +49,22 @@ function sparse_show(sm::SparseMatrix, rlabels::Vector{String}, clabels::Vector{
 
     # Print the header
 
-    pstr = repeat(" ",maxl+1)
+    pstr = repeat(" ",maxl) * "┆"
     for k=1:ncols
         nd   = 1 + maxl - length(clabels[k])
         pstr = pstr * repeat(" ",nd) * string(clabels[k])
     end
     println(pstr)
 
+    pstr = repeat("-",maxl) * "┆"
+    pstr = pstr * repeat("-", (maxl+1)*ncols)
+    println(pstr)
+
     # Print the matrix
 
     for m=1:nrows
         nd   = maxl - length(rlabels[m])
-        pstr = repeat(" ",nd) * rlabels[m] * "│"
+        pstr = repeat(" ",nd) * rlabels[m] * "┆"
         for k=1:ncols
             estr = string(sm[m,k])
             nd   = 1 + maxl - length(estr)
@@ -120,6 +125,37 @@ function sparse_show(sm::SparseMatrix)
         end
         println(pstr)
     end
+end
+
+"""
+    sparse_show(cm::ConleyMorseCM)
+
+Display the connection matrix with labels.
+
+This function displays the (sparse) connection matrix including
+its labels. It uses `sparse_show(cm.matrix, cm.labels, cm.labels)`.
+
+# Examples
+```jldoctest
+julia> lc, mvf = example_forman1d();
+
+julia> cm = connection_matrix(lc, mvf);
+
+julia> sparse_show(cm)
+  ┆  A AD  F BF DE
+--┆---------------
+ A┆  0  0  0  0  1
+AD┆  0  0  0  0  0
+ F┆  0  0  0  0  1
+BF┆  0  0  0  0  0
+DE┆  0  0  0  0  0
+```
+"""
+function sparse_show(cm::ConleyMorseCM)
+    #
+    # Display the connection matrix with labels
+    #
+    sparse_show(cm.matrix, cm.labels, cm.labels)
 end
 
 """
