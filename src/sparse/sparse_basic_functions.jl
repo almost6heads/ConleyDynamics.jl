@@ -2,7 +2,6 @@ export sparse_size, sparse_low, sparse_identity, sparse_zero
 export sparse_fullness, sparse_sparsity, sparse_nz_count
 export sparse_is_zero, sparse_is_equal, sparse_is_identity
 export scalar_inverse
-export sparse_show
 
 """
     sparse_size(matrix::SparseMatrix, dim::Int)
@@ -254,25 +253,6 @@ function sparse_is_identity(A::SparseMatrix)
 end
 
 """
-    sparse_show(sm::SparseMatrix)
-
-Display the sparse matrix `sm`.
-"""
-function sparse_show(sm::SparseMatrix)
-    #
-    # Display a sparse matrix
-    #
-
-    for k=1:sm.nrow
-        print("[", sm[k,1])
-        for m=2:sm.ncol
-            print("   ", sm[k,m])
-        end
-        println("]")
-    end
-end
-
-"""
     scalar_inverse(s, p::Int)
 
 Compute the inverse of a scalar.
@@ -298,23 +278,4 @@ function scalar_inverse(s::Int, p::Int)
     #
     return invmod(s, p)
 end
-
-# """
-#     Base.show(io::IO, sm::SparseMatrix)
-# 
-# Display the sparse matrix `sm`.
-# """
-# function Base.show(io::IO, sm::SparseMatrix)
-#     #
-#     # Display a sparse matrix
-#     #
-# 
-#     for k=1:sm.nrow
-#         print(io, "\n[", sm[k,1])
-#         for m=2:sm.ncol
-#             print(io, "   ", sm[k,m])
-#         end
-#         print(io, "]")
-#     end
-# end
 

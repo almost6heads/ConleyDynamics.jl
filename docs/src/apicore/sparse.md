@@ -35,7 +35,7 @@ sparse_fullness
 sparse_sparsity
 sparse_nz_count
 sparse_show
-sparse_show_nice
+Base.show(io::IO, ::MIME"text/plain", sm::SparseMatrix)
 ```
 
 ## Elementary Matrix Operations

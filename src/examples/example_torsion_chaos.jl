@@ -41,9 +41,9 @@ julia> homology(sc)
 julia> cmG = connection_matrix(sc, vfG);
 
 julia> sparse_show(cmG.matrix)
-[0   0   0]
-[0   0   3]
-[0   0   0]
+ 0 0 0
+ 0 0 3
+ 0 0 0
 
 julia> print(cmG.labels)
 ["0w", "0w0x", "0w0x1s"]
@@ -51,7 +51,7 @@ julia> print(cmG.labels)
 julia> cmC = connection_matrix(sc, vfC);
 
 julia> sparse_show(cmC.matrix)
-[0]
+ 0
 
 julia> print(cmC.labels)
 ["0w"]

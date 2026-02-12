@@ -17,11 +17,11 @@ julia> lc, mvf = example_clorenz();
 julia> cm = connection_matrix(lc, mvf);
 
 julia> sparse_show(cm.matrix)
-[0   0   0   0   1]
-[0   0   0   0   0]
-[0   0   0   0   1]
-[0   0   0   0   0]
-[0   0   0   0   0]
+ 0 0 0 0 1
+ 0 0 0 0 0
+ 0 0 0 0 1
+ 0 0 0 0 0
+ 0 0 0 0 0
 
 julia> print(cm.labels)
 ["i", "ip", "g", "gm", "bc"]
