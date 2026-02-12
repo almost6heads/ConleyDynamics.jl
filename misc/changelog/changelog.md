@@ -13,6 +13,15 @@ description, etc.
 
 Release notes:
 
+## v0.3.10 (February 12, 2026)
+
+- Added more methods to `sparse_show`. The first one allows two 
+  additional arguments which provide labels for the rows and
+  columns.
+- In addition, if `cm` is a connection matrix, then the
+  command `sparse_show(cm)` displays the connection matrix
+  with the Conley index labels.
+
 ## v0.3.9 (September 18, 2025)
 
 - Added extensions to `plot_planar_simplicial_morse` by Frank Pryor.
