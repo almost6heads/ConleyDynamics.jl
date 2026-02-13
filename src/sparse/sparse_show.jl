@@ -1,6 +1,44 @@
 export sparse_show
 
 """
+    sparse_show(sm::SparseMatrix)
+
+Display a sparse matrix in readable format.
+
+This function will print the complete matrix, so be careful
+with sparse matrices of large size!
+"""
+function sparse_show(sm::SparseMatrix)
+    #
+    # Display a sparse matrix in readable format
+    #
+    ncols = sm.ncol
+    nrows = sm.nrow
+
+    # Determine the maximal field size
+
+    maxl = 1
+    for k=1:ncols
+        if length(sm.entries[k]) > 0
+            maxentry = maximum(length.(string.(sm.entries[k])))
+            maxl     = maximum([maxl, maxentry])
+        end
+    end
+
+    # Print the matrix
+
+    for m=1:nrows
+        pstr = ""
+        for k=1:ncols
+            estr = string(sm[m,k])
+            nd   = 1 + maxl - length(estr)
+            pstr = pstr * repeat(" ",nd) * estr
+        end
+        println(pstr)
+    end
+end
+
+"""
     sparse_show(sm::SparseMatrix, rlabels::Vector{String}, clabels::Vector{String})
 
 Display a sparse matrix in readable format, with labels.
@@ -90,44 +128,6 @@ function sparse_show(sm::SparseMatrix, labels::Vector{String})
 end
 
 """
-    sparse_show(sm::SparseMatrix)
-
-Display a sparse matrix in readable format.
-
-This function will print the complete matrix, so be careful
-with sparse matrices of large size!
-"""
-function sparse_show(sm::SparseMatrix)
-    #
-    # Display a sparse matrix in readable format
-    #
-    ncols = sm.ncol
-    nrows = sm.nrow
-
-    # Determine the maximal field size
-
-    maxl = 1
-    for k=1:ncols
-        if length(sm.entries[k]) > 0
-            maxentry = maximum(length.(string.(sm.entries[k])))
-            maxl     = maximum([maxl, maxentry])
-        end
-    end
-
-    # Print the matrix
-
-    for m=1:nrows
-        pstr = ""
-        for k=1:ncols
-            estr = string(sm[m,k])
-            nd   = 1 + maxl - length(estr)
-            pstr = pstr * repeat(" ",nd) * estr
-        end
-        println(pstr)
-    end
-end
-
-"""
     sparse_show(cm::ConleyMorseCM)
 
 Display the connection matrix with labels.
@@ -159,9 +159,9 @@ function sparse_show(cm::ConleyMorseCM)
 end
 
 """
-    Base.show(io::IO, sm::SparseMatrix)
+    Base.show(io::IO, ::MIME"text/plain", sm::SparseMatrix)
 
-Display the sparse matrix `sm`.
+Display the sparse matrix `sm` when hitting return in REPL.
 """
 function Base.show(io::IO, ::MIME"text/plain", sm::SparseMatrix)
     #
