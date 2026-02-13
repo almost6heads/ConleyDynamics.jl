@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.3.11 (February 13, 2026)
+
+- Added `Base.show` methods for `LefschetzComplex` and `ConleyMorseCM`
+
 ## v0.3.10 (February 12, 2026)
 
 - Added more methods to `sparse_show`. The first one allows two 
