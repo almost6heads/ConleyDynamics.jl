@@ -13,6 +13,7 @@ ConleyDynamics
 
 ```@docs
 LefschetzComplex
+Base.show(io::IO, ::MIME"text/plain", lc::LefschetzComplex)
 ```
 
 ## Cell Subset Types
@@ -26,5 +27,6 @@ CellSubsets
 
 ```@docs
 ConleyMorseCM
+Base.show(io::IO, ::MIME"text/plain", cm::ConleyMorseCM)
 ```
 
