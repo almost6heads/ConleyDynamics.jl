@@ -122,3 +122,47 @@ for multivector fields.
 """
 CellSubsets = Union{Vector{Vector{Int}},Vector{Vector{String}}}
 
+######################################################################
+
+"""
+    Base.show(io::IO, ::MIME"text/plain", lc::LefschetzComplex)
+
+Display Lefschetz complex information when hitting return in REPL.
+"""
+function Base.show(io::IO, ::MIME"text/plain", lc::LefschetzComplex)
+    #
+    # Display information for a Lefschetz complex
+    #
+
+    # Display the size and type info
+
+    pstr = string(typeof(lc)) * ": struct with the following fields:"
+    println(io, pstr)
+    println(io, "  labels, indices, dimensions")
+    println(io, "  dim:      " * string(lc.dim))
+    println(io, "  ncells:   " * string(lc.ncells))
+    print(io, "  boundary: sparsity " * string(sparse_sparsity(lc.boundary)))
+end
+
+"""
+    Base.show(io::IO, ::MIME"text/plain", cm::ConleyMorseCM)
+
+Display connection matrix information when hitting return in REPL.
+"""
+function Base.show(io::IO, ::MIME"text/plain", cm::ConleyMorseCM)
+    #
+    # Display information for a connection matrix
+    #
+
+    # Display the size and type info
+    
+    pstr = string(typeof(cm)) * ": struct with the following fields:"
+    println(io, pstr)
+    println(io, "  columns, poset, labels, morse, conley, complex")
+    pstr = "  matrix: "
+    pstr = pstr * string(cm.matrix.nrow) * "x" * string(cm.matrix.ncol)
+    pstr = pstr * "-dimensional matrix with sparsity "
+    pstr = pstr * string(sparse_sparsity(cm.matrix))
+    print(io, pstr)
+end
+
