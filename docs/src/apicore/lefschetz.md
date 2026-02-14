@@ -97,5 +97,9 @@ convert_cellsubsets
 ```@docs
 convert_planar_coordinates
 convert_spatial_coordinates
+signed_distance_rectangle
+signed_distance_circle
+segment_intersects_rectangle
+segment_intersects_circle
 ```
 
