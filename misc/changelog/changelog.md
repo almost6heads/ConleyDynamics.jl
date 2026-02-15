@@ -13,6 +13,27 @@ description, etc.
 
 Release notes:
 
+## v.0.4.0 (February 15, 2026)
+
+This release does not contain any breaking changes. But the 
+following functionality has been added since release 0.3.0:
+
+- New functions for selecting cell subsets from a list
+  of cell subsets, based on their location with respect to
+  a rectangle or circle in the plane.
+- Functions which allow for graded basis changes in Lefschetz 
+  complexes.
+- Functions which implement reduction pairs for Lefschetz
+  complexes. These also provide the resulting chain maps
+  and chain homotopies.
+- Functions for computing Forman's combinatorial flow and
+  its stabilization.
+- Functions for generating and extracting chains for the
+  underlying Lefschetz chain complexes.
+- New sparse matrix functionality, such as comparison,
+  computing the inverse, and printing with row and 
+  column labels.
+
 ## v0.3.11 (February 13, 2026)
 
 - Added `Base.show` methods for `LefschetzComplex` and `ConleyMorseCM`
