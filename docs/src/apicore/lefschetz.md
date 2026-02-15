@@ -90,9 +90,13 @@ lefschetz_filtration
 ```@docs
 convert_cells
 convert_cellsubsets
+cellsubset_bounding_box
+locate_planar_cellsubsets
+cellsubset_location_rectangle
+cellsubset_location_circle
 ```
 
-## Coordinate Helper Functions
+## Geometry Helper Functions
 
 ```@docs
 convert_planar_coordinates

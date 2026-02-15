@@ -941,8 +941,33 @@ integer cell indices or by cell labels:
   integer to label format, or vice versa.
 - [`convert_cellsubsets`](@ref) converts a vector of cell
   subsets from integer to label format, and vice versa.
+- [`cellsubset_bounding_box`](@ref) computes the bounding box
+  for a cell subset, provided coordinates for the vertices
+  of the Lefschetz complex are provided. The bounding box is
+  purely based on the location of the vertices.
+- [`locate_planar_cellsubsets`](@ref) expects a list of cell
+  subsets, for example the collection of Morse sets, or a
+  multivector field, and it extracts the subsets whose closure
+  lies in the interior of a geometric object ``G``, and also the
+  ones whose closure intersects the boundary of ``G``. At the
+  moment, ``G`` can be either a planar rectangle with sides 
+  parallel to the coordinate axes, or a circle in the plane.
+  The same command is used for both, the version of ``G`` is
+  selected through the function arguments via multiple
+  dispatch.
+- [`cellsubset_location_rectangle`](@ref) determines the 
+  location of the closure of a given cell subset relative to
+  a rectangle in the plane. It distinguishes between being
+  in the interior, intersecting the boundary, or lying
+  in the exterior. The rectangle has to be parallel to the
+  coordinate axes.
+- [`cellsubset_location_circle`](@ref) determines the 
+  location of the closure of a given cell subset relative to
+  a circle in the plane. It distinguishes between being
+  in the interior, intersecting the boundary, or lying
+  in the exterior.
 
-Finally, there are a couple of *ccordinate helper functions*
+Finally, there are a couple of *geometry helper functions*
 which allow for the transformation of vertex coordinates
 in a Lefschetz complex:
 
@@ -954,6 +979,19 @@ in a Lefschetz complex:
   collection of spatial coordinates in such a way that the
   extreme coordinates fit precisely in a given rectangular
   box in space.
+- [`signed_distance_rectangle`](@ref) determines the signed
+  distance from a given point to the boundary of a rectangle
+  in the plane. Negative values correspond to the interior,
+  positive values to the exterior.
+- [`signed_distance_circle`](@ref) determines the signed
+  distance from a given point to the boundary of a circle
+  in the plane. Negative values correspond to the interior,
+  positive values to the exterior.
+- [`segment_intersects_rectangle`](@ref) determines whether
+  a line segment intersects the boundary of an axes-parallel
+  rectangle in the plane.
+- [`segment_intersects_circle`](@ref) determines whether
+  a line segment intersects a circle in the plane.
 
 For more details on the usage of any of these functions, please
 see their documentation in the API section of the manual. 

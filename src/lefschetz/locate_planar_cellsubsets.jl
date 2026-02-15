@@ -1,21 +1,281 @@
-
+export locate_planar_cellsubsets
+export cellsubset_location_rectangle
+export cellsubset_location_circle
+export cellsubset_bounding_box
 export signed_distance_rectangle
 export signed_distance_circle
 export segment_intersects_rectangle
 export segment_intersects_circle
 
+"""
+    locate_planar_cellsubsets(lc, coords, csubsets, rmin, rmax)
 
+Locate cell subsets relative to a planar rectangle.
 
+For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+have the coordinates given in `coords::Vector{Vector{Real}}`,
+and the cell subsets in `csubsets::CellSubsets` this function
+extracts the indices of all cell subset closures which lie in the
+interior, or intersect the boundary of the rectangle specified
+by the minimal and maximal corners `rmin::Vector{Real}`
+and `rmax::Vector{Real}`, respectively. The function returns
+* `indexI::Vector{Int}`: indices of cell subset closures inside
+  the rectangle,
+* `indexB::Vector{Int}`: indices of cell subset closures which
+  intersect the rectangle boundary.
+"""
+function locate_planar_cellsubsets(lc::LefschetzComplex,
+                                   coords::Vector{Vector{T}},
+                                   csubsets::CellSubsets,
+                                   rmin::Vector{<:Real},
+                                   rmax::Vector{<:Real}) where T<:Real
+    #
+    # Locate cell subsets relative to a planar rectangle
+    #
+    Nsub = length(csubsets)
+    lindex = fill(0,Nsub)
 
+    Threads.@threads for k in 1:Nsub
+        lindex[k] = cellsubset_location_rectangle(lc, coords,
+                                       csubsets[k], rmin, rmax)
+    end
 
-
-
-
-
-
+    indexI = findall(x -> x==1, lindex)
+    indexB = findall(x -> x==2, lindex)
+    return indexI, indexB
+end
 
 """
-   signed_distance_rectangle(p, rmin, rmax)
+    locate_planar_cellsubsets(lc, coords, csubsets, c, r)
+
+Locate cell subsets relative to a planar circle.
+
+For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+have the coordinates given in `coords::Vector{Vector{Real}}`,
+and the cell subsets in `csubsets::CellSubsets` this function
+extracts the indices of all cell subset closures which lie in the
+interior, or intersect the boundary of the circle specified by the
+center point `c::Vector{Real}` and radius `r::Real`. The function
+returns
+* `indexI::Vector{Int}`: indices of cell subset closures inside
+  the circle,
+* `indexB::Vector{Int}`: indices of cell subset closures which
+  intersect the circle.
+"""
+function locate_planar_cellsubsets(lc::LefschetzComplex,
+                                   coords::Vector{Vector{T}},
+                                   csubsets::CellSubsets,
+                                   c::Vector{<:Real},
+                                   r::Real) where T<:Real
+    #
+    # Locate cell subsets relative to a planar circle
+    #
+    Nsub = length(csubsets)
+    lindex = fill(0,Nsub)
+
+    Threads.@threads for k in 1:Nsub
+        lindex[k] = cellsubset_location_circle(lc, coords,
+                                       csubsets[k], c, r)
+    end
+
+    indexI = findall(x -> x==1, lindex)
+    indexB = findall(x -> x==2, lindex)
+    return indexI, indexB
+end
+
+"""
+    cellsubset_location_rectangle(lc, coords, csubset, rmin, rmax)
+
+Determine the location of a cell subset relative to a rectangle.
+
+For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+have the coordinates given in `coords::Vector{Vector{Real}}`,
+this function determines the location of the closure of the
+cellsubset given in `csubset::Cells` relative to the rectangle
+specified by the minimal and maximal corners `rmin::Vector{Real}`
+and `rmax::Vector{Real}`, respectively. The function returns
+* 1 if the set lies in the interior of the rectangle,
+* 2 of the set intersects the rectangle boundary, and
+* 3 if the set lies in the exterior of the rectangle.
+"""
+function cellsubset_location_rectangle(lc::LefschetzComplex,
+                                       coords::Vector{Vector{T}},
+                                       csubset::Cells,
+                                       rmin::Vector{<:Real},
+                                       rmax::Vector{<:Real}) where T<:Real
+    #
+    # Determine the location of a cell subset relative to a rectangle
+    #
+    @assert length(coords[1])==2 "The complex has to be planar!"
+
+    # Convert to index format if csubset is a string vector
+    if typeof(csubset) == Vector{String}
+        csubsetI = convert_cells(lc, csubset)
+    else
+        csubsetI = csubset
+    end
+
+    # Extract the vertices in the closure
+    vindices = lefschetz_skeleton(lc, csubsetI, 0)
+
+    # Compute the signed distances of the vertices
+    sd = [signed_distance_rectangle(coords[k],rmin,rmax) for k in vindices]
+    sdmin = minimum(sd)
+    sdmax = maximum(sd)
+    if sdmax < 0
+        return 1
+    end
+    if (sdmin <= 0) && (sdmax >= 0)
+        return 2
+    end
+
+    # All points lie outside, but does the bounding box?
+    bmin, bmax = cellsubset_bounding_box(lc, coords, csubsetI)
+    if (bmin[1] > rmax[1]) || (bmax[1] < rmin[1])
+        return 3
+    end
+    if (bmin[2] > rmax[2]) || (bmax[2] < rmin[2])
+        return 3
+    end
+
+    # All points lie outside, the bounding box intersects,
+    # so I guess we have to check the edges individually
+    eindices = lefschetz_skeleton(lc, csubsetI, 1)
+    if length(eindices)==0
+        return 3
+    end
+
+    for eind in eindices
+        vindices = lefschetz_boundary(lc, eind)
+        p1 = coords[vindices[1]]
+        p2 = coords[vindices[2]]
+        if segment_intersects_rectangle(p1,p2,rmin,rmax)
+            return 2
+        end
+    end
+
+    return 3
+end
+
+"""
+    cellsubset_location_circle(lc, coords, csubset, c, r)
+
+Determine the location of a cell subset relative to a circle.
+
+For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+have the coordinates given in `coords::Vector{Vector{Real}}`, this
+function determines the location of the closure of the cellsubset
+given in `csubset::Cells` relative to the circle specified by the
+center point `c::Vector{Real}` and the radius `r::Real`.
+The function returns
+* 1 if the set lies in the interior of the circle,
+* 2 of the set intersects the circle, and
+* 3 if the set lies in the exterior of the circle.
+"""
+function cellsubset_location_circle(lc::LefschetzComplex,
+                                    coords::Vector{Vector{T}},
+                                    csubset::Cells,
+                                    c::Vector{<:Real},
+                                    r::Real) where T<:Real
+    #
+    # Determine the location of a cell subset relative to a circle
+    #
+    @assert length(coords[1])==2 "The complex has to be planar!"
+
+    # Convert to index format if csubset is a string vector
+    if typeof(csubset) == Vector{String}
+        csubsetI = convert_cells(lc, csubset)
+    else
+        csubsetI = csubset
+    end
+
+    # Extract the vertices in the closure
+    vindices = lefschetz_skeleton(lc, csubsetI, 0)
+
+    # Compute the signed distances of the vertices
+    sd = [signed_distance_circle(coords[k],c,r) for k in vindices]
+    sdmin = minimum(sd)
+    sdmax = maximum(sd)
+    if sdmax < 0
+        return 1
+    end
+    if (sdmin <= 0) && (sdmax >= 0)
+        return 2
+    end
+
+    # All points lie outside, but does the bounding box?
+    bmin, bmax = cellsubset_bounding_box(lc, coords, csubsetI)
+    if (bmin[1] > c[1]+r) || (bmax[1] < c[1]-r)
+        return 3
+    end
+    if (bmin[2] > c[2]+r) || (bmax[2] < c[2]-r)
+        return 3
+    end
+
+    # All points lie outside, the bounding box intersects
+    # the box determined by the circle, so I guess we have
+    # to check the edges individually
+    eindices = lefschetz_skeleton(lc, csubsetI, 1)
+    if length(eindices)==0
+        return 3
+    end
+
+    for eind in eindices
+        vindices = lefschetz_boundary(lc, eind)
+        p1 = coords[vindices[1]]
+        p2 = coords[vindices[2]]
+        if segment_intersects_circle(p1,p2,c,r)
+            return 2
+        end
+    end
+
+    return 3
+end
+
+"""
+    cellsubset_bounding_box(lc, coords, csubset)
+
+Compute the bounding box for a cell subset.
+
+For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+have the coordinates given in `coords::Vector{Vector{Float64}}`,
+this function computes the smallest enclosing box for the
+closure of the cellsubset given in `csubset::Cells`. The function
+returns the coordinates `bmin` and `bmax` of the minimal
+and maximal corners of the box, respectively.
+"""
+function cellsubset_bounding_box(lc::LefschetzComplex,
+                                 coords::Vector{Vector{T}},
+                                 csubset::Cells) where T<:Real
+    #
+    # Compute the bounding box for a cell subset
+    #
+    cdim = length(coords[1])
+    bmin = fill(0.0, cdim)
+    bmax = fill(0.0, cdim)
+
+    # Convert to index format if csubset is a string vector
+    if typeof(csubset) == Vector{String}
+        csubsetI = convert_cells(lc, csubset)
+    else
+        csubsetI = csubset
+    end
+
+    # Extract the vertices in the closure
+    vindices = lefschetz_skeleton(lc, csubsetI, 0)
+
+    # Find the minimal and maximal coordinates
+    for k=1:cdim
+        ck = [coords[m][k] for m in vindices]
+        bmin[k] = minimum(ck)
+        bmax[k] = maximum(ck)
+    end
+
+    return bmin, bmax
+end
+
+"""
+    signed_distance_rectangle(p, rmin, rmax)
 
 Compute the signed distance from a point to a rectangle.
 
@@ -57,7 +317,7 @@ function signed_distance_rectangle(p::Vector{<:Real},
 end
 
 """
-   signed_distance_circle(p, c, r)
+    signed_distance_circle(p, c, r)
 
 Compute the signed distance from a point to a circle.
 
@@ -80,7 +340,7 @@ function signed_distance_circle(p::Vector{<:Real},
 end
 
 """
-   segment_intersects_rectangle(p1, p2, rmin, rmax)
+    segment_intersects_rectangle(p1, p2, rmin, rmax)
 
 Determine whether a line segment intersects a rectangle boundary.
 
@@ -153,7 +413,7 @@ function segment_intersects_rectangle(p1::Vector{<:Real},
 end
 
 """
-   segment_intersects_circle(p1, p2, c, r)
+    segment_intersects_circle(p1, p2, c, r)
 
 Determine whether a line segment intersects a circle.
 
@@ -166,7 +426,7 @@ the circle, otherwise it returns `false`.
 function segment_intersects_circle(p1::Vector{<:Real},
                                    p2::Vector{<:Real},
                                    c::Vector{<:Real},
-                                   r::Vector{<:Real})
+                                   r::Real)
     #
     # Determine whether a line segment intersects a circle
     #

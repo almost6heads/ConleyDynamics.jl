@@ -141,7 +141,8 @@ function Base.show(io::IO, ::MIME"text/plain", lc::LefschetzComplex)
     println(io, "  labels, indices, dimensions")
     println(io, "  dim:      " * string(lc.dim))
     println(io, "  ncells:   " * string(lc.ncells))
-    print(io, "  boundary: sparsity " * string(sparse_sparsity(lc.boundary)))
+    print(io, "  boundary: field " * lefschetz_field(lc) *
+              ", sparsity " * string(sparse_sparsity(lc.boundary)))
 end
 
 """
