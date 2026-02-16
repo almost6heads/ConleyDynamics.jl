@@ -13,7 +13,11 @@ description, etc.
 
 Release notes:
 
-## v.0.4.0 (February 15, 2026)
+## v0.4.1 (February 16, 2026)
+
+Maintenance release: Unified float argument type declarations
+
+## v0.4.0 (February 15, 2026)
 
 This release does not contain any breaking changes. But the 
 following functionality has been added since release 0.3.0:
