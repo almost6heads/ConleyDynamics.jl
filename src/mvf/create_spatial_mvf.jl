@@ -1,7 +1,7 @@
 export create_spatial_mvf
 
 """
-    create_spatial_mvf(lc::LefschetzComplex, coords::Vector{Vector{Float64}}, vf)
+    create_spatial_mvf(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}}, vf)
 
 Create a spatial multivector field from a regular vector field.
 
@@ -69,7 +69,7 @@ full_from_sparse(cm.matrix)
 finally show that this vector field gives rise to a Morse decomposition
 with three Morse sets, and two connecting orbits.
 """
-function create_spatial_mvf(lc::LefschetzComplex, coords::Vector{Vector{Float64}}, vf)
+function create_spatial_mvf(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Create a spatial multivector field from a regular vector field
     #
@@ -139,7 +139,7 @@ end
 ############################
 
 function spatial_mvf_vertex2region(vindex::Int, lc::LefschetzComplex,
-                                   coords::Vector{Vector{Float64}}, vf)
+                                   coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Find the 3d regions which can be entered from a vertex
     #
@@ -190,7 +190,7 @@ end
 ###############################################################################
 
 function spatial_mvf_edge2region(eindex::Int, lc::LefschetzComplex,
-                                 coords::Vector{Vector{Float64}}, vf)
+                                 coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Find the 3d regions which can be entered from an edge
     #
@@ -310,7 +310,7 @@ end
 ###############################################################################
 
 function spatial_mvf_face2region(findex::Int, lc::LefschetzComplex,
-                                 coords::Vector{Vector{Float64}}, vf)
+                                 coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Find the 3d regions which can be entered from a face
     #

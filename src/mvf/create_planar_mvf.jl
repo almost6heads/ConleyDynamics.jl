@@ -1,7 +1,7 @@
 export create_planar_mvf
 
 """
-    create_planar_mvf(lc::LefschetzComplex, coords::Vector{Vector{Float64}}, vf)
+    create_planar_mvf(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}}, vf)
 
 Create a planar multivector field from a regular vector field.
 
@@ -111,7 +111,7 @@ plot_planar_cubical_morse(lc2, fname2, cm2.morse, pv=true)
 In this case, one obtains three Morse sets: One is a stable equilibrium,
 one is an unstable periodic orbit, and the last is a stable periodic orbit.
 """
-function create_planar_mvf(lc::LefschetzComplex, coords::Vector{Vector{Float64}}, vf)
+function create_planar_mvf(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Create a planar multivector field from a regular vector field
     #
@@ -166,7 +166,7 @@ end
 ############################
 
 function planar_mvf_vertex2region(vindex::Int, lc::LefschetzComplex,
-                                  coords::Vector{Vector{Float64}}, vf)
+                                  coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Find the 2d regions which can be entered from a vertex
     #
@@ -218,7 +218,7 @@ end
 ###############################################################################
 
 function planar_mvf_edge2region(eindex::Int, lc::LefschetzComplex,
-                                coords::Vector{Vector{Float64}}, vf)
+                                coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Find the 2d regions which can be entered from an edge
     #

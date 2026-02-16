@@ -1,9 +1,9 @@
 export convert_planar_coordinates, convert_spatial_coordinates
 
 """
-    convert_planar_coordinates(coords::Vector{Vector{Float64}},
-                               p0::Vector{Float64},
-                               p1::Vector{Float64})
+    convert_planar_coordinates(coords::Vector{<:Vector{<:Real}},
+                               p0::Vector{<:Real},
+                               p1::Vector{<:Real})
 
 Convert a given collection of planar coordinates.
 
@@ -22,9 +22,9 @@ point `(x,y)` is transformed to `(xn,yn)` with:
 * `xn = p0x + (p1x-p0x) * (x-cxmin) / (cxmax-cxmin)`
 * `yn = p0y + (p1y-p0y) * (y-cymin) / (cymax-cymin)`
 """
-function convert_planar_coordinates(coords::Vector{Vector{Float64}},
-                                    p0::Vector{Float64},
-                                    p1::Vector{Float64})
+function convert_planar_coordinates(coords::Vector{<:Vector{<:Real}},
+                                    p0::Vector{<:Real},
+                                    p1::Vector{<:Real})
     #
     # Convert planar coordinates to fit inside a given box
     #
@@ -50,9 +50,9 @@ function convert_planar_coordinates(coords::Vector{Vector{Float64}},
 end
 
 """
-    convert_spatial_coordinates(coords::Vector{Vector{Float64}},
-                                p0::Vector{Float64},
-                                p1::Vector{Float64})
+    convert_spatial_coordinates(coords::Vector{<:Vector{<:Real}},
+                                p0::Vector{<:Real},
+                                p1::Vector{<:Real})
 
 Convert a given collection of spatial coordinates.
 
@@ -73,9 +73,9 @@ transformed to `(xn,yn,zn)` with:
 * `yn = p0y + (p1y-p0y) * (y-cymin) / (cymax-cymin)`
 * `zn = p0z + (p1z-p0z) * (z-czmin) / (czmax-czmin)`
 """
-function convert_spatial_coordinates(coords::Vector{Vector{Float64}},
-                                     p0::Vector{Float64},
-                                     p1::Vector{Float64})
+function convert_spatial_coordinates(coords::Vector{<:Vector{<:Real}},
+                                     p0::Vector{<:Real},
+                                     p1::Vector{<:Real})
     #
     # Convert spatial coordinates to fit inside a given box
     #
