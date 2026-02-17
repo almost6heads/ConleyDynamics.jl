@@ -15,6 +15,9 @@ using Documenter
 using ConleyDynamics
 using DocumenterCitations
 using Bibliography
+using Pkg
+
+cdv = Pkg.TOML.parsefile(joinpath(pkgdir(ConleyDynamics), "Project.toml"))["version"]
 
 #bib = CitationBibliography(
 #    joinpath(@__DIR__, "src", "refs.bib");
@@ -64,7 +67,7 @@ if "--local-html" in ARGS
 elseif "--latex-pdf" in ARGS
     makedocs(sitename="ConleyDynamics.jl",
         modules=[ConleyDynamics],
-        format = Documenter.LaTeX(platform = "docker"),
+        format = Documenter.LaTeX(platform = "docker", version=cdv),
         build = "latex_build",
         pages = pageslist,
         authors = "Thomas Wanner",
@@ -74,7 +77,7 @@ elseif "--latex-pdf" in ARGS
                                    # One can also use   style=:authoryear
                   ]
         )
-    cp(joinpath(@__DIR__, "latex_build", "ConleyDynamics.jl.pdf"),
+    cp(joinpath(@__DIR__, "latex_build", "ConleyDynamics.jl-$(cdv).pdf"),
         joinpath(@__DIR__, "build", "ConleyDynamics.pdf");
         force = true,
         )
@@ -93,7 +96,7 @@ else
         )
     makedocs(sitename="ConleyDynamics.jl",
         modules=[ConleyDynamics],
-        format = Documenter.LaTeX(platform = "docker"),
+        format = Documenter.LaTeX(platform = "docker", version=cdv),
         build = "latex_build",
         pages = pageslist,
         authors = "Thomas Wanner",
@@ -103,7 +106,7 @@ else
                                    # One can also use   style=:authoryear
                   ]
         )
-    cp(joinpath(@__DIR__, "latex_build", "ConleyDynamics.jl.pdf"),
+    cp(joinpath(@__DIR__, "latex_build", "ConleyDynamics.jl-$(cdv).pdf"),
         joinpath(@__DIR__, "build", "ConleyDynamics.pdf");
         force = true,
         )
