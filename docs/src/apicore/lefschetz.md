@@ -91,6 +91,8 @@ lefschetz_filtration
 convert_cells
 convert_cellsubsets
 cellsubset_bounding_box
+cellsubset_distance
+cellsubset_planar_area
 locate_planar_cellsubsets
 cellsubset_location_rectangle
 cellsubset_location_circle

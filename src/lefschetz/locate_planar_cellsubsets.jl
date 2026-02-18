@@ -2,6 +2,8 @@ export locate_planar_cellsubsets
 export cellsubset_location_rectangle
 export cellsubset_location_circle
 export cellsubset_bounding_box
+export cellsubset_distance
+export cellsubset_planar_area
 export signed_distance_rectangle
 export signed_distance_circle
 export segment_intersects_rectangle
@@ -240,7 +242,7 @@ Compute the bounding box for a cell subset.
 For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
 have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
 this function computes the smallest enclosing box for the
-closure of the cellsubset given in `csubset::Cells`. The function
+closure of the cell subset given in `csubset::Cells`. The function
 returns the coordinates `bmin` and `bmax` of the minimal
 and maximal corners of the box, respectively.
 """
@@ -272,6 +274,90 @@ function cellsubset_bounding_box(lc::LefschetzComplex,
     end
 
     return bmin, bmax
+end
+
+"""
+    cellsubset_distance(lc, coords, csubset, dpoint)
+
+Compute the distance of a cell subset from a point.
+
+For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
+this function computes the smallest distance of the vertices in
+the closure of the cell subset given in `csubset::Cells` from the 
+point given in `dpoint::Vector{<:Real}`.
+"""
+function cellsubset_distance(lc::LefschetzComplex,
+                             coords::Vector{<:Vector{<:Real}},
+                             csubset::Cells,
+                             dpoint::Vector{<:Real})
+    #
+    # Compute the distance of a cell subset from a point
+    #
+    cdim = length(coords[1])
+
+    # Convert to index format if csubset is a string vector
+    if typeof(csubset) == Vector{String}
+        csubsetI = convert_cells(lc, csubset)
+    else
+        csubsetI = csubset
+    end
+
+    # Extract the vertices in the closure
+    vindices = lefschetz_skeleton(lc, csubsetI, 0)
+    @assert length(vindices)>0 "This is not a geometric complex!"
+
+    # Compute the minimal vertex distance
+    dist = minimum([norm(coords[k] - dpoint) for k in vindices])
+    
+    return dist
+end
+
+"""
+    cellsubset_planar_area(lc, coords, csubset)
+
+Compute the area of a planar cell subset.
+
+For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
+this function computes the area of the cell subset given in
+`csubset::Cells`. The function assumes that the complex is
+two-dimensional and that the maximal 2-cells in the cell subset
+are all triangles. If these conditions are not met an error is
+raised.
+"""
+function cellsubset_planar_area(lc::LefschetzComplex,
+                                coords::Vector{<:Vector{<:Real}},
+                                csubset::Cells)
+    #
+    # Compute the area of a planar cell subset
+    #
+    @assert lc.dim==2 "This function expects a planar complex!"
+
+    # Convert to index format if csubset is a string vector
+    if typeof(csubset) == Vector{String}
+        csubsetI = convert_cells(lc, csubset)
+    else
+        csubsetI = csubset
+    end
+
+    # Extract the 2-cells in the cell subset
+    tindices = findall(x -> x==2, lc.dimensions[csubsetI])
+
+    # Determine the area
+    cellarea = 0.0
+    for k in tindices
+        m = csubsetI[k]
+        vindices = lefschetz_skeleton(lc, [m], 0)
+        @assert length(vindices)==3 "The 2-cell has to be a triangle!"
+        k1, k2, k3 = vindices
+        x1, y1 = coords[k1]
+        x2, y2 = coords[k2]
+        x3, y3 = coords[k3]
+        cellarea = cellarea + 0.5*abs(x1*(y2-y3)+x2*(y3-y1)+x3*(y1-y2))
+    end
+
+    return cellarea
 end
 
 """

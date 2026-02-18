@@ -945,6 +945,18 @@ integer cell indices or by cell labels:
   for a cell subset, provided coordinates for the vertices
   of the Lefschetz complex are provided. The bounding box is
   purely based on the location of the vertices.
+- [`cellsubset_distance`](@ref) computes the distance of a
+  cell subset from a point. More precisely, this function 
+  computes the minimal distance of a vertex in the closure
+  of the cell subset to the given point. While this function
+  does not provide the Hausdorff distance, it serves as a
+  simple measure for how far the cell subset is from a give
+  point.
+- [`cellsubset_planar_area`](@ref) computes the area of a
+  planar cell subset. This function assumes that the complex
+  is two-dimensional and that the maximal 2-cells in the cell
+  subset are all triangles. If these conditions are not met
+  an error is raised.
 - [`locate_planar_cellsubsets`](@ref) expects a list of cell
   subsets, for example the collection of Morse sets, or a
   multivector field, and it extracts the subsets whose closure
