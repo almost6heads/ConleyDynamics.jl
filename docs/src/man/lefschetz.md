@@ -955,8 +955,8 @@ integer cell indices or by cell labels:
 - [`cellsubset_planar_area`](@ref) computes the area of a
   planar cell subset. This function assumes that the complex
   is two-dimensional and that the maximal 2-cells in the cell
-  subset are all triangles. If these conditions are not met
-  an error is raised.
+  subset are all polygonal with straight boundary edges.
+  If these conditions are not met an error is raised.
 - [`locate_planar_cellsubsets`](@ref) expects a list of cell
   subsets, for example the collection of Morse sets, or a
   multivector field, and it extracts the subsets whose closure

@@ -323,8 +323,8 @@ have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
 this function computes the area of the cell subset given in
 `csubset::Cells`. The function assumes that the complex is
 two-dimensional and that the maximal 2-cells in the cell subset
-are all triangles. If these conditions are not met an error is
-raised.
+are all polygonal with straight boundary edges. If these conditions
+are not met an error is raised.
 """
 function cellsubset_planar_area(lc::LefschetzComplex,
                                 coords::Vector{<:Vector{<:Real}},
@@ -336,9 +336,9 @@ function cellsubset_planar_area(lc::LefschetzComplex,
 
     # Convert to index format if csubset is a string vector
     if typeof(csubset) == Vector{String}
-        csubsetI = convert_cells(lc, csubset)
+        csubsetI = unique(convert_cells(lc, csubset))
     else
-        csubsetI = csubset
+        csubsetI = unique(csubset)
     end
 
     # Extract the 2-cells in the cell subset
@@ -349,12 +349,50 @@ function cellsubset_planar_area(lc::LefschetzComplex,
     for k in tindices
         m = csubsetI[k]
         vindices = lefschetz_skeleton(lc, [m], 0)
-        @assert length(vindices)==3 "The 2-cell has to be a triangle!"
-        k1, k2, k3 = vindices
-        x1, y1 = coords[k1]
-        x2, y2 = coords[k2]
-        x3, y3 = coords[k3]
-        cellarea = cellarea + 0.5*abs(x1*(y2-y3)+x2*(y3-y1)+x3*(y1-y2))
+        nv = length(vindices)
+        @assert nv > 2 "This is not a planar closed 2-cell!"
+
+        # We can deal quickly with a triangle
+        if nv==3
+            k1, k2, k3 = vindices
+            x1, y1 = coords[k1]
+            x2, y2 = coords[k2]
+            x3, y3 = coords[k3]
+            cellarea = cellarea + 0.5*abs(x1*(y2-y3)+x2*(y3-y1)+x3*(y1-y2))
+        # Now consider the polygon case
+        else
+            eindices = lefschetz_skeleton(lc, [m], 1)
+            @assert length(eindices)==nv "This is not a planar closed 2-cell!"
+
+            # Bring the vertices into the correct order
+            vordered = Vector{Int}()
+            e = pop!(eindices)
+            ebnd = lefschetz_boundary(lc, e)
+            @assert length(ebnd)==2 "This is a strange edge!"
+            vs, vn = ebnd
+            push!(vordered, vs)
+            push!(vordered, vn)
+            for j=1:nv-1
+                nextedge = intersect(lefschetz_coboundary(lc,vn), eindices)
+                @assert length(nextedge)==1 "This is not a planar closed 2-cell!"
+                e = nextedge[1]
+                eindices = setdiff(eindices, [e])
+                nextvertex = setdiff(lefschetz_boundary(lc, e), [vn])
+                @assert length(nextvertex)==1 "This is not a planar closed 2-cell!"
+                vn = nextvertex[1]
+                push!(vordered, vn)
+            end
+            @assert vordered[1]==vordered[nv+1] "This is not a planar closed 2-cell!"
+
+            # Compute the area of the polygon
+            polyarea = 0.0
+            for j=1:nv
+                x1, y1 = coords[vordered[j]]
+                x2, y2 = coords[vordered[j+1]]
+                polyarea = polyarea + 0.5 * (x1*y2 - x2*y1)
+            end
+            cellarea = cellarea + abs(polyarea)
+        end
     end
 
     return cellarea
