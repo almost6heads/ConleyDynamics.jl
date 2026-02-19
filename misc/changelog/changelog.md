@@ -13,6 +13,16 @@ description, etc.
 
 Release notes:
 
+## v0.4.2 (February 19, 2026)
+
+- Added `lefschetz_filtration_mvf` to determine the multivector field
+  associated with a filtration on a Lefschetz complex.
+- Added `cellsubset_distance` to determine the distance from a cellsubset
+  to a given point, provided coordinates for the vertices are provided.
+- Added `cellsubset_planar_area` to compute the area of a cellsubset
+  in a planar Lefschetz complex. This function does allow for 2-cells
+  that are polygonal.
+
 ## v0.4.1 (February 16, 2026)
 
 Maintenance release: Unified float argument type declarations
