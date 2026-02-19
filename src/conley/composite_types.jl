@@ -164,6 +164,7 @@ function Base.show(io::IO, ::MIME"text/plain", cm::ConleyMorseCM)
     pstr = pstr * string(cm.matrix.nrow) * "x" * string(cm.matrix.ncol)
     pstr = pstr * "-dimensional matrix with sparsity "
     pstr = pstr * string(sparse_sparsity(cm.matrix))
-    print(io, pstr)
+    println(io, pstr)
+    print(io,"  inspect the connection matrix with sparse_show(cm)")
 end
 

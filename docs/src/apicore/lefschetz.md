@@ -76,13 +76,14 @@ manifold_boundary
 create_random_filter
 filter_shallow_pairs
 filter_induced_mvf
+lefschetz_filtration
+lefschetz_filtration_mvf
 ```
 
 ## Lefschetz Helper Functions
 
 ```@docs
 lefschetz_gfp_conversion
-lefschetz_filtration
 ```
 
 ## Cell Subset Helper Functions
