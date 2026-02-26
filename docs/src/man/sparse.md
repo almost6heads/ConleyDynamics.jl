@@ -233,11 +233,11 @@ that are needed for the functionality of the package:
   a sparse matrix. Exceptions are raised if the matrix
   is not square or not invertible.
 
-There is also the useful helper function [`scalar_inverse`](@ref)
-which computes the inverse of a scalar. Depending on the input
-type, this is either the rational inverse, or the inverse in
-modular arithmetic. See the function documentation for more 
-details.
+There are also the useful helper functions [`scalar_inverse`](@ref)
+and [`scalar_multiply`](@ref) which compute the inverse of a scalar,
+or the product of two scalars, respectively. Depending on the input
+type, these computations are performed either over the rationals, or in
+modular arithmetic. See the function documentations for more details.
 
 As mentioned earlier, additional operations can easily be
 implemented if they become necessary.

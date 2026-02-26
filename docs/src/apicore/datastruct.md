@@ -19,6 +19,7 @@ Base.show(io::IO, ::MIME"text/plain", lc::LefschetzComplex)
 ## Cell Subset Types
 
 ```@docs
+Cell
 Cells
 CellSubsets
 ```

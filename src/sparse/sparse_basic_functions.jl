@@ -1,7 +1,7 @@
 export sparse_size, sparse_low, sparse_identity, sparse_zero
 export sparse_fullness, sparse_sparsity, sparse_nz_count
 export sparse_is_zero, sparse_is_equal, sparse_is_identity
-export scalar_inverse
+export scalar_inverse, scalar_multiply
 
 """
     sparse_size(matrix::SparseMatrix, dim::Int)
@@ -277,5 +277,32 @@ function scalar_inverse(s::Int, p::Int)
     # Compute the inverse of a scalar
     #
     return invmod(s, p)
+end
+
+"""
+    scalar_multiply(s1, s2, p::Int)
+
+Compute the product of two scalars.
+"""
+function scalar_multiply(s1, s2, p::Int)
+    #
+    # Compute the product of two scalars
+    #
+    return s1 * s2
+end
+
+"""
+    scalar_multiply(s1::Int, s2::Int, p::Int)
+
+Compute the product of two scalars.
+
+This function computes the product in modular arithmetic
+with base `p`.
+"""
+function scalar_multiply(s1::Int, s2::Int, p::Int)
+    #
+    # Compute the product of two scalars
+    #
+    return mod(s1 * s2, p)
 end
 

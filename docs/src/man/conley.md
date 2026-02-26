@@ -356,7 +356,7 @@ as follows:
 * The function [`isoinvset_information`](@ref) expects a
   Lefschetz complex `lc::LefschetzComplex`, a multivector
   field `mvf::CellSubsets`, as well as an isolated invariant
-  set `iis::Cells` as its three arguments. Itreturns a
+  set `iis::Cells` as its three arguments. It returns a
   `Dict{String,Any}` with the information. The `keys` of
   this dictionary are as follows:
   - `"Conley index"` contains the Conley index of the 

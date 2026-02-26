@@ -101,6 +101,17 @@ struct ConleyMorseCM{T}
 end
 
 """
+    Cell = Union{Int,String}
+
+A cell of a Lefschetz complex.
+
+This data type is used to represent a cell of a Lefschetz
+complex. The cell can be specified either via its index,
+or its label.
+"""
+Cell = Union{Int,String}
+
+"""
     Cells = Union{Vector{Int},Vector{String}}
 
 A list of cells of a Lefschetz complex.
