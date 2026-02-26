@@ -30,6 +30,7 @@ include("./conley/remove_exit_set.jl")
 include("./conley/isoinvset_information.jl")
 include("./conley/forman_comb_flow.jl")
 include("./conley/forman_stab_flow.jl")
+include("./conley/forman_gpaths.jl")
 include("./conley/chain_vector.jl")
 include("./conley/chain_support.jl")
 

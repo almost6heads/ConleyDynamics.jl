@@ -1,4 +1,5 @@
-export LefschetzComplex, ConleyMorseCM, Cells, CellSubsets
+export LefschetzComplex, ConleyMorseCM
+export Cell, Cells, CellSubsets
 
 """
     LefschetzComplex
