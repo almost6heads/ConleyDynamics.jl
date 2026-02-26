@@ -754,6 +754,18 @@ again the sum of the separate indices:
 conley_index(cm.complex, ["ADE", "EF"])
 ```
 
+In order to simplify the inspection of connection matrices, the
+function [`sparse_show`](@ref) has a special method for an
+argument of type [`ConleyMorseCM`](@ref). In our example, it
+produces the following output:
+
+```@example Cconnmatrix
+sparse_show(cm)
+```
+
+In this way, one can easily see which Morse sets correspond
+to the columns and rows of the connection matrix.
+
 ## Extracting Subsystems
 
 We briefly return to one of the examples in the tutorial. More precisely, we
@@ -1054,7 +1066,7 @@ cm.poset
 The connection matrix itself is given by
 
 ```@example Ccircle
-full_from_sparse(cm.matrix)
+sparse_show(cm)
 ```
 
 This implies that there are connecting orbits from the unstable 
@@ -1335,6 +1347,54 @@ stabilized version can be computed using the following two functions.
   of iterations has been reached. In the latter case, one just has to
   pass the optional paramter `maxit` with a larger number of allowed
   iterations.
+- [`forman_gpaths`](@ref) can be used to find gradient paths in a
+  Forman gradient vector field. There are several methods for this 
+  function, which are accessible via multiple dispatch as follows.
+  - The call `forman_gpaths(lc, fvf, x)` determines all maximal
+    gradient paths of the Forman gradient field `fvf` on the
+    Lefschetz complex `lc` starting at `x`. These are solution
+    paths which consist exclusively of Forman vectors, i.e., they
+    contain an even number of cells whose dimensions alternate
+    between ``\dim x`` and ``1 + \dim x``. Every cell of
+    dimension ``\dim x`` is an arrow source which is followed
+    by its arrow target, while every cell of dimension ``1 + \dim x``
+    is an arrow target which is succeeded by a cell in its boundary,
+    and which in turn is the source of a different arrow, as long
+    as such a cell exists.
+  - The call `forman_gpaths(lc, fvf, x, extended=false)` finds
+    all maximal gradient paths `p` such that the subpath `p[1:end-1]`
+    is a gradient path in the above sense, and `p[end]` is an
+    element in the boundary of `p[end-1]` which is different
+    from `p[end-2]`. Such paths clearly have an odd length.
+  - The call `forman_gpaths(lc, fvf, x, y)` computes all
+    Forman gradient paths between the cells `x` and `y`.
+    Nontrivial paths are only returned if ``|\dim x - \dim y| \le 1``.
+    More precisely, the following paths are returned:
+    - If ``\dim x = \dim y - 1``, the function returns all
+      solution paths between `x` and `y` which consist entirely
+      of Forman arrows. All the sources have the dimension
+      of `x`, and the targets the dimension of `y`.
+    - For ``\dim x = \dim y`` the function finds all
+      solution paths `p` between `x` and `y` for which `p[1:end-1]`
+      is a Forman gradient path in the above sense, and `p[end]`
+      lies in the boundary of `p[end-1]` and is different from
+      the cell `p[end-2]`.
+    - Finally, if ``\dim x = \dim y + 1``, then the function
+      returns all solution paths `p` between `x` and `y`
+      for which `p[2:end]` is a Forman gradient path in
+      the sense of the second item, and `p[2]` lies
+      in the boundary of `p[1]`.
+    In all other cases an empty collection is returned.
+- [`forman_path_weight`](@ref) expects the arguments `lc:LefschetzComplex`
+  and `path::Cell` and computes the weight of the Forman gradient
+  path `path` in the Lefschetz complex `lc`. It is expected that the
+  dimensions of the first and the last cell in the path differ by at
+  most 1. In case they have equal dimension, and the path has length
+  larger than 1, the first cell has to be an arrow source. This
+  function also has a second method associated with its name, in
+  which the second argument is of type [`CellSubsets`](@ref), i.e.,
+  it contains a collection of Forman gradient paths. In the case,
+  the function returns the sum of all weights of these paths.
 
 For analyzing or applying Forman's combinatorial flow, one needs to
 work with sparse vector representations of chains. These are elements

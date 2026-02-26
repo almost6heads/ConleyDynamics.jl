@@ -70,5 +70,6 @@ lists_from_sparse
 ```@docs
 scalar_inverse
 scalar_multiply
+scalar_add
 ```
 
