@@ -13,6 +13,15 @@ description, etc.
 
 Release notes:
 
+## v0.4.3 (February 26, 2026)
+
+- Added the function `forman_gpaths` to find all gradient paths in
+  a Forman gradient vector field.
+- Added `forman_path_weight`, which computes the weight of a Forman
+  gradient path.
+- Added the helper functions `scalar_multiply` and `scalar_add` to allow
+  for easier computations in the underlying field.
+
 ## v0.4.2 (February 19, 2026)
 
 - Added `lefschetz_filtration_mvf` to determine the multivector field
