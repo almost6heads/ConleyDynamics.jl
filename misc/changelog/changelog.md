@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.4.4 (February 26, 2026)
+
+Bug fix release..
+
 ## v0.4.3 (February 26, 2026)
 
 - Added the function `forman_gpaths` to find all gradient paths in
