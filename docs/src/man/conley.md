@@ -1348,7 +1348,7 @@ stabilized version can be computed using the following two functions.
   pass the optional paramter `maxit` with a larger number of allowed
   iterations.
 - [`forman_gpaths`](@ref) can be used to find gradient paths in a
-  Forman gradient vector field. There are several methods for this 
+  Forman gradient vector field. There are two methods for this 
   function, which are accessible via multiple dispatch as follows.
   - The call `forman_gpaths(lc, fvf, x)` determines all maximal
     gradient paths of the Forman gradient field `fvf` on the
@@ -1361,11 +1361,6 @@ stabilized version can be computed using the following two functions.
     is an arrow target which is succeeded by a cell in its boundary,
     and which in turn is the source of a different arrow, as long
     as such a cell exists.
-  - The call `forman_gpaths(lc, fvf, x, extended=false)` finds
-    all maximal gradient paths `p` such that the subpath `p[1:end-1]`
-    is a gradient path in the above sense, and `p[end]` is an
-    element in the boundary of `p[end-1]` which is different
-    from `p[end-2]`. Such paths clearly have an odd length.
   - The call `forman_gpaths(lc, fvf, x, y)` computes all
     Forman gradient paths between the cells `x` and `y`.
     Nontrivial paths are only returned if ``|\dim x - \dim y| \le 1``.
@@ -1378,11 +1373,13 @@ stabilized version can be computed using the following two functions.
       solution paths `p` between `x` and `y` for which `p[1:end-1]`
       is a Forman gradient path in the above sense, and `p[end]`
       lies in the boundary of `p[end-1]` and is different from
-      the cell `p[end-2]`.
+      the cell `p[end-2]`. For this, the length of the path has
+      to be at least 3. If on the other hand one has ``x = y``,
+      then only a 1-element path is returned.
     - Finally, if ``\dim x = \dim y + 1``, then the function
       returns all solution paths `p` between `x` and `y`
-      for which `p[2:end]` is a Forman gradient path in
-      the sense of the second item, and `p[2]` lies
+      for which `p[2:end]` is a Forman gradient path in the
+      sense of the second item, and `p[2]` lies
       in the boundary of `p[1]`.
     In all other cases an empty collection is returned.
 - [`forman_path_weight`](@ref) expects the arguments `lc:LefschetzComplex`

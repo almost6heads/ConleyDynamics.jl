@@ -2,8 +2,7 @@ export forman_gpaths
 export forman_path_weight
 
 """
-    forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets, x::Cell;
-                       extended::Bool=false)
+    forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets, x::Cell)
 
 Find all Forman gradient paths starting at a source cell.
 
@@ -16,16 +15,8 @@ is an arrow source which is followed by its arrow target, while every
 cell of dimension `dim(x) + 1` is an arrow target which is succeeded
 by a cell in its boundary which is the source of a different arrow,
 as long as such a cell exists.
-
-If one passes the optional argument `extended = true`, then the
-function determines all maximal gradient paths `p` such that the
-subpath `p[1:end-1]` is a gradient path in the above sense,
-and `p[end]` is an element in the boundary of `p[end-1]` which
-is different from `p[end-2]`. Such paths clearly have an
-odd length.
 """
-function forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets, x::Cell;
-                       extended::Bool=false)
+function forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets, x::Cell)
     #
     # Find all Forman gradient paths starting from x
     #
@@ -105,45 +96,12 @@ function forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets, x::Cell;
         end
     end
 
-    # If extended==false we are done, return the paths
-
-    if !extended
-        if typeof(x)==String
-            return convert_cellsubsets(lc, paths)
-        else
-            return paths
-        end
-    end
-
-    # If extended==true, we need to find the next elements for each path
-
-    epaths = Vector{Vector{Int}}([])
-    push!(epaths, [xi])   # We have to add this trivial path
-
-    while length(paths) > 0
-        cpath = popfirst!(paths)
-        lasttcell = cpath[length(cpath)]
-        lastscell = cpath[length(cpath)-1]
-        tbnd = setdiff(lefschetz_boundary(lc, lasttcell), [lastscell])
-
-        # All cells in tbnd are either targets or critical,
-        # due to the construction of paths
-
-        if length(tbnd)==0
-            push!(epaths, cpath[1:length(cpath)-1])
-        else
-            for k in tbnd
-                push!(epaths, vcat(cpath, [k]))
-            end
-        end
-    end
-    
-    # Return the results
+    # Return the paths
 
     if typeof(x)==String
-        return convert_cellsubsets(lc, unique(epaths))
+        return convert_cellsubsets(lc, paths)
     else
-        return unique(epaths)
+        return paths
     end
 end
 
@@ -158,7 +116,7 @@ complex `lc` this function finds all gradient paths between
 the cells `x` and `y`. The dimensions of these cells have to
 satisfy one of the following three conditions:
 
-* `dim(x) + 1 = dim(y)`: In this case the function
+* `dim(x) = dim(y) - 1`: In this case the function
   returns all solution paths between `x` and `y` which
   consist entirely of Forman arrows. All the sources
   have the dimension of `x`, and the targets the
@@ -170,9 +128,10 @@ satisfy one of the following three conditions:
   and is different from the cell `p[end-2]`.
 * `dim(x) = dim(y) + 1`: In this case the function
   returns all solution paths `p` between `x` and `y`
-  for which `p[2:end]` is a Forman gradient path in
-  the sense of the second item, and `p[2]` lies
-  in the boundary of `p[1]`.
+  for which `p[2:end-1]` is a Forman gradient path in
+  the sense of the first item, where `p[2]` lies
+  in the boundary of `p[1]`, and `p[end]` is contained
+  in the boundary of `p[end-1]`.
 
 In all other cases an empty collection is returned.
 """
@@ -204,22 +163,17 @@ function forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets,
         if typeof(x)==String
             return Vector{Vector{String}}([])
         else
-            return Vector{Vector{String}}([])
+            return Vector{Vector{Int}}([])
         end
     end
 
-    # Now find all paths between x and y if dim(y) = dim(x) + 1
-    # or if dim(y) = dim(x)
+    # Find all paths between x and y if dim(x) = dim(y) - 1
 
-    if (yd == xd + 1) || (yd == xd)
+    if xd == yd - 1
 
         # Find all paths starting from x
-
-        if yd == xd + 1
-            allpaths = forman_gpaths(lc, fvf, xi)
-        else
-            allpaths = forman_gpaths(lc, fvf, xi, extended=true)
-        end
+        
+        allpaths = forman_gpaths(lc, fvf, xi)
 
         # Extract all paths that contain y
 
@@ -231,23 +185,75 @@ function forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets,
                 push!(paths, cpath[1:yindices[1]])
             end
         end
+
+        # Return the results
+
+        if typeof(x)==String
+            return convert_cellsubsets(lc, unique(paths))
+        else
+            return unique(paths)
+        end
     end
 
-    # Here we consider the remaining case dim(x) = dim(y) + 1
+    # Next deal with the edge case x = y
+
+    if xi == yi
+        paths = [[xi]]
+        if typeof(x)==String
+            return convert_cellsubsets(lc, unique(paths))
+        else
+            return unique(paths)
+        end
+    end
+
+    # Once we get here, we have dim(x) >= dim(y), and in case
+    # the dimensions are equal we further have x different from y.
+    
+    # First we need to seed the partial paths which start at x,
+    # if dim(x) = dim(y)
+
+    if xd == yd
+        partialpaths = forman_gpaths(lc, fvf, xi)
+    end
+
+    # Now seed the partial paths if dim(x) = dim(y) + 1
 
     if xd == yd + 1
+        
+        # Make sure x by itself is a partial path
 
-        # Find the boundary of x
+        partialpaths = Vector{Vector{Int}}([])
+        push!(partialpaths, [xi])
+
+        # Now add all paths which start at a boundary element of x
 
         xbnd = lefschetz_boundary(lc, xi)
 
-        # For every boundary point, find all paths to y
-
-        paths = Vector{Vector{Int}}([])
         for cbnd in xbnd
-            bndpaths = forman_gpaths(lc, fvf, cbnd, yi)
+            bndpaths = forman_gpaths(lc, fvf, cbnd)
             for cpath in bndpaths
-                push!(paths, vcat([xi], cpath))
+                push!(partialpaths, vcat([xi], cpath))
+            end
+        end
+    end
+
+    # At this point, partialpaths contain all maximal paths
+    # which start at x and end in a target vector, or in x.
+    # Now we need to see whether these paths intersect the
+    # coboundary of y, and extract the resulting subpaths.
+
+    # Find the coboundary of y
+
+    ycobnd = lefschetz_coboundary(lc, yi)
+
+    # Extract the subpaths
+
+    paths = Vector{Vector{Int}}([])
+    for ycb in ycobnd
+        for cpath in partialpaths
+            yindices = findall(t -> t==ycb, cpath)
+            for k in yindices
+                push!(paths, vcat(cpath[1:k], [yi]))
             end
         end
     end
