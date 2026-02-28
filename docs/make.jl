@@ -55,7 +55,7 @@ if "--local-html" in ARGS
      makedocs(sitename="ConleyDynamics.jl",
         modules=[ConleyDynamics],
         format = Documenter.HTML(prettyurls = false,
-                                 assets=String["assets/citations.css"]),
+                                 assets=String["assets/citations.css","assets/favicon.ico"]),
         pages = pageslist,
         authors = "Thomas Wanner",
         plugins = [CitationBibliography(
@@ -84,7 +84,7 @@ elseif "--latex-pdf" in ARGS
 else
     makedocs(sitename="ConleyDynamics.jl",
         modules=[ConleyDynamics],
-        format = Documenter.HTML(assets=String["assets/citations.css"]),
+        format = Documenter.HTML(assets=String["assets/citations.css","assets/favicon.ico"]),
         build = "build",
         pages = pageslist,
         authors = "Thomas Wanner",
