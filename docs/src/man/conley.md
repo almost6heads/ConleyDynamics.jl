@@ -652,8 +652,7 @@ the following result was shown in
 
 In [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
 connection matrices can be computed over arbitrary finite fields or the
-rationals, using the persistence-like algorithm introduced
-in [dey:etal:24a](@cite):
+rationals:
 
 * The function [`connection_matrix`](@ref) computes a connection matrix
   for the multivector field `mvf` on the Lefschetz complex `lc` over the
@@ -662,6 +661,23 @@ in [dey:etal:24a](@cite):
   described below. If the optional argument `returnbasis=true` is given,
   then the function also returns a dictionary which gives the basis
   for the connection matrix columns in terms of the original cell labels.
+
+At the present time, there are two different algorithms implemented for
+the computation of connection matrices. A specific algorithm can be
+selected by passing the optional argument `algorithm::String`:
+
+* `algorithm = "DLMS24"` selects the original algorithm due to Dey,
+  Lipinski, Mrozek, and Slechta [dey:etal:24a](@cite). This algorithm
+  is based on matrix reductions, and performs a full similarity
+  transformation.
+* `algorithm = "DHL26"` selects the more efficient algorithm due to
+  Dey, Haas, and Lipinski [dey:etal:26a](@cite), which does not
+  perform a complete reduction.
+
+By default, the function [`connection_matrix`](@ref) uses the faster
+second algorithm. However, if the flag `returnbasis::Bool=true` is
+given the function has to choose the slower one, that is, it
+automatically uses `algorithm = "DLMS24"`.
 
 The connection matrix is returned in an object with the composite
 data type [`ConleyMorseCM`](@ref). Its docstring is as follows:

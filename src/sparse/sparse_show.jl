@@ -53,10 +53,10 @@ julia> lc, mvf = example_forman1d();
 julia> cm = connection_matrix(lc, mvf);
 
 julia> sparse_show(cm.matrix, cm.labels, cm.labels)
-  ┆  A AD  F BF DE
+  ┆  A CD  F BF DE
 --┆---------------
  A┆  0  0  0  0  1
-AD┆  0  0  0  0  0
+CD┆  0  0  0  0  0
  F┆  0  0  0  0  1
 BF┆  0  0  0  0  0
 DE┆  0  0  0  0  0
@@ -142,10 +142,10 @@ julia> lc, mvf = example_forman1d();
 julia> cm = connection_matrix(lc, mvf);
 
 julia> sparse_show(cm)
-  ┆  A AD  F BF DE
+  ┆  A CD  F BF DE
 --┆---------------
  A┆  0  0  0  0  1
-AD┆  0  0  0  0  0
+CD┆  0  0  0  0  0
  F┆  0  0  0  0  1
 BF┆  0  0  0  0  0
 DE┆  0  0  0  0  0

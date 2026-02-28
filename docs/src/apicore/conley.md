@@ -26,7 +26,8 @@ remove_exit_set
 
 ```@docs
 connection_matrix
-cm_reduce!
+cm_reduce_dlms24!
+cm_reduce_dhl26!
 ```
 
 ## Forman Vector Fields

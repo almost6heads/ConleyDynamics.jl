@@ -16,14 +16,17 @@ terms of the original labels. Finally, it is possible to invoke the
 connection matrix computation with one of two different algorithms,
 by passing the optional argument `algorithm::String`:
 
-* `algorithm = "DLMS24"`
-* `algorithm = "DHL26"`
+* `algorithm = "DLMS24"` selects the algorithm due to Dey, Lipinski,
+  Mrozek, Slechta (SIAM Journal on Applied Dynamical Systems, 2024)
+* `algorithm = "DHL26"` selects the algorithm due to Dey, Haas,
+  Lipinski (SIAM Journal on Applied Dynamical Systems, 2026)
 
-If the flag `returnbasis::Bool=true` is given the function automatically
+By default, the function uses the faster second algorithm. If the
+flag `returnbasis::Bool=true` is given the function automatically
 chooses `algorithm = "DLMS24"`.
 """
 function connection_matrix(lc::LefschetzComplex, mvfarg::CellSubsets;
-                           algorithm::String="DLMS24",
+                           algorithm::String="DHL26",
                            returnbasis::Bool=false)
     #
     # Compute the connection matrix

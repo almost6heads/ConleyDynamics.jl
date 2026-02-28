@@ -24,7 +24,7 @@ julia> sparse_show(cm.matrix)
  0 0 0 0 0
 
 julia> print(cm.labels)
-["i", "ip", "g", "gm", "bc"]
+["i", "jp", "g", "hm", "bc"]
 
 julia> ms, ps = morse_sets(lc, mvf, poset=true);
 

@@ -19,9 +19,9 @@ as well as the multivector field `mvf`.
 ```jldoctest
 julia> lc1, lc2, mvf = example_small_periodicity();
 
-julia> cm1 = connection_matrix(lc1, mvf);
+julia> cm1 = connection_matrix(lc1, mvf, algorithm="DLMS24");
 
-julia> cm2 = connection_matrix(lc2, mvf);
+julia> cm2 = connection_matrix(lc2, mvf, algorithm="DLMS24");
 
 julia> full_from_sparse(cm1.matrix)
 4×4 Matrix{Int64}:

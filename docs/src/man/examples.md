@@ -271,16 +271,18 @@ julia> cm1.conley
  [0, 1, 0]
  [0, 0, 1]
 
-julia> sparse_show(cm1.matrix)
-[0   0   0   0   6   0]
-[0   0   0   0   0   1]
-[0   0   0   0   1   0]
-[0   0   0   0   0   6]
-[0   0   0   0   0   0]
-[0   0   0   0   0   0]
+julia> sparse_show(cm1)
+   ┆   A  EG   B  FH  AB EFG
+---┆------------------------
+  A┆   0   0   0   0   6   0
+ EG┆   0   0   0   0   0   6
+  B┆   0   0   0   0   1   0
+ FH┆   0   0   0   0   0   1
+ AB┆   0   0   0   0   0   0
+EFG┆   0   0   0   0   0   0
 
 julia> print(cm1.labels)
-["A", "AG", "B", "BH", "AB", "EFG"]
+["A", "EG", "B", "FH", "AB", "EFG"]
 ```
 
 In fact, the connection matrix implies the existence of
@@ -308,14 +310,16 @@ julia> cm2.conley
  [0, 1, 0]
  [0, 0, 1]
 
-julia> sparse_show(cm2.matrix)
-[0   0   0   0]
-[0   0   0   1]
-[0   0   0   2]
-[0   0   0   0]
+julia> sparse_show(cm2)
+   ┆   A  FH  AB EFG
+---┆----------------
+  A┆   0   0   0   0
+ FH┆   0   0   0   1
+ AB┆   0   0   0   2
+EFG┆   0   0   0   0
 
 julia> print(cm2.labels)
-["A", "BG", "AB", "EFG"]
+["A", "FH", "AB", "EFG"]
 ```
 
 In this case, the connection matrix is able to identify the
@@ -358,7 +362,9 @@ In other words, `lc1` and `lc2` are different representations of
 the same complex. Nevertheless, computing the connection matrices
 as in the example gives two distinct connection matrices. This is
 purely a consequence of the different ordering of the rows and 
-columns in the boundary matrix.
+columns in the boundary matrix. Notice also, that for demonstration
+purposes we compute the connection matrix using the `DLMS24`
+algorithm.
 
 To shed further light on this issue, notice that the triangle
 at the center of the complex forms an attracting periodic orbit, 
@@ -379,8 +385,8 @@ mvf1 = deepcopy(mvf);
 mvf2 = deepcopy(mvf);
 deleteat!(mvf1,6);
 deleteat!(mvf2,8);
-cm1mod = connection_matrix(lc1, mvf1);
-cm2mod = connection_matrix(lc2, mvf2);
+cm1mod = connection_matrix(lc1, mvf1, algorithm="DLMS24");
+cm2mod = connection_matrix(lc2, mvf2, algorithm="DLMS24");
 ```
 
 Both of the new Forman vector fields are gradient vector fields, and
@@ -389,16 +395,18 @@ matrices are therefore uniquely determined. The connection matrix for
 the vector field `mvf1` is of the form
 
 ```julia
-julia> sparse_show(cm1mod.matrix)
-[0   0   1   0   1   0   0   0   0]
-[0   0   1   0   1   0   0   0   0]
-[0   0   0   0   0   0   1   1   0]
-[0   0   0   0   0   0   0   1   0]
-[0   0   0   0   0   0   1   1   0]
-[0   0   0   0   0   0   0   1   1]
-[0   0   0   0   0   0   0   0   0]
-[0   0   0   0   0   0   0   0   0]
-[0   0   0   0   0   0   0   0   0]
+julia> sparse_show(cm1mod)
+   ┆   2   7  29  45  67  79 168 349 789
+---┆------------------------------------
+  2┆   0   0   1   0   1   0   0   0   0
+  7┆   0   0   1   0   1   0   0   0   0
+ 29┆   0   0   0   0   0   0   1   1   0
+ 45┆   0   0   0   0   0   0   0   1   0
+ 67┆   0   0   0   0   0   0   1   1   0
+ 79┆   0   0   0   0   0   0   0   1   1
+168┆   0   0   0   0   0   0   0   0   0
+349┆   0   0   0   0   0   0   0   0   0
+789┆   0   0   0   0   0   0   0   0   0
 
 julia> print(cm1mod.labels)
 ["2", "7", "29", "45", "67", "79", "168", "349", "789"]
@@ -414,16 +422,18 @@ Similarly, the connection matrix for the second modified Forman
 vector field `mvf2` is uniquely determined, and it is given by
 
 ```julia
-julia> sparse_show(cm2mod.matrix)
-[0   0   1   0   1   0   0   0   0]
-[0   0   1   0   1   0   0   0   0]
-[0   0   0   0   0   0   1   1   0]
-[0   0   0   0   0   0   0   1   0]
-[0   0   0   0   0   0   1   1   0]
-[0   0   0   0   0   0   1   0   1]
-[0   0   0   0   0   0   0   0   0]
-[0   0   0   0   0   0   0   0   0]
-[0   0   0   0   0   0   0   0   0]
+julia> sparse_show(cm2mod)
+   ┆   2   8  29  45  67  78 168 349 789
+---┆------------------------------------
+  2┆   0   0   1   0   1   0   0   0   0
+  8┆   0   0   1   0   1   0   0   0   0
+ 29┆   0   0   0   0   0   0   1   1   0
+ 45┆   0   0   0   0   0   0   0   1   0
+ 67┆   0   0   0   0   0   0   1   1   0
+ 78┆   0   0   0   0   0   0   1   0   1
+168┆   0   0   0   0   0   0   0   0   0
+349┆   0   0   0   0   0   0   0   0   0
+789┆   0   0   0   0   0   0   0   0   0
 
 julia> print(cm2mod.labels)
 ["2", "8", "29", "45", "67", "78", "168", "349", "789"]
@@ -481,7 +491,7 @@ first vector field one obtains the following connection matrix:
 ```julia
 julia> lc1, mvf1 = example_three_cm(1);
 
-julia> cm1 = connection_matrix(lc1, mvf1);
+julia> cm1 = connection_matrix(lc1, mvf1, algorithm="DLMS24");
 
 julia> print(cm1.labels)
 ["A", "C", "AC", "BD", "CD", "DF", "ABC", "EFG"]
@@ -503,7 +513,7 @@ In contrast, the second vector field leads to:
 ```julia
 julia> lc2, mvf2 = example_three_cm(2);
 
-julia> cm2 = connection_matrix(lc2, mvf2);
+julia> cm2 = connection_matrix(lc2, mvf2, algorithm="DLMS24");
 
 julia> print(cm2.labels)
 ["A", "D", "AC", "BD", "DE", "DF", "ABC", "EFG"]
@@ -525,7 +535,7 @@ Finally, the third gradient vector field gives:
 ```julia
 julia> lc3, mvf3 = example_three_cm(3);
 
-julia> cm3 = connection_matrix(lc3, mvf3);
+julia> cm3 = connection_matrix(lc3, mvf3, algorithm="DLMS24");
 
 julia> print(cm3.labels)
 ["A", "E", "AC", "BD", "CE", "DF", "ABC", "EFG"]
@@ -766,9 +776,9 @@ matrices can be computed using the commands
 lc0, mvf0 = example_subdivision(0)
 lc1, mvf1 = example_subdivision(1)
 lc2, mvf2 = example_subdivision(2)
-cm0 = connection_matrix(lc0,mvf0)
-cm1 = connection_matrix(lc1,mvf1)
-cm2 = connection_matrix(lc2,mvf2)
+cm0 = connection_matrix(lc0, mvf0, algorithm="DLMS24")
+cm1 = connection_matrix(lc1, mvf1, algorithm="DLMS24")
+cm2 = connection_matrix(lc2, mvf2, algorithm="DLMS24")
 ```
 
 All three vector fields give rise to the same Morse decomposition,

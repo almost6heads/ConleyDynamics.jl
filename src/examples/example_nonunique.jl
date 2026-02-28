@@ -18,9 +18,9 @@ coordinates for the vertices of the two complexes.
 ```jldoctest
 julia> lc1, lc2, mvf = example_nonunique();
 
-julia> cm1 = connection_matrix(lc1, mvf);
+julia> cm1 = connection_matrix(lc1, mvf, algorithm="DLMS24");
 
-julia> cm2 = connection_matrix(lc2, mvf);
+julia> cm2 = connection_matrix(lc2, mvf, algorithm="DLMS24");
 
 julia> sparse_show(cm1.matrix)
  0 0 0 1 0 1 0 0 0

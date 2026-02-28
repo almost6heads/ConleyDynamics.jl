@@ -22,7 +22,7 @@ julia> sparse_show(cm.matrix)
  0 0 0
 
 julia> print(cm.labels)
-["D", "AC", "ABC"]
+["D", "BC", "ABC"]
 ```
 """
 function example_julia_logo()
