@@ -1,12 +1,15 @@
-export cm_reduce! 
+export cm_reduce_dlms24!
+export cm_reduce_dhl26!
 
 """
-    cm_reduce!(matrix::SparseMatrix, psetvec::Vector{Int};
-               [returnbasis::Bool],[returntm::Bool])
+    cm_reduce_dlms24!(matrix::SparseMatrix, psetvec::Vector{Int};
+                      [returnbasis::Bool],[returntm::Bool])
 
 Compute the connection matrix.
 
-Assumes that `matrix` is upper triangular and filtered according
+This function uses the algorithm from the paper Dey, Lipinski,
+Mrozek, and Slechta (SIAM Journal on Applied Dynamical Systems, 2024).
+It assumes that `matrix` is upper triangular and filtered according
 to `psetvec`. Modifies the argument `matrix`.
 
 # Return values:
@@ -21,8 +24,8 @@ to `psetvec`. Modifies the argument `matrix`.
   the function returns the complete transformation matrix. In this
   case, `basicvecs` is not returned.
 """
-function cm_reduce!(matrix::SparseMatrix, psetvec::Vector{Int};
-                    returnbasis::Bool=false, returntm::Bool=false)
+function cm_reduce_dlms24!(matrix::SparseMatrix, psetvec::Vector{Int};
+                           returnbasis::Bool=false, returntm::Bool=false)
     #
     # Compute the connection matrix
     #
@@ -89,6 +92,102 @@ function cm_reduce!(matrix::SparseMatrix, psetvec::Vector{Int};
     else
         return cmatrix, cmatrix_cols
     end
+end
+
+"""
+    cm_reduce_dhl26!(matrix::SparseMatrix, psetvec::Vector{Int})
+
+Compute the connection matrix.
+
+This function uses the algorithm from the paper Dey, Haas, and
+Lipinski (SIAM Journal on Applied Dynamical Systems, 2026).
+Assumes that `matrix` is upper triangular and filtered according
+to `psetvec`. Modifies the argument `matrix`.
+
+# Return values:
+* `cmatrix`: Connection matrix
+* `cmatrix_cols`: Columns of the connection matrix in the boundary
+"""
+function cm_reduce_dhl26!(matrix::SparseMatrix, psetvec::Vector{Int})
+    #
+    # Compute the connection matrix
+    #
+
+    # Extract the zero and one elements
+
+    tchar = matrix.char
+    tzero = matrix.zero
+    tone  = matrix.one
+
+    # Initialize the main computation
+    
+    numcolumns = sparse_size(matrix, 2)
+
+    for j = 1:numcolumns
+        jlow = sparse_low(matrix,j)
+        if jlow > 0
+            for i = jlow:-1:1
+                if !(matrix[i,j] == tzero)
+                    found_s = false
+                    if length(matrix.rows[i]) > 0
+                        s = 0  # Needed to make it accessible outside for loop
+                        for sj in matrix.rows[i]
+                            if ((sj < j) && (sparse_low(matrix,sj) == i) && is_homogeneous(matrix,psetvec,sj))
+                                found_s = true
+                                s = sj
+                                break
+                            end
+                        end
+                    end
+
+                    if found_s
+                        gamma1 = matrix[i,j]
+                        gamma2 = matrix[i,s]
+                        sparse_add_column!(matrix,j,s,-gamma1,gamma2)
+                    end
+                end
+            end
+        end
+    end
+
+#    #
+#    # The following uses standard sparse matrix interfaces, which results in
+#    # more memory allocation, but the speed seems to be the same. For now I
+#    # keep the above version, as it is using less memory.
+#    #
+#    for j = 1:numcolumns
+#        jlow = sparse_low(matrix,j)
+#        if jlow > 0
+#            for i = jlow:-1:1
+#                if !(matrix[i,j] == tzero)
+#                    nzrow   = sparse_get_nz_row(matrix, i)
+#                    nzrowj  = nzrow[nzrow.<j]
+#                    found_s = false
+#
+#                    if length(nzrowj) > 0
+#                        s = 0  # Needed to make it accessible outside for loop
+#                        for sj in nzrowj
+#                            if ((sparse_low(matrix,sj) == i) && is_homogeneous(matrix,psetvec,sj))
+#                                found_s = true
+#                                s = sj
+#                                break
+#                            end
+#                        end
+#                    end
+#
+#                    if found_s
+#                        gamma1 = matrix[i,j]
+#                        gamma2 = matrix[i,s]
+#                        sparse_add_column!(matrix,j,s,-gamma1,gamma2)
+#                    end
+#                end
+#            end
+#        end
+#    end
+
+    cmatrix_cols = cm_columns(matrix, psetvec)
+    cmatrix      = sparse_minor(matrix, cmatrix_cols, cmatrix_cols)
+    return cmatrix, cmatrix_cols
 end
 
 ###############################################################################

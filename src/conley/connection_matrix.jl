@@ -2,6 +2,7 @@ export connection_matrix
 
 """
     connection_matrix(lc::LefschetzComplex, mvf::CellSubsets;
+                      [algorithm::String],
                       [returnbasis::Bool])
 
 Compute a connection matrix for the multivector field `mvf` on the
@@ -11,9 +12,18 @@ complex boundary matrix.
 The function returns an object of type `ConleyMorseCM`. If the optional
 argument `returnbasis::Bool=true` is given, then the function also returns
 a dictionary which gives the basis for the connection matrix columns in
-terms of the original labels.
+terms of the original labels. Finally, it is possible to invoke the
+connection matrix computation with one of two different algorithms,
+by passing the optional argument `algorithm::String`:
+
+* `algorithm = "DLMS24"`
+* `algorithm = "DHL26"`
+
+If the flag `returnbasis::Bool=true` is given the function automatically
+chooses `algorithm = "DLMS24"`.
 """
 function connection_matrix(lc::LefschetzComplex, mvfarg::CellSubsets;
+                           algorithm::String="DLMS24",
                            returnbasis::Bool=false)
     #
     # Compute the connection matrix
@@ -42,9 +52,13 @@ function connection_matrix(lc::LefschetzComplex, mvfarg::CellSubsets;
 
     cmRedP = deepcopy(adbnd)
     if returnbasis
-        cmMatrP, cmColsP, cmBasisP = cm_reduce!(cmRedP, psetvec; returnbasis=true)
+        cmMatrP, cmColsP, cmBasisP = cm_reduce_dlms24!(cmRedP, psetvec; returnbasis=true)
+    elseif algorithm == "DHL26"
+        cmMatrP, cmColsP = cm_reduce_dhl26!(cmRedP, psetvec)
+    elseif algorithm == "DLMS24"
+        cmMatrP, cmColsP = cm_reduce_dlms24!(cmRedP, psetvec)
     else
-        cmMatrP, cmColsP = cm_reduce!(cmRedP, psetvec)
+        error("Invalid value of the algorithm flag!")
     end
 
     # Compute first few return variables
