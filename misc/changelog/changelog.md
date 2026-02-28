@@ -13,6 +13,27 @@ description, etc.
 
 Release notes:
 
+## v0.5.0 (February 28, 2026)
+
+This release does not contain any breaking changes. But the 
+following functionality has been added since release 0.4.0:
+
+- The connection matrix can now be computed with two different
+  algorithms. In addition to the original `DLMS24` algorithm,
+  one can now also use the faster `DHL26` algorithm. The latter
+  one is now the default.
+- Added the function `forman_gpaths` to find all gradient paths in
+  a Forman gradient vector field.
+- Added `forman_path_weight`, which computes the weight of a Forman
+  gradient path.
+- Added `lefschetz_filtration_mvf` to determine the multivector field
+  associated with a filtration on a Lefschetz complex.
+- Added `cellsubset_distance` to determine the distance from a cellsubset
+  to a given point, provided coordinates for the vertices are provided.
+- Added `cellsubset_planar_area` to compute the area of a cellsubset
+  in a planar Lefschetz complex. This function does allow for 2-cells
+  that are polygonal.
+
 ## v0.4.4 (February 26, 2026)
 
 Bug fix release..
