@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.5.1 (March 3, 2026)
+
+Some quick additions.. :-)
+
 ## v0.5.0 (February 28, 2026)
 
 This release does not contain any breaking changes. But the 
