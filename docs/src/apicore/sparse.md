@@ -53,6 +53,8 @@ sparse_scale
 Base.:+(::SparseMatrix,::SparseMatrix)
 Base.:-(::SparseMatrix,::SparseMatrix)
 Base.:*(::SparseMatrix,::SparseMatrix)
+Base.:*(::Int,::SparseMatrix)
+Base.:*(::Rational{Int},::SparseMatrix)
 Base.:*(::Any,::SparseMatrix)
 ```
 
