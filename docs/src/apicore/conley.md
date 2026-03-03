@@ -28,6 +28,8 @@ remove_exit_set
 connection_matrix
 cm_reduce_dlms24!
 cm_reduce_dhl26!
+cm_reduce_hms21
+cm_reduce_pmorse26
 ```
 
 ## Forman Vector Fields

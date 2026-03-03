@@ -20,7 +20,8 @@ include("./conley/composite_types.jl")
 
 # Load the methods
 
-include("./conley/cm_reduce.jl")
+include("./conley/cm_matrix_reduce.jl")
+include("./conley/cm_morse_reduce.jl")
 include("./conley/connection_matrix.jl")
 include("./conley/conley_index.jl")
 include("./conley/morse_sets.jl")

@@ -20,6 +20,9 @@ by passing the optional argument `algorithm::String`:
   Mrozek, Slechta (SIAM Journal on Applied Dynamical Systems, 2024)
 * `algorithm = "DHL26"` selects the algorithm due to Dey, Haas,
   Lipinski (SIAM Journal on Applied Dynamical Systems, 2026)
+* `algorithm = "HMS21"` selects the algorithm due to Harker,
+  Mischaikow, Spendlove (Journal of Applied and Computational
+  Topology, 2021)
 
 By default, the function uses the faster second algorithm. If the
 flag `returnbasis::Bool=true` is given the function automatically
@@ -60,6 +63,10 @@ function connection_matrix(lc::LefschetzComplex, mvfarg::CellSubsets;
         cmMatrP, cmColsP = cm_reduce_dhl26!(cmRedP, psetvec)
     elseif algorithm == "DLMS24"
         cmMatrP, cmColsP = cm_reduce_dlms24!(cmRedP, psetvec)
+    elseif algorithm == "HMS21"
+        cmMatrP, cmColsP = cm_reduce_hms21(cmRedP, psetvec)
+    elseif algorithm == "PMORSE26"
+        cmMatrP, cmColsP = cm_reduce_pmorse26(cmRedP, psetvec)
     else
         error("Invalid value of the algorithm flag!")
     end
