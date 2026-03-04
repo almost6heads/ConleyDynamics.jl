@@ -14,7 +14,7 @@ and the multivector field `mvf`.
 ```jldoctest
 julia> lc, mvf = example_julia_logo();
 
-julia> cm = connection_matrix(lc, mvf);
+julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 
 julia> sparse_show(cm.matrix)
  0 0 0

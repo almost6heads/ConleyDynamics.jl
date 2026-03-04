@@ -16,7 +16,7 @@ gives a vector of coordinates for the vertices.
 ```jldoctest
 julia> lc, mvf = example_forman2d();
 
-julia> cm = connection_matrix(lc, mvf);
+julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 
 julia> sparse_show(cm)
    ┆   D   E   F  IJ  BF  EF  HI ADE FGJ

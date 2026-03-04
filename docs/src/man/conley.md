@@ -666,18 +666,26 @@ At the present time, there are two different algorithms implemented for
 the computation of connection matrices. A specific algorithm can be
 selected by passing the optional argument `algorithm::String`:
 
-* `algorithm = "DLMS24"` selects the original algorithm due to Dey,
+* `algorithm = "DLMS"` selects the original algorithm due to Dey,
   Lipinski, Mrozek, and Slechta [dey:etal:24a](@cite). This algorithm
   is based on matrix reductions, and performs a full similarity
   transformation.
-* `algorithm = "DHL26"` selects the more efficient algorithm due to
+* `algorithm = "DHL"` selects the more efficient algorithm due to
   Dey, Haas, and Lipinski [dey:etal:26a](@cite), which does not
   perform a complete reduction.
+* `algorithm = "HMS"` selects the algorithm due to Harker,
+  Mischaikow, and Spendlove [harker:etal:21a](@cite), which is
+  based on discrete Morse theory, i.e., on the use of gradient
+  Forman vector fields to preprocess the underlying Lefschetz
+  complex.
+* `algorithm = "pmorse"` selects a parallelized algorithm based
+  on Morse reductions. For this to take effect, Julia has to be started
+  with multi-threading enabled.
 
-By default, the function [`connection_matrix`](@ref) uses the faster
-second algorithm. However, if the flag `returnbasis::Bool=true` is
-given the function has to choose the slower one, that is, it
-automatically uses `algorithm = "DLMS24"`.
+By default, the function [`connection_matrix`](@ref) uses the parallel
+Morse reduction algorithm `pmorse`. However, if the flag `returnbasis::Bool=true`
+is given the function has to choose the slower matrix-based one, that is,
+it automatically uses `algorithm = "DLMS"`.
 
 The connection matrix is returned in an object with the composite
 data type [`ConleyMorseCM`](@ref). Its docstring is as follows:

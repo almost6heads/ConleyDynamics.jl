@@ -16,7 +16,7 @@ and the multivector field `mvf`.
 ```jldoctest
 julia> lc, mvf = example_subdivision(1);
 
-julia> cm = connection_matrix(lc, mvf);
+julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 
 julia> full_from_sparse(cm.matrix)
 5×5 Matrix{Rational{Int64}}:

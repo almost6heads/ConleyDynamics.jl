@@ -50,7 +50,7 @@ while `rlabels` give the row labels.
 ```jldoctest
 julia> lc, mvf = example_forman1d();
 
-julia> cm = connection_matrix(lc, mvf);
+julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 
 julia> sparse_show(cm.matrix, cm.labels, cm.labels)
   ┆  A CD  F BF DE
@@ -139,7 +139,7 @@ its labels. It uses `sparse_show(cm.matrix, cm.labels, cm.labels)`.
 ```jldoctest
 julia> lc, mvf = example_forman1d();
 
-julia> cm = connection_matrix(lc, mvf);
+julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 
 julia> sparse_show(cm)
   ┆  A CD  F BF DE

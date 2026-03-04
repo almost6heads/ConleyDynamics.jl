@@ -25,7 +25,7 @@ julia> homology(sc)
  0
  0
 
-julia> cmG = connection_matrix(sc, vfG);
+julia> cmG = connection_matrix(sc, vfG, algorithm="DHL");
 
 julia> sparse_show(cmG.matrix)
  0 0 0
@@ -35,7 +35,7 @@ julia> sparse_show(cmG.matrix)
 julia> print(cmG.labels)
 ["1", "12", "128"]
 
-julia> cmC = connection_matrix(sc, vfC);
+julia> cmC = connection_matrix(sc, vfC, algorithm="DHL");
 
 julia> sparse_show(cmC.matrix)
  0

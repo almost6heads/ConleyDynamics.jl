@@ -17,7 +17,7 @@ return value `coords` gives a vector of coordinates for the vertices.
 ```jldoctest
 julia> lc, mvf = example_three_cm(0);
 
-julia> cm = connection_matrix(lc, mvf);
+julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 
 julia> print(cm.labels)
 ["A", "C", "DE", "AC", "BD", "DF", "ABC", "EFG"]

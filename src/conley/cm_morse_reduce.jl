@@ -9,7 +9,7 @@ Compute the connection matrix.
 This function uses the algorithm from the paper Harker, Mischaikow,
 Spendlove (Journal of Applied and Computational Topology, 2021).
 Assumes that `matrix` is upper triangular and filtered according
-to `psetvec`. Modifies the argument `matrix`.
+to `psetvec`.
 
 # Return values:
 * `cmatrix`: Connection matrix
@@ -66,7 +66,7 @@ Compute the connection matrix.
 
 This function uses a parallelized Morse matching algorithm.
 Assumes that `matrix` is upper triangular and filtered according
-to `psetvec`. Modifies the argument `matrix`.
+to `psetvec`.
 
 # Return values:
 * `cmatrix`: Connection matrix

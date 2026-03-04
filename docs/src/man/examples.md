@@ -248,8 +248,8 @@ connection matrices for ``p=7`` using the following commands:
 
 ```julia
 lc1, mvf1, lc2, mvf2 = example_moebius(7)
-cm1 = connection_matrix(lc1,mvf1)
-cm2 = connection_matrix(lc2,mvf2)
+cm1 = connection_matrix(lc1,mvf1, algorithm="DHL")
+cm2 = connection_matrix(lc2,mvf2, algorithm="DHL")
 ```
 
 For the first example, the combinatorial flow on the cylinder has
@@ -385,8 +385,8 @@ mvf1 = deepcopy(mvf);
 mvf2 = deepcopy(mvf);
 deleteat!(mvf1,6);
 deleteat!(mvf2,8);
-cm1mod = connection_matrix(lc1, mvf1, algorithm="DLMS24");
-cm2mod = connection_matrix(lc2, mvf2, algorithm="DLMS24");
+cm1mod = connection_matrix(lc1, mvf1, algorithm="DLMS");
+cm2mod = connection_matrix(lc2, mvf2, algorithm="DLMS");
 ```
 
 Both of the new Forman vector fields are gradient vector fields, and
@@ -491,7 +491,7 @@ first vector field one obtains the following connection matrix:
 ```julia
 julia> lc1, mvf1 = example_three_cm(1);
 
-julia> cm1 = connection_matrix(lc1, mvf1, algorithm="DLMS24");
+julia> cm1 = connection_matrix(lc1, mvf1, algorithm="DLMS");
 
 julia> print(cm1.labels)
 ["A", "C", "AC", "BD", "CD", "DF", "ABC", "EFG"]
@@ -513,7 +513,7 @@ In contrast, the second vector field leads to:
 ```julia
 julia> lc2, mvf2 = example_three_cm(2);
 
-julia> cm2 = connection_matrix(lc2, mvf2, algorithm="DLMS24");
+julia> cm2 = connection_matrix(lc2, mvf2, algorithm="DLMS");
 
 julia> print(cm2.labels)
 ["A", "D", "AC", "BD", "DE", "DF", "ABC", "EFG"]
@@ -535,7 +535,7 @@ Finally, the third gradient vector field gives:
 ```julia
 julia> lc3, mvf3 = example_three_cm(3);
 
-julia> cm3 = connection_matrix(lc3, mvf3, algorithm="DLMS24");
+julia> cm3 = connection_matrix(lc3, mvf3, algorithm="DLMS");
 
 julia> print(cm3.labels)
 ["A", "E", "AC", "BD", "CE", "DF", "ABC", "EFG"]
@@ -776,9 +776,9 @@ matrices can be computed using the commands
 lc0, mvf0 = example_subdivision(0)
 lc1, mvf1 = example_subdivision(1)
 lc2, mvf2 = example_subdivision(2)
-cm0 = connection_matrix(lc0, mvf0, algorithm="DLMS24")
-cm1 = connection_matrix(lc1, mvf1, algorithm="DLMS24")
-cm2 = connection_matrix(lc2, mvf2, algorithm="DLMS24")
+cm0 = connection_matrix(lc0, mvf0, algorithm="DLMS")
+cm1 = connection_matrix(lc1, mvf1, algorithm="DLMS")
+cm2 = connection_matrix(lc2, mvf2, algorithm="DLMS")
 ```
 
 All three vector fields give rise to the same Morse decomposition,
@@ -866,10 +866,10 @@ The first of the above commands creates the simplicial complex `lc`
 and the Forman vector field `mvf`. These are then analyzed using
 the following commands:
 
-* Using `cm = connection_matrix(lc, mvf)` one can compute the 
-  connection matrix of the example. This connection matrix has
-  two nonzero entries, which indicate connecting orbits from
-  the index 1 critical cell ``\mathbf{bc}`` to each of the
+* Using `cm = connection_matrix(lc, mvf, algorithm="DHL")` one
+  can compute the connection matrix of the example. This connection
+  matrix has two nonzero entries, which indicate connecting orbits
+  from the index 1 critical cell ``\mathbf{bc}`` to each of the
   stable periodic orbits spanned by the vertices
   ``\mathbf{h}``, ``\mathbf{g}``, ``\mathbf{m}`` and
   ``\mathbf{i}``, ``\mathbf{j}``, ``\mathbf{p}``, respectively.
@@ -928,15 +928,15 @@ the above example provides the following analysis:
 
 * The command `homology(sc)` shows that the Dunce hat has the
   homology of a point, i.e., it is contractible.
-* The next command `cmG = connection_matrix(sc, vfG)` determines
-  the connection matrix for the gradient system. As the entry
-  `cmG.labels` shows, the Morse sets are the three simplices
+* The next command `cmG = connection_matrix(sc, vfG, algorithm="DHL")`
+  determines the connection matrix for the gradient system. As the
+  entry `cmG.labels` shows, the Morse sets are the three simplices
   ``\mathrm{1}``, ``\mathrm{12}``, and ``\mathrm{128}``,
   and the nontrivial entry in the connection matrix indicates
   at least one connection between the index ``2`` critical cell
   and the index ``1`` critical cell. In fact, there are three
   such connections.
-* The command `cmC = connection_matrix(sc, vfC)` 
+* The command `cmC = connection_matrix(sc, vfC, algorithm="DHL")` 
   computes the connection matrix. This time, the matrix is the
   zero matrix with one row and column, which correspond to the
   stable critical cell ``\mathrm{1}``.
@@ -1001,9 +1001,9 @@ following commands:
 
 * The command `homology(sc)` shows that in the field ``GF(7)``, 
   the space has the homology of a point.
-* The next command `cmG = connection_matrix(sc, vfG)` determines
-  the connection matrix for the gradient system. As the entry
-  `cmG.labels` shows, the Morse sets are the three simplices
+* The next command `cmG = connection_matrix(sc, vfG, algorithm="DHL")`
+  determines the connection matrix for the gradient system. As the
+  entry `cmG.labels` shows, the Morse sets are the three simplices
   ``\mathrm{0w}``, ``\mathrm{0w0x}``, and ``\mathrm{0w0x1s}``,
   and the nontrivial entry in the connection matrix indicates
   three connections between the index ``2`` critical cell and
@@ -1011,7 +1011,7 @@ following commands:
 
 The next commands analyze the chaotic Forman vector field `vfC`:
 
-* As before, the command `cmC = connection_matrix(sc, vfC)` 
+* As before, the command `cmC = connection_matrix(sc, vfC, algorithm="DHL")` 
   computes the connection matrix. This time, the matrix is the
   zero matrix with one row and column, which correspond to the
   stable critical cell ``\mathrm{0w}``.

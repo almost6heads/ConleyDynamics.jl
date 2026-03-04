@@ -16,20 +16,23 @@ terms of the original labels. Finally, it is possible to invoke the
 connection matrix computation with one of two different algorithms,
 by passing the optional argument `algorithm::String`:
 
-* `algorithm = "DLMS24"` selects the algorithm due to Dey, Lipinski,
-  Mrozek, Slechta (SIAM Journal on Applied Dynamical Systems, 2024)
-* `algorithm = "DHL26"` selects the algorithm due to Dey, Haas,
-  Lipinski (SIAM Journal on Applied Dynamical Systems, 2026)
-* `algorithm = "HMS21"` selects the algorithm due to Harker,
+* `algorithm = "DLMS"` selects the algorithm due to Dey, Lipinski,
+  Mrozek, Slechta (SIAM Journal on Applied Dynamical Systems, 2024),
+* `algorithm = "DHL"` selects the algorithm due to Dey, Haas,
+  Lipinski (SIAM Journal on Applied Dynamical Systems, 2026),
+* `algorithm = "HMS"` selects the algorithm due to Harker,
   Mischaikow, Spendlove (Journal of Applied and Computational
-  Topology, 2021)
+  Topology, 2021),
+* `algorithm = "pmorse"` selects a parallelized algorithm based
+  on Morse reductions.
 
-By default, the function uses the faster second algorithm. If the
-flag `returnbasis::Bool=true` is given the function automatically
-chooses `algorithm = "DLMS24"`.
+By default, the function uses the parallelized Morse reduction
+algorithm `pmorse`. If the flag `returnbasis::Bool=true` is given,
+then the function automatically chooses the slower matrix-based
+`algorithm = "DLMS"`.
 """
 function connection_matrix(lc::LefschetzComplex, mvfarg::CellSubsets;
-                           algorithm::String="DHL26",
+                           algorithm::String="pmorse",
                            returnbasis::Bool=false)
     #
     # Compute the connection matrix
@@ -59,13 +62,13 @@ function connection_matrix(lc::LefschetzComplex, mvfarg::CellSubsets;
     cmRedP = deepcopy(adbnd)
     if returnbasis
         cmMatrP, cmColsP, cmBasisP = cm_reduce_dlms24!(cmRedP, psetvec; returnbasis=true)
-    elseif algorithm == "DHL26"
+    elseif uppercase(algorithm) == "DHL"
         cmMatrP, cmColsP = cm_reduce_dhl26!(cmRedP, psetvec)
-    elseif algorithm == "DLMS24"
+    elseif uppercase(algorithm) == "DLMS"
         cmMatrP, cmColsP = cm_reduce_dlms24!(cmRedP, psetvec)
-    elseif algorithm == "HMS21"
+    elseif uppercase(algorithm) == "HMS"
         cmMatrP, cmColsP = cm_reduce_hms21(cmRedP, psetvec)
-    elseif algorithm == "PMORSE26"
+    elseif uppercase(algorithm) == "PMORSE"
         cmMatrP, cmColsP = cm_reduce_pmorse26(cmRedP, psetvec)
     else
         error("Invalid value of the algorithm flag!")
