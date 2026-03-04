@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.5.2 (March 4, 2026)
+
+Changed the algorithm default.
+
 ## v0.5.1 (March 3, 2026)
 
 Some quick additions.. :-)
