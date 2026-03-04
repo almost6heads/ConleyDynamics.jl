@@ -40,14 +40,12 @@ function create_mvf_hull(lc::LefschetzComplex, mvfbase::Vector{Vector{Int}})
 
         # Create the graph of multivectors for merging
 
-        edgelist = Vector{Tuple{Int,Int}}()
+        sgraph = SimpleGraph(lc.ncells)
         for k in lchulls
             for m = 1:length(k)-1
-                push!(edgelist, (k[m], k[m+1]))
+                add_edge!(sgraph, k[m], k[m+1])
             end
         end
-        sgraph = SimpleGraph(lc.ncells)
-        add_edges!(sgraph, Edge.(edgelist))
 
         # Find the connected components
 

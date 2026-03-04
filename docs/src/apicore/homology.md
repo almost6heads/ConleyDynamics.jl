@@ -13,9 +13,11 @@ relative_homology
 persistent_homology
 ```
 
-## Reduction Algorithm
+## Reduction Algorithms
 
 ```@docs
+ph_morse_reduce
+ph_matrix_reduce
 ph_reduce!
 ```
 
