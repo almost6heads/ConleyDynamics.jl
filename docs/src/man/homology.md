@@ -193,13 +193,32 @@ Lefschetz complex ``X``. For more details, see [munkres:84a](@cite).
 
 The package
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
-provides one function to compute standard homology:
+provides two methods to compute standard homology, both of which use
+the function name `homology`:
 
-- [`homology`](@ref) expects one input argument, which has to be 
-  of the Lefschetz complex type [`LefschetzComplex`](@ref). It
-  returns a vector `betti` of integers, whose length is one more than 
+- In the first version, [`homology`](@ref) expects one input argument `lc`,
+  which has to be of the Lefschetz complex type [`LefschetzComplex`](@ref).
+  It returns a vector `betti` of integers, whose length is one more than 
   the dimension of the complex. The ``k``-th Betti number ``\beta_k(X)``
   is returned in `betti[k+1]`.
+- In the second version, [`homology`](@ref) expects two input arguments:
+  An underlying Lefschetz complex `lc` as above, together with an 
+  argument of type [`Cells`](@ref), which describes a locally closed
+  subset of `lc`. In this case, the function returns the homology of
+  the associated subcomplex.
+
+In both versions of this function, one can also specify the optional
+argument `algorithm`, which has to be of type `String`. It selects the
+method used for computing homology:
+
+* `algorithm = "matrix"` selects the standard matrix algorithm,
+  as for example described in [edelsbrunner:harer:10a](@cite),
+* `algorithm = "morse"` selects an algorithm based on Morse
+  reductions, inspired by [harker:etal:14a](@cite), and
+* `algorithm = "pmorse"` selects a parallelized algorithm based
+  on Morse reductions.
+
+By default, the function uses the Morse reduction algorithm `morse`.
 
 We would like to point out that the field ``F`` is implicit in the
 data structure for the Lefschetz complex ``X``, and therefore it does
@@ -389,7 +408,10 @@ homology as a vector `betti` of Betti numbers, where `betti[k]`
 is the Betti number in dimension `k-1`. Notice also that the
 necessary cell list arguments have to be variables of the type
 `Cells = Union{Vector{Int},Vector{String}}`, i.e., they can be
-given in either label or index form.
+given in either label or index form. Finally, in both versions
+of this function, one can also specify the optional argument
+`algorithm`, which selects the method used for computing relative
+homology. It has the same options as [`homology`](@ref).
 
 ![Sample simplicial complex](img/lefschetzex2.png)
 
@@ -612,6 +634,9 @@ there are two functions that provide basic persistence functionality:
   integer between ``1`` and ``n`` at least once, and only these
   integers. An error is raised if this is not the case, or if the
   resulting subcomplexes ``X^{(k)}`` are not closed.
+  This function also accepts the optional argument `algorithm`,
+  which selects the method used for computing persistent
+  homology. It has the same options as [`homology`](@ref).
 - The function [`lefschetz_filtration`](@ref) is meant to simplify
   the construction of the argument `filtration`, especially
   in the situation that ``X^{(n)}`` is a proper subcomplex of some
