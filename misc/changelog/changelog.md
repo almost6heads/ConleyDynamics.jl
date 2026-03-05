@@ -13,6 +13,14 @@ description, etc.
 
 Release notes:
 
+## v0.5.3 (March 5, 2026)
+
+- Some under-the-hood speed improvements.
+- There are now three different algorithms implemented
+  for the computation of homology and persistent homology.
+- There are an additional two algorithms for the
+  computation of connection matrices.
+
 ## v0.5.2 (March 4, 2026)
 
 Changed the algorithm default.
