@@ -9,33 +9,36 @@ function sparse_minor(sm::SparseMatrix, rvec::Vector{Int}, cvec::Vector{Int})
     #
     # Create sparse submatrix by specifying the desired row and column indices
     #
+    @assert length(rvec)==length(unique(rvec)) "Rows cannot repeat!"
+    @assert length(cvec)==length(unique(cvec)) "Columns cannot repeat!"
+
+    rdict = Dict{Int,Int}([rvec[k] => k for k in 1:length(rvec)])
+    cdict = Dict{Int,Int}([cvec[k] => k for k in 1:length(cvec)])
+    rset  = Set(rvec)
+    cset  = Set(cvec)
+
+    # Extract lists from the sparse matrix
+
+    nr, nc, tchar, tzero, tone, r, c, v = lists_from_sparse(sm)
+
+    # Filter out the correct part
+
+    rcv    = [(r[k],c[k],v[k]) for k in 1:length(r)]
+    newrcv = filter(v -> (v[1] in rset) && (v[2] in cset), rcv)
+    rs     = getindex.(newrcv, 1)
+    cs     = getindex.(newrcv, 2)
+    newv   = getindex.(newrcv, 3)
+    newr   = [rdict[m] for m in rs]
+    newc   = [cdict[m] for m in cs]
 
     # Create the new dimensions
 
     newnr = length(rvec)
     newnc = length(cvec)
 
-    # Determine the new nonzero entry lists
-
-    r = Vector{Int}([])
-    c = Vector{Int}([])
-    vals = Vector{typeof(sm.zero)}([])
-
-    for m=1:newnc
-        colm = sparse_get_nz_column(sm, cvec[m])
-        for centry in colm
-            rowind = findall(x -> x==centry, rvec)
-            for k in rowind
-                push!(r,k)
-                push!(c,m)
-                push!(vals,sm[rvec[k],cvec[m]])
-            end
-        end
-    end
-
     # Create and return new sparse matrix
 
-    msm = sparse_from_lists(newnr, newnc, sm.char, sm.zero, sm.one, r, c, vals)
+    msm = sparse_from_lists(newnr, newnc, sm.char, sm.zero, sm.one, newr, newc, newv)
     return msm
 end
 

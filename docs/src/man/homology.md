@@ -4,13 +4,16 @@ Conley's theory for the qualitative study of dynamical systems is based
 on fundamental concepts from algebraic topology. One of these is homology,
 which studies the topological properties of spaces using algebraic means.
 As part of [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
-a number of homology methods are included. It should be noted that these
-algorithms are not meant for truly large-scale problems, but mostly for
-illustrative purposes. They are based on the persistence algorithm described
-in [edelsbrunner:harer:10a](@cite), and have been extended to work for
-arbitrary Lefschetz complexes over either the rationals or a finite
-field of prime order. For more serious applications one could use
-professional implementations such as *Gudhi*, see [gudhi:24a](@cite).
+a number of homology methods are included. The first of these is based on
+the persistence algorithm described in [edelsbrunner:harer:10a](@cite), 
+which is based on matrix reductions. In addition, we have
+implemented a version of the method described in [harker:etal:14a](@cite),
+which is based on Morse reductions. Finally, a parallelized version of
+the Morse reduction algorithm is provided. All of these methods have
+been extended to work for arbitrary Lefschetz complexes over either the
+rationals or a finite field of prime order. For more serious applications,
+one could use professional implementations such as *Gudhi*,
+see [gudhi:24a](@cite).
 
 ## Lefschetz Complex Homology
 

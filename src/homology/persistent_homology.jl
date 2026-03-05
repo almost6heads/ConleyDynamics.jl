@@ -15,7 +15,7 @@ i.e., the permuted boundary matrix is strictly upper triangular. The
 function returns the starting filtration values for infinite length
 persistence intervals in `phsingles`, and the birth- and death-filtration
 values for finite length persistence intervals in `phpairs`. It is
-possible to invoke the connection matrix computation with one of
+possible to invoke the persistent homology computation with one of
 three different algorithms, by passing the optional
 argument `algorithm::String`:
 

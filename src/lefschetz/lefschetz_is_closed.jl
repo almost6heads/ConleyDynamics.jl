@@ -16,25 +16,10 @@ function lefschetz_is_closed(lc::LefschetzComplex, subcomp::Vector{Int})
         return true
     end
 
-    # Compute the closure
+    # Compute the closure and return the result
 
     subclosure = lefschetz_closure(lc, subcomp)
-
-    # Determine whether subcomp is closed
-
-    k = 1
-    isclosed = true
-    while isclosed && (k <= length(subclosure))
-        if subclosure[k] in subcomp
-            k += 1
-        else
-            isclosed = false
-        end
-    end
-
-    # Return the result
-
-    return isclosed
+    return length(subclosure) == length(subcomp)
 end
 
 """
