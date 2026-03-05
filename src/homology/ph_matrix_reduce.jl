@@ -1,5 +1,4 @@
 export ph_matrix_reduce
-export ph_reduce!
 
 """
     ph_matrix_reduce(lc::LefschetzComplex, filtration::Vector{Int})

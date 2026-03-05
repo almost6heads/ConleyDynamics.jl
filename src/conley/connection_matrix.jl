@@ -13,7 +13,7 @@ The function returns an object of type `ConleyMorseCM`. If the optional
 argument `returnbasis::Bool=true` is given, then the function also returns
 a dictionary which gives the basis for the connection matrix columns in
 terms of the original labels. Finally, it is possible to invoke the
-connection matrix computation with one of two different algorithms,
+connection matrix computation with one of four different algorithms,
 by passing the optional argument `algorithm::String`:
 
 * `algorithm = "DLMS"` selects the algorithm due to Dey, Lipinski,

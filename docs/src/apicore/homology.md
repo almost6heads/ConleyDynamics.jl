@@ -18,6 +18,5 @@ persistent_homology
 ```@docs
 ph_morse_reduce
 ph_matrix_reduce
-ph_reduce!
 ```
 

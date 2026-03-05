@@ -1,7 +1,8 @@
 export ph_morse_reduce
 
 """
-    ph_morse_reduce(lc::LefschetzComplex, filtration::Vector{Int})
+    ph_morse_reduce(lc::LefschetzComplex, filtration::Vector{Int};
+                    [parallel::Bool])
 
 Compute the persistent homology of a Lefschetz complex filtration over
 the field associated with the Lefschetz complex boundary matrix.
@@ -13,9 +14,12 @@ It assumes that the order given by the filtration values is admissible,
 i.e., the permuted boundary matrix is strictly upper triangular. The
 function returns the starting filtration values for infinite length
 persistence intervals in `phsingles`, and the birth- and death-filtration
-values for finite length persistence intervals in `phpairs`.
+values for finite length persistence intervals in `phpairs`. This
+function uses an algorithm based on Morse reductions. If the optional
+argument `parallel=true` is added, then a parallelized version is used.
 """
-function ph_morse_reduce(lc::LefschetzComplex, filtration::Vector{Int})
+function ph_morse_reduce(lc::LefschetzComplex, filtration::Vector{Int};
+                         parallel::Bool=false)
     #
     # Compute the persistent homology of a Lefschetz complex filtration
     #
@@ -41,8 +45,11 @@ function ph_morse_reduce(lc::LefschetzComplex, filtration::Vector{Int})
 
     # Reduce the complex size by computing the connection matrix
 
-    cmatrix, cmcols = cm_reduce_hms21(bndperm, fperm)
-    # cmatrix, cmcols = cm_reduce_pmorse26(bndperm, fperm)
+    if !parallel
+        cmatrix, cmcols = cm_reduce_hms21(bndperm, fperm)    
+    else
+        cmatrix, cmcols = cm_reduce_pmorse26(bndperm, fperm)
+    end
 
     # Now perform the matrix-based persistence algorithm
 
