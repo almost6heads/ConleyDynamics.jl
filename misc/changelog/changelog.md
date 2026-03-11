@@ -13,6 +13,12 @@ description, etc.
 
 Release notes:
 
+## v0.5.4 (March 11, 2026)
+
+- Changed the output format for sparse matrices.
+- Added the function `forman_conley_maps`.
+- Added the helper functions `forman_critical_cells` and `forman_all_cell_types`.
+
 ## v0.5.3 (March 5, 2026)
 
 - Some under-the-hood speed improvements.
