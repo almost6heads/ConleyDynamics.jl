@@ -1371,6 +1371,20 @@ stabilized version can be computed using the following two functions.
   of iterations has been reached. In the latter case, one just has to
   pass the optional paramter `maxit` with a larger number of allowed
   iterations.
+- [`forman_conley_maps`](@ref) computes the chain maps and chain 
+  homotopies associated with the Conley complex of a Forman gradient
+  vector field. The function expects a Lefschetz complex and a
+  Forman gradient vector field as arguments, and it returns:
+  - `pp:SparseMatrix`: The chain equivalence which maps the Lefschetz
+    complex to the Conley complex.
+  - `jj:SparseMatrix`: The chain equivalence which maps the Conley
+    complex to the Lefschetz complex.
+  - `hh:SparseMatrix`: The chain homotopy between `jj*pp` and the
+    identity map on the Lefschetz complex.
+  - `cc:Cells`: The list of critical cells of the Forman vector 
+    field which make up the Conley complex.
+  These quantities are computed using Forman's stabilized 
+  combinatorial flow.
 - [`forman_gpaths`](@ref) can be used to find gradient paths in a
   Forman gradient vector field. There are two methods for this 
   function, which are accessible via multiple dispatch as follows.
@@ -1416,6 +1430,16 @@ stabilized version can be computed using the following two functions.
   which the second argument is of type [`CellSubsets`](@ref), i.e.,
   it contains a collection of Forman gradient paths. In the case,
   the function returns the sum of all weights of these paths.
+
+The following two functions allow one to extract cells of certain
+types from a Forman vector field:
+
+- [`forman_critical_cells`](@ref) extracts all critical cells
+  from a Forman vector field.
+- [`forman_all_cell_types`](@ref) returns lists of cells of all
+  three types in a Forman vector field. More precisely, it returns
+  vectors which contain the critical cells, the arrow sources,
+  and the arrow targets.
 
 For analyzing or applying Forman's combinatorial flow, one needs to
 work with sparse vector representations of chains. These are elements

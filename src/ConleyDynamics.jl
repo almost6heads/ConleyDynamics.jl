@@ -32,6 +32,8 @@ include("./conley/isoinvset_information.jl")
 include("./conley/forman_comb_flow.jl")
 include("./conley/forman_stab_flow.jl")
 include("./conley/forman_gpaths.jl")
+include("./conley/forman_cell_types.jl")
+include("./conley/forman_conley_maps.jl")
 include("./conley/chain_vector.jl")
 include("./conley/chain_support.jl")
 

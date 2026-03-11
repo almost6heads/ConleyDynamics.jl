@@ -35,6 +35,9 @@ cm_reduce_pmorse26
 ## Forman Vector Fields
 
 ```@docs
+forman_critical_cells
+forman_all_cell_types
+forman_conley_maps
 forman_comb_flow
 forman_stab_flow
 forman_gpaths
