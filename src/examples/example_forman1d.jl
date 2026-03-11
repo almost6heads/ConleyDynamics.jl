@@ -22,18 +22,18 @@ julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 julia> sparse_show(cm)
   ┆  A CD  F BF DE
 --┆---------------
- A┆  0  0  0  0  1
-CD┆  0  0  0  0  0
- F┆  0  0  0  0  1
-BF┆  0  0  0  0  0
-DE┆  0  0  0  0  0
+ A┆  .  .  .  .  1
+CD┆  .  .  .  .  .
+ F┆  .  .  .  .  1
+BF┆  .  .  .  .  .
+DE┆  .  .  .  .  .
 
 julia> sparse_show(cm.matrix)
- 0 0 0 0 1
- 0 0 0 0 0
- 0 0 0 0 1
- 0 0 0 0 0
- 0 0 0 0 0
+ . . . . 1
+ . . . . .
+ . . . . 1
+ . . . . .
+ . . . . .
 
 julia> println(cm.labels)
 ["A", "CD", "F", "BF", "DE"]

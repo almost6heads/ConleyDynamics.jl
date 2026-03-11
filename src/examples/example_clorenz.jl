@@ -16,12 +16,14 @@ julia> lc, mvf = example_clorenz();
 
 julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 
-julia> sparse_show(cm.matrix)
- 0 0 0 0 1
- 0 0 0 0 0
- 0 0 0 0 1
- 0 0 0 0 0
- 0 0 0 0 0
+julia> sparse_show(cm)
+  ┆  i jp  g hm bc
+--┆---------------
+ i┆  .  .  .  .  1
+jp┆  .  .  .  .  .
+ g┆  .  .  .  .  1
+hm┆  .  .  .  .  .
+bc┆  .  .  .  .  .
 
 julia> print(cm.labels)
 ["i", "jp", "g", "hm", "bc"]

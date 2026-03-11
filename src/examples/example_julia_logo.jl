@@ -16,10 +16,12 @@ julia> lc, mvf = example_julia_logo();
 
 julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 
-julia> sparse_show(cm.matrix)
- 0 0 0
- 0 0 1
- 0 0 0
+julia> sparse_show(cm)
+   ┆   D  BC ABC
+---┆------------
+  D┆   .   .   .
+ BC┆   .   .   1
+ABC┆   .   .   .
 
 julia> print(cm.labels)
 ["D", "BC", "ABC"]

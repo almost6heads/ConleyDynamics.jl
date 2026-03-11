@@ -30,7 +30,11 @@ function sparse_show(sm::SparseMatrix)
     for m=1:nrows
         pstr = ""
         for k=1:ncols
-            estr = string(sm[m,k])
+            if sm[m,k] == sm.zero
+                estr = "."
+            else
+                estr = string(sm[m,k])
+            end
             nd   = 1 + maxl - length(estr)
             pstr = pstr * repeat(" ",nd) * estr
         end
@@ -55,11 +59,11 @@ julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 julia> sparse_show(cm.matrix, cm.labels, cm.labels)
   ┆  A CD  F BF DE
 --┆---------------
- A┆  0  0  0  0  1
-CD┆  0  0  0  0  0
- F┆  0  0  0  0  1
-BF┆  0  0  0  0  0
-DE┆  0  0  0  0  0
+ A┆  .  .  .  .  1
+CD┆  .  .  .  .  .
+ F┆  .  .  .  .  1
+BF┆  .  .  .  .  .
+DE┆  .  .  .  .  .
 ```
 """
 function sparse_show(sm::SparseMatrix, rlabels::Vector{String}, clabels::Vector{String})
@@ -104,7 +108,11 @@ function sparse_show(sm::SparseMatrix, rlabels::Vector{String}, clabels::Vector{
         nd   = maxl - length(rlabels[m])
         pstr = repeat(" ",nd) * rlabels[m] * "┆"
         for k=1:ncols
-            estr = string(sm[m,k])
+            if sm[m,k] == sm.zero
+                estr = "."
+            else
+                estr = string(sm[m,k])
+            end
             nd   = 1 + maxl - length(estr)
             pstr = pstr * repeat(" ",nd) * estr
         end
@@ -144,11 +152,11 @@ julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 julia> sparse_show(cm)
   ┆  A CD  F BF DE
 --┆---------------
- A┆  0  0  0  0  1
-CD┆  0  0  0  0  0
- F┆  0  0  0  0  1
-BF┆  0  0  0  0  0
-DE┆  0  0  0  0  0
+ A┆  .  .  .  .  1
+CD┆  .  .  .  .  .
+ F┆  .  .  .  .  1
+BF┆  .  .  .  .  .
+DE┆  .  .  .  .  .
 ```
 """
 function sparse_show(cm::ConleyMorseCM)
@@ -187,7 +195,7 @@ function Base.show(io::IO, ::MIME"text/plain", sm::SparseMatrix)
 
     ncols = sm.ncol
     nrows = sm.nrow
-    maxl = 0
+    maxl = 1
     for k=1:ncols
         if length(sm.entries[k]) > 0
             maxentry = maximum(length.(string.(sm.entries[k])))
@@ -197,7 +205,11 @@ function Base.show(io::IO, ::MIME"text/plain", sm::SparseMatrix)
     for m=1:nrows
         pstr = ""
         for k=1:ncols
-            estr = string(sm[m,k])
+            if sm[m,k] == sm.zero
+                estr = "."
+            else
+                estr = string(sm[m,k])
+            end
             nd   = 1 + maxl - length(estr)
             pstr = pstr * repeat(" ",nd) * estr
         end

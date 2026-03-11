@@ -284,5 +284,7 @@ for quickly extracting certain information from sparse matrices:
   row and column labels, which have to be specified as second and third
   arguments. In addition, if `cm` is a connection matrix, then the
   command `sparse_show(cm)` shows the connection matrix including the
-  Conley index labels.
+  Conley index labels. In order to increase the readability of the
+  shown matrix, any zero entries will be represented as `.`. In other
+  words, only nonzero entries will be printed as their numeric value.
 

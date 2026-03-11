@@ -15,11 +15,13 @@ julia> lc, mvf = example_multiflow();
 
 julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 
-julia> sparse_show(cm.matrix)
- 0 0 0 0
- 0 0 0 0
- 0 0 0 0
- 0 0 0 0
+julia> sparse_show(cm)
+  ┆ BD DF AC CE
+--┆------------
+BD┆  .  .  .  .
+DF┆  .  .  .  .
+AC┆  .  .  .  .
+CE┆  .  .  .  .
 
 julia> print(cm.labels)
 ["BD", "DF", "AC", "CE"]

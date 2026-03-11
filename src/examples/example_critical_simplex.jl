@@ -15,14 +15,16 @@ julia> lc, mvf = example_critical_simplex(2);
 
 julia> cm = connection_matrix(lc, mvf, algorithm="DHL");
 
-julia> sparse_show(cm.matrix)
- 0 0 0 1 1 0 0
- 0 0 0 1 0 1 0
- 0 0 0 0 1 1 0
- 0 0 0 0 0 0 1
- 0 0 0 0 0 0 1
- 0 0 0 0 0 0 1
- 0 0 0 0 0 0 0
+julia> sparse_show(cm)
+   ┆   A   B   C  AB  AC  BC ABC
+---┆----------------------------
+  A┆   .   .   .   1   1   .   .
+  B┆   .   .   .   1   .   1   .
+  C┆   .   .   .   .   1   1   .
+ AB┆   .   .   .   .   .   .   1
+ AC┆   .   .   .   .   .   .   1
+ BC┆   .   .   .   .   .   .   1
+ABC┆   .   .   .   .   .   .   .
 
 julia> print(cm.labels)
 ["A", "B", "C", "AB", "AC", "BC", "ABC"]
