@@ -68,6 +68,9 @@ full_from_sparse
 sparse_from_lists
 lists_from_sparse
 sparse_hcat
+Base.hcat(::SparseMatrix...)
+sparse_vcat
+Base.vcat(::SparseMatrix...)
 ```
 
 ## Sparse Helper Functions

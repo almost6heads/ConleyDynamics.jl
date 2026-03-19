@@ -136,10 +136,18 @@ and are therefore by no means exhaustive:
   ``\mathbb{Q}``.
 - [`sparse_hcat`](@ref) concatenates sparse matrices horizontally,
   as long as they have the same number of rows, and are all defined
-  over the same field. This function has two implemented methods.
-  The form `sparse_hcat(A,B)` concatenates the two sparse matrices
-  `A` and `B` horizontally, while `sparse_hcat(v)` assumes that `v`
-  is a vector of sparse matrices, which are then concatenated.
+  over the same field. This function can be used with any number
+  of arguments, as long as they are all sparse matrices. If the
+  sparse matrices are collected in a vector `vec`, use the call
+  `sparse_hcat(vec...)` to splat the vector entries. Finally,
+  one can also use the usual `[A B C...]` to concatenate sparse
+  matrices horizontally, just like in the case of Julia arrays.
+- [`sparse_vcat`](@ref) concatenates sparse matrices vertically,
+  as long as they have the same number of columns, and are all
+  defined over the same field. Also this function can be used
+  with any number of arguments, see the previous entry. One can
+  also use the abbreviation `[A; B; C; ...]` to concatenate
+  sparse matrices vertically.
 
 Of these methods, the function [`sparse_from_lists`](@ref)
 provides the easiest and quickest way to create a sparse
