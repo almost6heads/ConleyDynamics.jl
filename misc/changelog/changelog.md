@@ -13,6 +13,11 @@ description, etc.
 
 Release notes:
 
+## v0.5.5 (March 19, 2026)
+
+- Added the function `sparse_transpose`.
+- Added the function `sparse_hcat`.
+
 ## v0.5.4 (March 11, 2026)
 
 - Changed the output format for sparse matrices.
