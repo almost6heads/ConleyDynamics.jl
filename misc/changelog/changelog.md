@@ -15,7 +15,7 @@ Release notes:
 
 ## v0.5.6 (March 19, 2026)
 
-- Added the function `sparse_hcat`.
+- Added the function `sparse_vcat`.
 - Added new methods to `Base.hcat` and `Base.vcat` so that the 
   concatenation functions can use the usual short array syntax.
 
