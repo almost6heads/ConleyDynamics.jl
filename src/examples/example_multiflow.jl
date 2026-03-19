@@ -4,7 +4,7 @@ export example_multiflow
     lc, mvf = example_multiflow()
 
 Create the Lefschetz complex and multivector field for the example
-from Figure 3 in the connection matrix paper by *Mrozek & Wanner*.
+from Figure 2.3 in the connection matrix book by *Mrozek & Wanner*.
 
 The function returns the Lefschetz complex `lc` over GF(2) and
 the multivector field `mvf`.

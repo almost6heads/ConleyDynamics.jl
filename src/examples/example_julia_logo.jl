@@ -4,8 +4,8 @@ export example_julia_logo
     lc, mvf = example_julia_logo()
 
 Create the simplicial complex and multivector field
-for the example from Figure 1 in the connection matrix
-paper by *Mrozek & Wanner*.
+for the example from Figure 2.1 in the connection matrix
+book by *Mrozek & Wanner*.
 
 The function returns the Lefschetz complex `lc` over GF(2)
 and the multivector field `mvf`.

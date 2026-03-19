@@ -134,6 +134,12 @@ and are therefore by no means exhaustive:
   then the matrix is considered over the finite field with
   characteristic `PP`, otherwise it is over the rationals
   ``\mathbb{Q}``.
+- [`sparse_hcat`](@ref) concatenates sparse matrices horizontally,
+  as long as they have the same number of rows, and are all defined
+  over the same field. This function has two implemented methods.
+  The form `sparse_hcat(A,B)` concatenates the two sparse matrices
+  `A` and `B` horizontally, while `sparse_hcat(v)` assumes that `v`
+  is a vector of sparse matrices, which are then concatenated.
 
 Of these methods, the function [`sparse_from_lists`](@ref)
 provides the easiest and quickest way to create a sparse
@@ -205,6 +211,9 @@ that are needed for the functionality of the package:
   command `AP = sparse_permute(A,pr,pc)`, and the integer
   vectors `pr` and `pc` have to describe the row and column
   permutations, respectively.
+- [`sparse_transpose`](@ref) creates the transpose of a sparse
+  matrix. In addition to the call `sparse_transpose(A)` one can
+  also simply use the more natural `A'`.
 - [`sparse_remove!`](@ref) is invoked as `sparse_remove!(A,ri,ci)`
   and removes the sparse matrix entry in the `ri`-th row
   and `ci`-th colum, i.e., it effectively sets the entry

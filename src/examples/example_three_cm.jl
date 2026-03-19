@@ -4,7 +4,7 @@ export example_three_cm
     lc, mvf, coords = example_three_cm(mvftype)
 
 Create the simplicial complex and multivector field for the example
-from Figure 2 in the connection matrix paper by *Mrozek & Wanner*.
+from Figure 2.2 in the connection matrix book by *Mrozek & Wanner*.
 
 Depending on the value of `mvftype`, return the periodic orbit (0=default)
 or one of the three gradient (1,2,3) examples.

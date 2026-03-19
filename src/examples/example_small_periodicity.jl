@@ -4,8 +4,8 @@ export example_small_periodicity
     lc1, lc2, mvf = example_small_periodicity()
 
 Create two representations of the Lefschetz complex and
-the multivector field for the example from Figure 4 in
-the connection matrix paper by *Mrozek & Wanner*.
+the multivector field for the example from Figure 2.4 in
+the connection matrix book by *Mrozek & Wanner*.
 
 The complexes `lc1` and `lc2` are just two representations
 of the same complex, but they lead to different connection

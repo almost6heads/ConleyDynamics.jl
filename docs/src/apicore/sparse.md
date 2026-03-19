@@ -44,6 +44,8 @@ Base.show(io::IO, ::MIME"text/plain", sm::SparseMatrix)
 sparse_add_column!
 sparse_add_row!
 sparse_permute
+sparse_transpose
+Base.adjoint(::SparseMatrix)
 sparse_inverse
 sparse_remove!
 sparse_add
@@ -65,6 +67,7 @@ sparse_from_full
 full_from_sparse
 sparse_from_lists
 lists_from_sparse
+sparse_hcat
 ```
 
 ## Sparse Helper Functions
