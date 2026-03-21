@@ -13,6 +13,14 @@ description, etc.
 
 Release notes:
 
+## v0.5.7 (March 21, 2026)
+
+- Added the function `sparse_hvcat`.
+- Added the function `sparse_hvncat`.
+- Added the function `sparse_cat`.
+- One can now use Julia's block matrix notation
+  to form large sparse matrices using smaller blocks.
+
 ## v0.5.6 (March 19, 2026)
 
 - Added the function `sparse_vcat`.
