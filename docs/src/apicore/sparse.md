@@ -68,9 +68,15 @@ full_from_sparse
 sparse_from_lists
 lists_from_sparse
 sparse_hcat
-Base.hcat(::SparseMatrix...)
 sparse_vcat
+sparse_hvcat
+sparse_hvncat
+sparse_cat
+Base.hcat(::SparseMatrix...)
 Base.vcat(::SparseMatrix...)
+Base.hvcat(::Tuple{Vararg{Int}}, ::SparseMatrix...)
+Base.hvcat(::Int, ::SparseMatrix...)
+Base.hvncat(::Tuple{Int,Int}, ::Bool, ::SparseMatrix...)
 ```
 
 ## Sparse Helper Functions

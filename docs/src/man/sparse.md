@@ -148,6 +148,25 @@ and are therefore by no means exhaustive:
   with any number of arguments, see the previous entry. One can
   also use the abbreviation `[A; B; C; ...]` to concatenate
   sparse matrices vertically.
+- [`sparse_hvcat`](@ref) can be used to arrange sparse matrices
+  of varying dimensions in block form, as long as the dimensions
+  are compatible and all matrices are defined over the same
+  field. The specific function calls for `sparse_hvcat` can be
+  found in the API. One can also use Julia's block form
+  abbreviation `[A B; C D E; F]`.
+- [`sparse_hvncat`](@ref) can also be used for the purpose
+  of arranging sparse matrices in blocks, but this time every
+  row and every column have to be made up of the same number
+  of blocks. It is, however, possible to specify whether the
+  rows or the columns are first filled. In addition, one can
+  use the Julia abbreviation `[A; B;; C; D;; E; F]` etc.
+- [`sparse_cat`](@ref) is useful for creating sparse matrices
+  which only have nontrivial blocks along the diagonal of the
+  block matrix. The call `sparse_cat(A1, A2, .., An, dims=(1,2))`
+  arranges the sparse matrices `A1, A2, .., An` along the
+  main diagonal, and fills the remainder entries of the 
+  combined matrix with zero. There are no restrictions on the
+  dimensions of the individual matrices.
 
 Of these methods, the function [`sparse_from_lists`](@ref)
 provides the easiest and quickest way to create a sparse
