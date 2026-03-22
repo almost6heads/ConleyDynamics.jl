@@ -16,8 +16,7 @@ Release notes:
 ## v0.5.8 (March 22, 2026)
 
 - Added the function `sparse_diagonal`.
-- Reorganized the sparse matric section of the manual
-  and for the API.
+- Reorganized the sparse matrix section of the manual and for the API.
 
 ## v0.5.7 (March 21, 2026)
 
