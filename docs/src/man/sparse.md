@@ -134,6 +134,25 @@ and are therefore by no means exhaustive:
   then the matrix is considered over the finite field with
   characteristic `PP`, otherwise it is over the rationals
   ``\mathbb{Q}``.
+- [`sparse_diagonal`](@ref) creates a sparse diagonal matrix.
+  The function is called as `sparse_diagonal(nr, nc, d, p=pp)`,
+  and it creates a sparse matrix with `nr` rows and `nc` columns,
+  over a field with characteristic `pp`. In this form of the 
+  function call, the matrix has the entries in the vector `d` along
+  the main diagonal. If the optional integer argument `offset` is
+  given and positive, then the diagonal is placed `offset` positions
+  above the main diagonal, if it is negative, then it indicates how
+  many positions below the diagonal it is placed. The function places
+  as many entries from `d` as possible, i.e., if the length of `d` is
+  too short, the remaining diagonal entries are zero, if it is too
+  long, then the later entries are ignored. The function tries to
+  convert the entries in `d` to the correct format based on `p`.
+
+Of these methods, the function [`sparse_from_lists`](@ref)
+provides the easiest and quickest way to create a sparse
+matrix. In addition, it is also possible to combine given
+sparse matrices using the following functions:
+
 - [`sparse_hcat`](@ref) concatenates sparse matrices horizontally,
   as long as they have the same number of rows, and are all defined
   over the same field. This function can be used with any number
@@ -167,10 +186,6 @@ and are therefore by no means exhaustive:
   main diagonal, and fills the remainder entries of the 
   combined matrix with zero. There are no restrictions on the
   dimensions of the individual matrices.
-
-Of these methods, the function [`sparse_from_lists`](@ref)
-provides the easiest and quickest way to create a sparse
-matrix.
 
 ## Sparse Matrix Access
 

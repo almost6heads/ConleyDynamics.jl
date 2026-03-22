@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.5.8 (March ??, 2026)
+
+- Added the function `sparse_diagonal`.
+
 ## v0.5.7 (March 21, 2026)
 
 - Added the function `sparse_hvcat`.

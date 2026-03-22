@@ -101,6 +101,7 @@ include("./sparse/sparse_multiply.jl")
 include("./sparse/sparse_scale.jl")
 include("./sparse/sparse_inverse.jl")
 include("./sparse/sparse_transpose.jl")
+include("./sparse/sparse_diagonal.jl")
 include("./sparse/sparse_cat.jl")
 include("./sparse/sparse_show.jl")
 
