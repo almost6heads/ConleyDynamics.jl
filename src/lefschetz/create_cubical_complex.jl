@@ -62,6 +62,7 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
     # 1+pointdim:2*pointdim:   interval length in each dimension
     # 1+2*pointdim:            dimension of the cube
 
+    @debug "Creating labe dictionary..."
     labelintinfodict = Dict{String,Vector{Int}}()
     for curlabel in cubes
         labelintinfodict[curlabel] = cube_information(curlabel)
@@ -74,6 +75,7 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
     # Create labels for all cubes in the complex, organized by
     # dimensions, as well as ordered vectors of labels
 
+    @debug "Creating labels..."
     labelsets = [Set{String}() for _ in 0:CCdim]
     labelvect = [Vector{String}() for _ in 0:CCdim]
     
@@ -85,7 +87,7 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
     # Work your way from highest to lowest dimension, keep adding faces
 
     for k = CCdim:-1:1
-        
+        @debug "Working on dimension..." k
         # Create vector of labels at dimension k
 
         labelvect[k+1] = sort(collect(labelsets[k+1]))
@@ -108,8 +110,8 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
             curones = findall(x -> x==1, curintinfo[1+pointdim:2*pointdim])
 
             for m=1:k
-                newintinfoP = deepcopy(curintinfo)
-                newintinfoN = deepcopy(curintinfo)
+                newintinfoP = copy(curintinfo)
+                newintinfoN = copy(curintinfo)
                 ione = curones[m]
                 newintinfoP[ione] += 1
                 newintinfoP[ione+pointdim] = 0
@@ -143,12 +145,14 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     # Organize cube labels in one vector and create label to index dictionary
 
+    @debug "Organizing cube labels..."
     CClabelvec = reduce(vcat,labelvect)
     CClabelindexdict = Dict{String,Int}(CClabelvec[j] => j for j=1:length(CClabelvec))
     CCn = length(CClabelvec)
 
     # Create the vector of dimensions for the cubes
 
+    @debug "creating dimension vector..."
     CCdimvec = Vector{Int}()
     for k=0:CCdim
         for m=1:length(labelvect[k+1])
@@ -158,6 +162,7 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     # Create the boundary map
 
+    @debug "Creating boundary map..."
     pdindices = findall(x -> x>0, CCdimvec)
     pdsize    = length(pdindices)
     tmpBr = [Vector{Int}() for _ in 1:pdsize]
@@ -200,6 +205,7 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
         end
     end
 
+    @debug "Creating sparse matrix..."
     Br = reduce(vcat,tmpBr)
     Bc = reduce(vcat,tmpBc)
     Bv = reduce(vcat,tmpBv)
@@ -215,6 +221,7 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     # Create the Lefschetz complex
 
+    @debug "Creating Lefschetz complex..."
     lc = LefschetzComplex(CClabelvec, CCdimvec, B)
 
     # Return the Lefschetz complex
@@ -348,20 +355,14 @@ function cube_label(pointdim::Int, pointlen::Int, pointinfo::Vector{Int})
     # Create the label for a cube
     #
 
-    labformat = "%0" * string(pointlen) * "d"
-    labelvec = Vector{String}()
-
+    sp = string.(pointinfo)
+    label = ""
     for k = 1:pointdim
-        push!(labelvec, Printf.format(Printf.Format(labformat), pointinfo[k]))
+        label = label * repeat("0", pointlen-length(sp[k])) * sp[k]
     end
-
-    push!(labelvec, ".")
-
-    for k = 1:pointdim
-        push!(labelvec, string(pointinfo[k+pointdim]))
-    end
-
-    return join(labelvec)
+    label = label * "." * join(sp[1+pointdim:end])
+    
+    return label
 end
 
 """

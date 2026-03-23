@@ -33,6 +33,7 @@ function create_cubical_rectangle(nx::Int, ny::Int;
 
     # Create the vector of two-dimensional cubes
 
+    @debug "Creating vector of cubes..."
     pointdim = 2
     pointlen = Int(ceil(log(maximum([nx,ny]) + 2) / log(10)))
     cubes = Vector{String}()
@@ -47,6 +48,7 @@ function create_cubical_rectangle(nx::Int, ny::Int;
 
     # Create the Lefschetz complex
 
+    @debug "Creating cubical complex..."
     lc = create_cubical_complex(cubes, p=p)
 
     # Create the coordinate vector
