@@ -51,6 +51,7 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     # Determine the point dimension and the coordinate field width
 
+    @assert length(cubes)>=1 "We do need at least one cube!"
     pointdim, pointlen = cube_field_size(cubes[1])
 
     # Create a dictionary with all label to integer data information
@@ -62,7 +63,6 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
     # 1+pointdim:2*pointdim:   interval length in each dimension
     # 1+2*pointdim:            dimension of the cube
 
-    @debug "Creating labe dictionary..."
     labelintinfodict = Dict{String,Vector{Int}}()
     for curlabel in cubes
         labelintinfodict[curlabel] = cube_information(curlabel)
@@ -75,7 +75,6 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
     # Create labels for all cubes in the complex, organized by
     # dimensions, as well as ordered vectors of labels
 
-    @debug "Creating labels..."
     labelsets = [Set{String}() for _ in 0:CCdim]
     labelvect = [Vector{String}() for _ in 0:CCdim]
     
@@ -94,17 +93,13 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
         # Loop through the cubes and add boundaries
 
-        tmpncubes   = length(labelvect[k+1])
-        tmpnewlabelP = [Vector{String}() for _ in 1:tmpncubes]
-        tmpnewlabelN = [Vector{String}() for _ in 1:tmpncubes]
-        emptyvecint  = [Vector{Int}() for _ in 1:k]
-        tmpnewinfoP  = [deepcopy(emptyvecint) for _ in 1:tmpncubes]
-        tmpnewinfoN  = [deepcopy(emptyvecint) for _ in 1:tmpncubes]
+        tmpncubes = length(labelvect[k+1])
 
         # Create labels and intinfo in parallel
 
-        Threads.@threads for ck in 1:tmpncubes
+        tmpchannel = Channel{Tuple{String,Vector{Int}}}(Inf)
 
+        Threads.@threads for ck in 1:tmpncubes
             curcube    = labelvect[k+1][ck]
             curintinfo = labelintinfodict[curcube]
             curones = findall(x -> x==1, curintinfo[1+pointdim:2*pointdim])
@@ -120,22 +115,18 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
                 newintinfoN[1+2*pointdim] -= 1
                 newlabelP = cube_label(pointdim, pointlen, newintinfoP)
                 newlabelN = cube_label(pointdim, pointlen, newintinfoN)
-                push!(tmpnewlabelP[ck], newlabelP)
-                push!(tmpnewlabelN[ck], newlabelN)
-                tmpnewinfoP[ck][m] = newintinfoP
-                tmpnewinfoN[ck][m] = newintinfoN
+                put!(tmpchannel, (newlabelP, newintinfoP))
+                put!(tmpchannel, (newlabelN, newintinfoN))
             end
         end
 
         # Incorporate data in serial
-
-        for ck in 1:tmpncubes
-            for m in 1:k
-                push!(labelsets[k], tmpnewlabelP[ck][m])
-                push!(labelsets[k], tmpnewlabelN[ck][m])
-                labelintinfodict[tmpnewlabelP[ck][m]] = tmpnewinfoP[ck][m]
-                labelintinfodict[tmpnewlabelN[ck][m]] = tmpnewinfoN[ck][m]
-            end
+        
+        close(tmpchannel)
+        tmppairs = collect(tmpchannel)
+        for tmppair in tmppairs
+            push!(labelsets[k], tmppair[1])
+            labelintinfodict[tmppair[1]] = tmppair[2]
         end
     end
 
@@ -145,14 +136,12 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     # Organize cube labels in one vector and create label to index dictionary
 
-    @debug "Organizing cube labels..."
     CClabelvec = reduce(vcat,labelvect)
     CClabelindexdict = Dict{String,Int}(CClabelvec[j] => j for j=1:length(CClabelvec))
     CCn = length(CClabelvec)
 
     # Create the vector of dimensions for the cubes
 
-    @debug "creating dimension vector..."
     CCdimvec = Vector{Int}()
     for k=0:CCdim
         for m=1:length(labelvect[k+1])
@@ -221,7 +210,6 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     # Create the Lefschetz complex
 
-    @debug "Creating Lefschetz complex..."
     lc = LefschetzComplex(CClabelvec, CCdimvec, B)
 
     # Return the Lefschetz complex
@@ -355,12 +343,12 @@ function cube_label(pointdim::Int, pointlen::Int, pointinfo::Vector{Int})
     # Create the label for a cube
     #
 
-    sp = string.(pointinfo)
+    sp = string.(copy(pointinfo))
     label = ""
     for k = 1:pointdim
         label = label * repeat("0", pointlen-length(sp[k])) * sp[k]
     end
-    label = label * "." * join(sp[1+pointdim:end])
+    label = label * "." * join(sp[1+pointdim:2*pointdim])
     
     return label
 end
