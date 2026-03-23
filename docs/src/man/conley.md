@@ -662,7 +662,7 @@ rationals:
   then the function also returns a dictionary which gives the basis
   for the connection matrix columns in terms of the original cell labels.
 
-At the present time, there are two different algorithms implemented for
+At the present time, there are four different algorithms implemented for
 the computation of connection matrices. A specific algorithm can be
 selected by passing the optional argument `algorithm::String`:
 
