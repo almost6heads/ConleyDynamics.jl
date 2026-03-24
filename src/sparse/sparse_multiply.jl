@@ -40,12 +40,10 @@ function sparse_multiply(A::SparseMatrix, B::SparseMatrix)
 
     # Perform the matrix product
 
-    r = Vector{Int}()
-    c = Vector{Int}()
-    v = Vector{typeof(A.zero)}()
-    tzero = A.zero
+    echannel = Channel{Tuple{Int,Int,typeof(A.zero)}}(Inf)
+    tzero    = A.zero
 
-    for k=1:A.nrow
+    Threads.@threads for k=1:A.nrow
         for m=1:B.ncol
             dpindex = intersect(rset[k],cset[m])
             if length(dpindex) > 0
@@ -54,12 +52,24 @@ function sparse_multiply(A::SparseMatrix, B::SparseMatrix)
                     dotprod += A[k,j] * B[j,m]
                 end
                 if !(dotprod == tzero)
-                    push!(r,k)
-                    push!(c,m)
-                    push!(v,dotprod)
+                    put!(echannel, (k,m,dotprod))
                 end
             end
         end
+    end
+
+    # Collect the entries
+
+    close(echannel)
+    entries = collect(echannel)
+    if length(entries) > 0
+        r = [entries[k][1] for k in 1:length(entries)]
+        c = [entries[k][2] for k in 1:length(entries)]
+        v = [entries[k][3] for k in 1:length(entries)]
+    else
+        r = Vector{Int}()
+        c = Vector{Int}()
+        v = Vector{typeof(A.zero)}()
     end
 
     # Construct and return the sparse product matrix
