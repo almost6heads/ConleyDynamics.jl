@@ -85,8 +85,9 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     # Work your way from highest to lowest dimension, keep adding faces
 
+    bndchannel = Channel{Tuple{String,String,String,Bool}}(Inf)
+
     for k = CCdim:-1:1
-        @debug "Working on dimension..." k
         # Create vector of labels at dimension k
 
         labelvect[k+1] = sort(collect(labelsets[k+1]))
@@ -104,6 +105,7 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
             curintinfo = labelintinfodict[curcube]
             curones = findall(x -> x==1, curintinfo[1+pointdim:2*pointdim])
 
+            bndsign = true
             for m=1:k
                 newintinfoP = copy(curintinfo)
                 newintinfoN = copy(curintinfo)
@@ -117,6 +119,8 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
                 newlabelN = cube_label(pointdim, pointlen, newintinfoN)
                 put!(tmpchannel, (newlabelP, newintinfoP))
                 put!(tmpchannel, (newlabelN, newintinfoN))
+                put!(bndchannel, (curcube, newlabelP, newlabelN, bndsign))
+                bndsign = ~bndsign
             end
         end
 
@@ -151,62 +155,35 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     # Create the boundary map
 
-    @debug "Creating boundary map..."
-    pdindices = findall(x -> x>0, CCdimvec)
-    pdsize    = length(pdindices)
-    tmpBr = [Vector{Int}() for _ in 1:pdsize]
-    tmpBc = [Vector{Int}() for _ in 1:pdsize]
-    tmpBv = [Vector{Int}() for _ in 1:pdsize]
+    close(bndchannel)
+    bndtuples = collect(bndchannel)
+    Br = Vector{Int}()
+    Bc = Vector{Int}()
+    if p==0
+        Bv = Vector{Rational{Int}}()
+        tone  = 1//1
+        tzero = 0//1
+    else
+        Bv = Vector{Int}()
+        tone  = Int(1)
+        tzero = Int(0)
+    end
 
-    Threads.@threads for ki = 1:pdsize
-        k = pdindices[ki]
-        curcdim = CCdimvec[k]
-        curcube = CClabelvec[k]
-        curintinfo = labelintinfodict[curcube]
-        curones = findall(x -> x==1, curintinfo[1+pointdim:2*pointdim])
-
-        for m=1:curcdim
-            if mod(m,2) == 1
-                coeff = Int(1)
-            else
-                coeff = Int(-1)
-            end
-            newintinfoP = deepcopy(curintinfo)
-            newintinfoN = deepcopy(curintinfo)
-            ione = curones[m]
-            newintinfoP[ione] += 1
-            newintinfoP[ione+pointdim] = 0
-            newintinfoN[ione+pointdim] = 0
-            newintinfoP[1+2*pointdim] -= 1
-            newintinfoN[1+2*pointdim] -= 1
-            newlabelP = cube_label(pointdim, pointlen, newintinfoP)
-            newlabelN = cube_label(pointdim, pointlen, newintinfoN)
-            bcellP = CClabelindexdict[newlabelP]
-            bcellN = CClabelindexdict[newlabelN]
-
-            push!(tmpBr[ki],bcellP)   # Row index
-            push!(tmpBc[ki],k)        # Column index
-            push!(tmpBv[ki],coeff)    # Matrix entry
-                
-            push!(tmpBr[ki],bcellN)   # Row index
-            push!(tmpBc[ki],k)        # Column index
-            push!(tmpBv[ki],-coeff)   # Matrix entry
+    for bndt in bndtuples
+        push!(Bc, CClabelindexdict[bndt[1]])
+        push!(Bc, CClabelindexdict[bndt[1]])
+        push!(Br, CClabelindexdict[bndt[2]])
+        push!(Br, CClabelindexdict[bndt[3]])
+        if bndt[4]
+            push!(Bv, tone)
+            push!(Bv, -tone)
+        else
+            push!(Bv, -tone)
+            push!(Bv, tone)
         end
     end
 
-    @debug "Creating sparse matrix..."
-    Br = reduce(vcat,tmpBr)
-    Bc = reduce(vcat,tmpBc)
-    Bv = reduce(vcat,tmpBv)
-
-    if p > 0
-        B = sparse_from_lists(CCn,CCn,p,Int(0),Int(1),Br,Bc,Bv)
-    else
-        tzero = Rational{Int}(0)
-        tone  = Rational{Int}(1)
-        Bvrational = convert(Vector{Rational{Int}},Bv)
-        B = sparse_from_lists(CCn,CCn,0,tzero,tone,Br,Bc,Bvrational)
-    end
+    B = sparse_from_lists(CCn,CCn,p,tzero,tone,Br,Bc,Bv)
 
     # Create the Lefschetz complex
 
@@ -343,7 +320,7 @@ function cube_label(pointdim::Int, pointlen::Int, pointinfo::Vector{Int})
     # Create the label for a cube
     #
 
-    sp = string.(copy(pointinfo))
+    sp = string.(pointinfo[1:2*pointdim])
     label = ""
     for k = 1:pointdim
         label = label * repeat("0", pointlen-length(sp[k])) * sp[k]
