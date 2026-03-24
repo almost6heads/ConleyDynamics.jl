@@ -27,29 +27,118 @@ function create_cubical_rectangle(nx::Int, ny::Int;
 
     # Make sure that we have at least width one in each direction
 
-    if (nx < 1) || (ny < 1)
-        error("Width and height have to be at least 1!")
-    end
+    @assert min(nx,ny)>=1 "Width and height have to be at least 1!"
 
-    # Create the vector of two-dimensional cubes
+    # Determine the field size, and initialize the coordinate labels
 
     pointdim = 2
     pointlen = Int(ceil(log(max(nx,ny) + 2) / log(10)))
-    cubes    = Vector{String}()
-    cubestr  = string.(0:max(nx,ny)-1)
-    cubelen  = length.(cubestr)
-    cubeext  = ".11"
-    for k = 1:nx
-        for m = 1:ny
-            clabel = repeat("0", pointlen-cubelen[k]) * cubestr[k] *
-                     repeat("0", pointlen-cubelen[m]) * cubestr[m] * cubeext
-            push!(cubes, clabel)
+
+    cl = Vector{String}()
+    for k = 0:max(nx,ny)
+        push!(cl, repeat("0", pointlen-length(string(k))) * string(k))
+    end
+
+    # Create the vertex labels
+
+    cubes  = Vector{String}()
+    for k = 0:nx
+        for m = 0:ny
+            push!(cubes, cl[k+1] * cl[m+1] * ".00")
         end
     end
 
-    # Create the Lefschetz complex
+    labels = sort(cubes)
+    dims   = fill(0, length(labels))
+    l2i    = Dict(labels[k] => k for k = 1:length(labels))
 
-    lc = create_cubical_complex(cubes, p=p)
+    # Set up the lists for the boundary matrix creation
+    
+    if p==0
+        tone  = 1//1
+        tzero = 0//1
+    else
+        tone  = Int(1)
+        tzero = Int(0)
+    end
+
+    r = Vector{Int}()
+    c = Vector{Int}()
+    v = Vector{typeof(tone)}()
+
+    # Create the edge labels and boundary matrix entries
+
+    cubes   = Vector{String}()
+    bndlist = Vector{Tuple{String,Int,typeof(tone)}}()
+
+    for k = 0:nx-1
+        for m = 0:ny
+            ccube = cl[k+1] * cl[m+1] * ".10"
+            push!(cubes, ccube)
+            push!(bndlist, (ccube, l2i[cl[k+2] * cl[m+1] * ".00"], tone))
+            push!(bndlist, (ccube, l2i[cl[k+1] * cl[m+1] * ".00"], -tone))
+        end
+    end
+    for k = 0:nx
+        for m = 0:ny-1
+            ccube = cl[k+1] * cl[m+1] * ".01"
+            push!(cubes, ccube)
+            push!(bndlist, (ccube, l2i[cl[k+1] * cl[m+2] * ".00"], tone))
+            push!(bndlist, (ccube, l2i[cl[k+1] * cl[m+1] * ".00"], -tone))
+        end
+    end
+
+    sort!(cubes)
+    ncells = length(labels)
+    for k in 1:length(cubes)
+        l2i[cubes[k]] = k + ncells
+    end
+
+    labels = [labels; cubes]
+    dims   = [dims; fill(1, length(cubes))]
+
+    for k in 1:length(bndlist)
+        push!(c, l2i[bndlist[k][1]])
+        push!(r, bndlist[k][2])
+        push!(v, bndlist[k][3])
+    end
+
+    # Create the rectangle labels and boundary matrix entries
+
+    cubes   = Vector{String}()
+    bndlist = Vector{Tuple{String,Int,typeof(tone)}}()
+
+    for k = 0:nx-1
+        for m = 0:ny-1
+            ccube = cl[k+1] * cl[m+1] * ".11"
+            push!(cubes, ccube)
+            push!(bndlist, (ccube, l2i[cl[k+2] * cl[m+1] * ".01"], tone))
+            push!(bndlist, (ccube, l2i[cl[k+1] * cl[m+1] * ".01"], -tone))
+            push!(bndlist, (ccube, l2i[cl[k+1] * cl[m+2] * ".10"], -tone))
+            push!(bndlist, (ccube, l2i[cl[k+1] * cl[m+1] * ".10"], tone))
+        end
+    end
+
+    sort!(cubes)
+    ncells = length(labels)
+    for k in 1:length(cubes)
+        l2i[cubes[k]] = k + ncells
+    end
+
+    labels = [labels; cubes]
+    dims   = [dims; fill(2, length(cubes))]
+    ncells = length(labels)
+
+    for k in 1:length(bndlist)
+        push!(c, l2i[bndlist[k][1]])
+        push!(r, bndlist[k][2])
+        push!(v, bndlist[k][3])
+    end
+
+    # Create the boundary matrix and Lefschetz complex
+
+    B  = sparse_from_lists(ncells,ncells,p,tzero,tone,r,c,v)
+    lc = LefschetzComplex(labels, dims, B)
 
     # Create the coordinate vector
 
