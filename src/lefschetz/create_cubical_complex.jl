@@ -85,7 +85,14 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     # Work your way from highest to lowest dimension, keep adding faces
 
-    bndchannel = Channel{Tuple{String,String,String,Bool}}(Inf)
+    if p==0
+        tone  = 1//1
+        tzero = 0//1
+    else
+        tone  = Int(1)
+        tzero = Int(0)
+    end
+    bndchannel = Channel{Tuple{String,String,typeof(tone)}}(Inf)
 
     for k = CCdim:-1:1
         # Create vector of labels at dimension k
@@ -105,7 +112,7 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
             curintinfo = labelintinfodict[curcube]
             curones = findall(x -> x==1, curintinfo[1+pointdim:2*pointdim])
 
-            bndsign = true
+            bndsign = tone
             for m=1:k
                 newintinfoP = copy(curintinfo)
                 newintinfoN = copy(curintinfo)
@@ -119,8 +126,9 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
                 newlabelN = cube_label(pointdim, pointlen, newintinfoN)
                 put!(tmpchannel, (newlabelP, newintinfoP))
                 put!(tmpchannel, (newlabelN, newintinfoN))
-                put!(bndchannel, (curcube, newlabelP, newlabelN, bndsign))
-                bndsign = ~bndsign
+                put!(bndchannel, (curcube, newlabelP,  bndsign))
+                put!(bndchannel, (curcube, newlabelN, -bndsign))
+                bndsign = -bndsign
             end
         end
 
@@ -157,33 +165,11 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     close(bndchannel)
     bndtuples = collect(bndchannel)
-    Br = Vector{Int}()
-    Bc = Vector{Int}()
-    if p==0
-        Bv = Vector{Rational{Int}}()
-        tone  = 1//1
-        tzero = 0//1
-    else
-        Bv = Vector{Int}()
-        tone  = Int(1)
-        tzero = Int(0)
-    end
 
-    for bndt in bndtuples
-        push!(Bc, CClabelindexdict[bndt[1]])
-        push!(Bc, CClabelindexdict[bndt[1]])
-        push!(Br, CClabelindexdict[bndt[2]])
-        push!(Br, CClabelindexdict[bndt[3]])
-        if bndt[4]
-            push!(Bv, tone)
-            push!(Bv, -tone)
-        else
-            push!(Bv, -tone)
-            push!(Bv, tone)
-        end
-    end
-
-    B = sparse_from_lists(CCn,CCn,p,tzero,tone,Br,Bc,Bv)
+    Bc = [CClabelindexdict[bndtuples[k][1]] for k = 1:length(bndtuples)]
+    Br = [CClabelindexdict[bndtuples[k][2]] for k = 1:length(bndtuples)]
+    Bv = [bndtuples[k][3] for k = 1:length(bndtuples)]
+    B  = sparse_from_lists(CCn,CCn,p,tzero,tone,Br,Bc,Bv)
 
     # Create the Lefschetz complex
 
