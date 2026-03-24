@@ -13,6 +13,25 @@ description, etc.
 
 Release notes:
 
+## v0.6.0 (March 24, 2026)
+
+This release does not contain any breaking changes. But the 
+following functionality has been added since release 0.5.0:
+
+- There are now four different algorithms implemented for the
+  computation of connection matrices.
+- There are now three different algorithms implemented for the
+  computation of persistence.
+- New functions for the treatment of Forman gradient vector
+  fields such as `forman_conley_maps`, `forman_critical_cells`,
+  and `forman_all_cell_types`.
+- New functions for sparse matrices include concatenation
+  functions, `sparse_diagonal`, and `sparse_transpose`.
+  In addition, the output format based on `sparse_show` has
+  been improved.
+- A number of functions have been rewritten for speed, and 
+  parallelized whenever possible.
+
 ## v0.5.8 (March 22, 2026)
 
 - Added the function `sparse_diagonal`.
