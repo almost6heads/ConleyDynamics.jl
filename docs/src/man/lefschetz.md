@@ -808,9 +808,11 @@ features* from a Lefschetz complex:
   associated with a Lefschetz complex subset.
 - [`lefschetz_skeleton`](@ref) computes the ``k``-dimensional
   skeleton of a Lefschetz complex or of a given Lefschetz complex
-  subset. While in the first case the ``k``-skeleton of the full
-  Lefschetz complex is returned, in the second case it returns the
-  ``k``-skeleton of the closure of the given subset.
+  subset. There are two possible function calls, namely
+  `lefschetz_skeleton(lc, k)` and `lefschetz_skeleton(lc, subcomp, k)`.
+  While in the first case the ``k``-skeleton of the full Lefschetz
+  complex is returned, in the second case it returns the
+  ``k``-skeleton of the closure of the given subset `subcomp`.
 - [`manifold_boundary`](@ref) returns a list of cells which form
   the "manifold boundary" of the given Lefschetz complex. More 
   precisely, if the complex has dimension ``d``, then it determines

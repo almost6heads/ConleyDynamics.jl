@@ -46,6 +46,37 @@ all of its dependencies, you can start using it by typing
 julia> using ConleyDynamics
 ```
 
+Whenever possible, the functions implemented in
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
+have been parallelized, so as to speed up performance on multi-core
+computers. This, however, is only taken advantage of if Julia is started
+with multiple threads. For example, if you would like to start Julia using
+8 threads, use the command
+
+```bash
+julia -t 8
+```
+
+or
+
+```bash
+julia --threads=8
+```
+
+If you want to leave the number of threads selection to the machine, 
+simply use
+
+```bash
+julia --threads=auto
+```
+
+Once you are in the Julia REPL, you can see the number of used threads
+using the command
+
+```
+julia> Threads.nthreads()
+```
+
 ## Manual Outline
 
 The [Tutorial](@ref) briefly explains how to get started with
