@@ -2,7 +2,7 @@ export sparse_diagonal
 
 """
     sparse_diagonal(nr::Int, nc::Int, d::Vector{<:Real};
-                    p::Int=0, offset::Int=0)
+                    p::Int=2, offset::Int=0)
 
 Create sparse diagonal matrix.
 
@@ -20,7 +20,7 @@ convert the entries in `d` to the correct format based on `p`.
 Errors are raised if this is not possible.
 """
 function sparse_diagonal(nr::Int, nc::Int, d::Vector{<:Real};
-                         p::Int=0, offset::Int=0)
+                         p::Int=2, offset::Int=0)
     #
     # Create a sparse diagonal matrix
     #

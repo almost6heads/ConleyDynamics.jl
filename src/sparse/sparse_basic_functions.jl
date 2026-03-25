@@ -41,7 +41,7 @@ function sparse_low(matrix::SparseMatrix, col::Int)
 end
 
 """
-    sparse_identity(n::Int; p::Int=0)
+    sparse_identity(n::Int; p::Int=2)
 
 Create a sparse identity matrix with n rows and columns.
 
@@ -50,7 +50,7 @@ If `p=0` then the sparse matrix is over the rationals, while
 if `p>0` is a prime, then the matrix is an integer matrix 
 whose entries are interpreted in `GF(p)`.
 """
-function sparse_identity(n::Int; p::Int=0)
+function sparse_identity(n::Int; p::Int=2)
     #
     # Create a sparse identity matrix with n rows and columns,
     # and with diagonal entry tone.
@@ -78,7 +78,7 @@ function sparse_identity(n::Int; p::Int=0)
 end
 
 """
-    sparse_zero(nr::Int, nc::Int; p::Int=0)
+    sparse_zero(nr::Int, nc::Int; p::Int=2)
 
 Create a sparse zero matrix with `nr` rows and `nc` columns.
 
@@ -87,7 +87,7 @@ If `p=0` then the sparse matrix is over the rationals, while
 if `p>0` is a prime, then the matrix is an integer matrix 
 whose entries are interpreted in `GF(p)`.
 """
-function sparse_zero(nr::Int, nc::Int; p::Int=0)
+function sparse_zero(nr::Int, nc::Int; p::Int=2)
     #
     # Create a sparse zero matrix with nr rows and nc columns
     #
