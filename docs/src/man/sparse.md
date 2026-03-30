@@ -248,6 +248,11 @@ that are needed for the functionality of the package:
   row[ri2]`. As before, this operation automatically performs
   the computations over the field ``F`` underlying the sparse
   matrix `A`.
+- [`sparse_rref`](@ref) computes the reduced row Echelon form 
+  of a sparse matrix. There also exists an in-place version
+  of this function which alters the input argument,
+  see [`sparse_rref!`](@ref). Both of these functions
+  are most useful for reasonably small matrices.
 - [`sparse_permute`](@ref) creates a new sparse matrix by
   permuting the row and column indices. It is invoked using the
   command `AP = sparse_permute(A,pr,pc)`, and the integer

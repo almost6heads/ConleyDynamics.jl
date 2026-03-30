@@ -23,6 +23,21 @@ function sparse_size(matrix::SparseMatrix, dim::Int)
 end
 
 """
+    sparse_size(matrix::SparseMatrix)
+
+Return the size of a sparse matrix.
+
+The function returns a tuple which contains the number of
+rows and the number of columns of the given matrix.
+"""
+function sparse_size(matrix::SparseMatrix)
+    #
+    # Return the number of rows and columns
+    #
+    return matrix.nrow, matrix.ncol
+end
+
+"""
     sparse_low(matrix::SparseMatrix, col::Int)
 
 Row index of the lowest nonzero matrix entry in column `col`.

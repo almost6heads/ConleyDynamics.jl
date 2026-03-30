@@ -68,6 +68,8 @@ Base.hvncat(::Tuple{Int,Int}, ::Bool, ::SparseMatrix...)
 ```@docs
 sparse_add_column!
 sparse_add_row!
+sparse_rref!
+sparse_rref
 sparse_permute
 sparse_transpose
 Base.adjoint(::SparseMatrix)

@@ -13,6 +13,14 @@ description, etc.
 
 Release notes:
 
+## v0.6.1 (March ??, 2026)
+
+- Added the functions `sparse_rref` and `sparse_rref!` to
+  compute the reduced row Echelon form of a sparse matrix.
+- Added the function `sparse_size` with only one imatrix
+  argument, which returns the number of rows and columns
+  of the matrix as a pair.
+
 ## v0.6.0 (March 24, 2026)
 
 This release does not contain any breaking changes. But the 
