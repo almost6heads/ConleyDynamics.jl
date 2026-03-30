@@ -17,6 +17,9 @@ Release notes:
 
 - Added the functions `sparse_rref` and `sparse_rref!` to
   compute the reduced row Echelon form of a sparse matrix.
+- Added a method to `sparse_from_full`, which allows for
+  an integer vector argument and creates a sparse matrix
+  in column form.
 - Added the function `sparse_size` with only one imatrix
   argument, which returns the number of rows and columns
   of the matrix as a pair.

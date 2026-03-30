@@ -56,6 +56,22 @@ function sparse_from_full(matrix::Matrix{Int}; p::Int=2)
 end
 
 """
+    sparse_from_full(vec::Vector{Int}; [p::Int=2])
+
+Create sparse column matrix from a full integer vector. If the
+optional argument `p` is specified and positive, then the returned
+matrix is an integer matrix which is interpreted over `GF(p)`. On
+the other hand, if `p` is equal to zero, then the return matrix has
+rational type.
+"""
+function sparse_from_full(vec::Vector{Int}; p::Int=2)
+    #
+    # Create sparse matrix from full vector
+    #
+    return sparse_from_full(hcat(vec), p=p)
+end
+
+"""
     full_from_sparse(sm::SparseMatrix)
 
 Create full matrix from sparse matrix.
