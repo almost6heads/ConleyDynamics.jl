@@ -71,6 +71,9 @@ sparse_add_column!
 sparse_add_row!
 sparse_rref!
 sparse_rref
+sparse_solve
+sparse_basis_kernel
+sparse_basis_range
 sparse_permute
 sparse_transpose
 Base.adjoint(::SparseMatrix)

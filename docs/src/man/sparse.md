@@ -253,6 +253,24 @@ that are needed for the functionality of the package:
   of this function which alters the input argument,
   see [`sparse_rref!`](@ref). Both of these functions
   are most useful for reasonably small matrices.
+- [`sparse_solve`](@ref) computes a solution of the sparse
+  linear system `Ax = b`. It is expected that `A` and `b` are
+  sparse matrices over the same field, and that both have the
+  same number of rows. Usually, this function is probably used
+  with a column vector `b`. However, if `b` is a matrix, then
+  the respective matrix equation is solved. The function returns
+  a particular solution of the system, if one exists. Otherwise it
+  returns `nothing`. In order to obtain all solutions of the
+  system, one has to add an arbitrary linear combination of the
+  basis vectors determined via `sparse_basis_kernel(A)`.
+- [`sparse_basis_kernel`](@ref) determines a basis for the
+  kernel of the given sparse matrix. The basis vectors are
+  returned in a `Vector{SparseMatrix}`, where all vectors
+  are sparse column vectors.
+- [`sparse_basis_range`](@ref) determines a basis for the
+  column space or range of the given sparse matrix. As above,
+  the basis vectors are returned in a `Vector{SparseMatrix}`,
+  where all vectors are sparse column vectors.
 - [`sparse_permute`](@ref) creates a new sparse matrix by
   permuting the row and column indices. It is invoked using the
   command `AP = sparse_permute(A,pr,pc)`, and the integer
