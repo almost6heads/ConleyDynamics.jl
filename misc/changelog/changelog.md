@@ -13,8 +13,12 @@ description, etc.
 
 Release notes:
 
-## v0.6.2 (, 2026)
+## v0.6.2 (March 31, 2026)
 
+- Added the functions `sparse_basis_kernel` and `sparse_basis_range`
+  to find bases for kernel and range of a sparse matrix.
+- Added `sparse_solve` to find a particular solution of a sparse
+  linear system.
 - Added the test `sparse_is_rref`.
 
 ## v0.6.1 (March 30, 2026)
