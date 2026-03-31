@@ -322,6 +322,9 @@ for quickly extracting certain information from sparse matrices:
   the same. For this, they not only have to have the same size
   and the same entries, they also need to be defined over the same
   field. This function can also be invoked using `A == B`.
+- [`sparse_is_rref`](@ref) checks whether the argument matrix is
+  in reduced row Echelon form, and returns the respective boolean
+  value.
 - [`sparse_is_sut`](@ref) checks whether a given sparse matrix is
   strictly upper triangular, and returns either `true` or `false`.
 - [`sparse_fullness`](@ref) returns the fullness of a sparse

@@ -28,6 +28,7 @@ sparse_is_zero
 sparse_is_identity
 sparse_is_equal
 Base.:(==)(::SparseMatrix,::SparseMatrix)
+sparse_is_rref
 sparse_is_sut
 sparse_fullness
 sparse_sparsity

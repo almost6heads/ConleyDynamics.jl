@@ -1,5 +1,6 @@
 export sparse_rref!
 export sparse_rref
+export sparse_is_rref
 
 """
     sparse_rref!(A::SparseMatrix)
@@ -106,5 +107,56 @@ function sparse_rref(A::SparseMatrix)
     Acopy = deepcopy(A)
     sparse_rref!(Acopy)
     return Acopy
+end
+
+"""
+    sparse_is_rref(A::SparseMatrix)
+
+Check whether a matrix is in reduced row Echelon format.
+
+This function determines whether a given matrix is in reduced
+row Echelon format. It returns the appropriate boolean value.
+"""
+function sparse_is_rref(A::SparseMatrix)
+    #
+    # Check whether a matrix has reduced row Echelon form
+    #
+
+    # Let's get the trivial case out of the way
+    if sparse_is_zero(A)
+        return true
+    end
+
+    # Check that the nonempty rows are the first ones
+    rowlengths = length.(A.rows)
+    nzrows = findall(t -> t > 0, rowlengths)
+
+    if !(nzrows == collect(1:length(nzrows)))
+        return false
+    end
+
+    # Make sure the pivots are strictly increasing
+    for k = 1:length(nzrows)-1
+        if minimum(A.rows[k]) >= minimum(A.rows[k+1])
+            return false
+        end
+    end
+
+    # Make sure the pivots are 1
+    for k = 1:length(nzrows)-1
+        if !(A[k,minimum(A.rows[k])] == A.one)
+            return false
+        end
+    end
+
+    # Make sure the pivot columns only contain the pivot
+    for k = 1:length(nzrows)-1
+        if !(length(A.columns[minimum(A.rows[k])]) == 1)
+            return false
+        end
+    end
+
+    # We have passed all tests, so it is in rref
+    return true
 end
 

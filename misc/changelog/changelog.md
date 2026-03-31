@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.6.2 (, 2026)
+
+- Added the test `sparse_is_rref`.
+
 ## v0.6.1 (March 30, 2026)
 
 - Added the functions `sparse_rref` and `sparse_rref!` to
