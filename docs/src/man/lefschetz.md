@@ -806,6 +806,16 @@ features* from a Lefschetz complex:
   cell subset.
 - [`lefschetz_clomo_pair`](@ref) determines the closure-mouth-pair
   associated with a Lefschetz complex subset.
+- [`lefschetz_neighbors`](@ref) finds all cells neighboring a
+  Lefschetz complex subset. More precisely, the function returns
+  all cells which are not contained in the subset specified
+  by `subcomp`, but which are either in the closure or in the open
+  hull of `subcomp`. In other words, if one adds any one of these
+  neighbors to the set `subcomp`, then the number of connected
+  components of the combined set does not increase. It could,
+  however, decrease. In particular, if `subcomp` represents a
+  connected set, then the neighbors are exactly the cells that
+  can be added while preserving connectedness.
 - [`lefschetz_skeleton`](@ref) computes the ``k``-dimensional
   skeleton of a Lefschetz complex or of a given Lefschetz complex
   subset. There are two possible function calls, namely

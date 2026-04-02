@@ -66,6 +66,7 @@ lefschetz_topboundary
 lefschetz_openhull
 lefschetz_lchull
 lefschetz_clomo_pair
+lefschetz_neighbors
 lefschetz_skeleton
 manifold_boundary
 ```

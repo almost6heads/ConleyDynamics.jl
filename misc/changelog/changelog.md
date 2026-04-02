@@ -13,6 +13,12 @@ description, etc.
 
 Release notes:
 
+## v0.6.3 (???, 2026)
+
+- Added the function `lefschetz_neighbors` which determines
+  all cells that can be added to a cell subset without
+  increasing its number of connected components.
+
 ## v0.6.2 (March 31, 2026)
 
 - Added the functions `sparse_basis_kernel` and `sparse_basis_range`
