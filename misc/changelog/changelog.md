@@ -13,8 +13,9 @@ description, etc.
 
 Release notes:
 
-## v0.6.3 (???, 2026)
+## v0.6.3 (April 2, 2026)
 
+- Added the function `mvf_is_acyclic`.
 - Added the function `lefschetz_neighbors` which determines
   all cells that can be added to a cell subset without
   increasing its number of connected components.
