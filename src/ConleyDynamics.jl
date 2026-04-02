@@ -86,6 +86,7 @@ include("./mvf/create_spatial_mvf.jl")
 include("./mvf/extract_multivectors.jl")
 include("./mvf/planar_nontransverse_edges.jl")
 include("./mvf/mvf_information.jl")
+include("./mvf/mvf_is_acyclic.jl")
 
 include("./sparse/sparse_basic_functions.jl")
 include("./sparse/sparse_from_lists.jl")

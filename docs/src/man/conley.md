@@ -125,6 +125,11 @@ fields on Lefschetz complexes:
   In the last two cases, the dictionary entries are vectors of pairs
   `(length,frequency)`, where each pair indicates that there are
   `frequency` multivectors of length `length`.
+- [`mvf_is_acyclic`](@ref) determines whether a multivector field
+  forms an acyclic partition of the underlying Lefschetz complex
+  or not, and returns the corresponding boolean value. If the 
+  multivector field is acyclic, then it is gradient-like, otherwise
+  it contains nontrivial recurrent sets.
 * The function [`extract_multivectors`](@ref) expects as input arguments
   a Lefschetz complex and a multivector field, as well as a list of
   cells specified as a `Vector{Int}` or a `Vector{String}`. It returns

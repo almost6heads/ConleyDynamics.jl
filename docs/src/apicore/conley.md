@@ -4,6 +4,7 @@
 
 ```@docs
 mvf_information
+mvf_is_acyclic
 create_mvf_hull
 create_planar_mvf
 create_spatial_mvf
