@@ -39,6 +39,7 @@ pageslist = ["Overview" => "index.md",
              "Core API" => Any[
                  "apicore/datastruct.md",
                  "apicore/lefschetz.md",
+                 "apicore/specialcomp.md",
                  "apicore/homology.md",
                  "apicore/conley.md",
                  "apicore/examples.md",

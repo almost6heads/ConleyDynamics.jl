@@ -12,6 +12,12 @@ Pages = ["datastruct.md"]
 Pages = ["lefschetz.md"]
 ```
 
+## [Special Complex Functions](@id indexspecialcomp)
+
+```@index
+Pages = ["specialcomp.md"]
+```
+
 ## [Homology Functions](@id indexhomology)
 
 ```@index
