@@ -32,8 +32,6 @@ end
     @test "EFG" in cm.labels
     @test !("DE" in cm.labels)
 
-    # The connection matrix has the specific nonzero entry EFG → ABC (dimension 2→2 would be wrong;
-    # check the actual known matrix: cm.matrix at [ABC,EFG] position should be nonzero)
     cmfull = full_from_sparse(cm.matrix)
     @test sum(abs.(cmfull)) > 0   # gradient with connections → nonzero matrix
 
