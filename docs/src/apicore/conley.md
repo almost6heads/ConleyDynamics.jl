@@ -4,6 +4,9 @@
 
 ```@docs
 mvf_information
+mvf_length
+mvf_critical
+mvf_regular
 mvf_is_acyclic
 create_mvf_hull
 create_planar_mvf

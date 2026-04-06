@@ -113,6 +113,18 @@ fields on Lefschetz complexes:
   A Lefschetz complex `lc`, as well as a vector `mvfbase` that defines
   the dynamical transitions in ``\mathcal{D}``. The latter has to have
   type `Vector{Vector{Int}}` or `Vector{Vector{String}}`.
+* The function [`mvf_length`](@ref) returns the number of all
+  multivectors of a given multivector field. This not only includes
+  the multivectors explicitly listed in the argument vector `mvf`,
+  but also the number of all singletons, which are always critical
+  multivectors.
+* The function [`mvf_critical`](@ref) determines all critical
+  multivectors of the specified multivector field. This includes
+  both the implied singletons, as well as the multivectors explicitly
+  listed in the argument vector `mvf` which have nontrivial homology.
+* The function [`mvf_regular`](@ref) returns all regular multivectors
+  of the specified multivector field, i.e., all multivectors whose
+  homology groups are all trivial.
 * The function [`mvf_information`](@ref) displays basic information
   about a given multivector field. It expects both a Lefschetz complex
   and a multivector field as arguments, and returns a `Dict{String,Any}`
