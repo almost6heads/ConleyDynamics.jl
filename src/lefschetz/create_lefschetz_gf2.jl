@@ -129,15 +129,9 @@ function create_lefschetz_gf2(defcellbnd)
 
     B = sparse_from_lists(ncell, ncell, 2, Int(0), Int(1), Br, Bc, Bv)
 
-    # Make sure the boundary matrix squares to zero
+    # Create and return the Lefschetz complex, validating boundary matrix
 
-    if !sparse_is_zero(B*B)
-        error("The squared boundary matrix has to be zero!")
-    end
-
-    # Create and return the Lefschetz complex
-
-    lc = LefschetzComplex(labelsvec, ldimvec, B)
+    lc = LefschetzComplex(labelsvec, ldimvec, B; validate=true)
     return lc
 end
 

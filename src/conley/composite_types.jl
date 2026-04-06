@@ -3,6 +3,7 @@ export Cell, Cells, CellSubsets
 
 """
     LefschetzComplex
+    LefschetzComplex(labels, dimensions, boundary; validate=false)
 
 Collect the Lefschetz complex information in a struct.
 
@@ -18,9 +19,14 @@ In addition, the following fields are created during initialization:
 * `indices::Dict{String,Int}`: Dictionary for finding cell index from label
 The coefficient field is specified by the boundary matrix.
 
-!!! warning
-    Note that the constructor does not check whether the boundary matrix
-    squares to zero. It is the responsibility of the user to ensure that!
+The optional keyword argument `validate` controls whether the constructor
+verifies that the boundary matrix squares to zero. By default this check is
+disabled, because complexes created by the library functions (simplicial,
+cubical, or derived via restriction/permutation/basis-change) are guaranteed
+to be valid by construction, and for large complexes the check is expensive.
+Set `validate=true` when constructing a `LefschetzComplex` manually from
+user-provided boundary data, or use [`validate_lefschetz_complex`](@ref) to
+check an existing complex at any point.
 """
 struct LefschetzComplex
     #
@@ -40,11 +46,12 @@ struct LefschetzComplex
     #
     function LefschetzComplex(labels::Vector{String},
                               dimensions::Vector{Int},
-                              boundary::SparseMatrix)
+                              boundary::SparseMatrix;
+                              validate::Bool=false)
         #
         # Create a Lefschetz complex instance
         #
-        
+
         # Perform basic length checks
 
         ncells = length(labels)
@@ -67,12 +74,20 @@ struct LefschetzComplex
         end
         dim = dimensions[ncells]
 
+        # Optionally verify that the boundary matrix squares to zero
+
+        if validate
+            if !sparse_is_zero(sparse_multiply(boundary, boundary))
+                error("Boundary matrix does not square to zero: invalid Lefschetz complex.")
+            end
+        end
+
         # Create the label to indices dictionary
 
         indices = Dict{String,Int}([(labels[k],k) for k in 1:ncells])
 
         # Create the composite type
-        
+
         new(labels, dimensions, boundary, ncells, dim, indices)
     end
 end
