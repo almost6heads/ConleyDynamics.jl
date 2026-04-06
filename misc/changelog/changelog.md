@@ -13,6 +13,34 @@ description, etc.
 
 Release notes:
 
+## v0.7.0 (April 6, 2026)
+
+This release does not contain any breaking changes. But the 
+following functionality has been added since release 0.6.0:
+
+- Added the multivector functions `mvf_length`, `mvf_critical`,
+  `mvf_regular`, and `mvf_is_acyclic`.
+- Added the function `lefschetz_neighbors` which determines
+  all cells that can be added to a cell subset without
+  increasing its number of connected components.
+- Added the functions `sparse_basis_kernel` and `sparse_basis_range`
+  to find bases for kernel and range of a sparse matrix.
+- Added `sparse_solve` to find a particular solution of a sparse
+  linear system.
+- Added the functions `sparse_rref` and `sparse_rref!` to
+  compute the reduced row Echelon form of a sparse matrix,
+  as well as `sparse_is_rref` to test for it.
+- Added additional methods to `sparse_from_full` and `sparse_size`.
+
+With the help of my dear friend Claude, I also made the following
+changes:
+
+- Added boundary matrix validation to the `LefschetzComplex`
+  creation. While this is now the default, it can be suppressed
+  in guaranteed-valid paths via a keyword parameter.
+- Expanded the test suite with per-module test files.
+- Extended and reorganized the manual.
+
 ## v0.6.3 (April 2, 2026)
 
 - Added the function `mvf_is_acyclic`.
