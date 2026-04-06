@@ -138,7 +138,7 @@ function create_cubical_rectangle(nx::Int, ny::Int;
     # Create the boundary matrix and Lefschetz complex
 
     B  = sparse_from_lists(ncells,ncells,p,tzero,tone,r,c,v)
-    lc = LefschetzComplex(labels, dims, B)
+    lc = LefschetzComplex(labels, dims, B; validate=false)
 
     # Create the coordinate vector
 

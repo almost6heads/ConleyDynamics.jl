@@ -173,7 +173,7 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     # Create the Lefschetz complex
 
-    lc = LefschetzComplex(CClabelvec, CCdimvec, B)
+    lc = LefschetzComplex(CClabelvec, CCdimvec, B; validate=false)
 
     # Return the Lefschetz complex
 

@@ -89,7 +89,7 @@ function lefschetz_reduction(lc::LefschetzComplex, redpairs::Vector{Vector{Int}}
 
     # Create and return the reduced Lefschetz complex
 
-    lcred = LefschetzComplex(redlabels, reddims, redbnd)
+    lcred = LefschetzComplex(redlabels, reddims, redbnd; validate=false)
     return lcred
 end
 

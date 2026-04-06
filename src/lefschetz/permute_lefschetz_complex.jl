@@ -51,7 +51,7 @@ function permute_lefschetz_complex(lc::LefschetzComplex,
 
     # Create the permuted Lefschetz complex
 
-    lc2 = LefschetzComplex(labels2, dimensions2, boundary2)
+    lc2 = LefschetzComplex(labels2, dimensions2, boundary2; validate=false)
     
     # Return the permuted Lefschetz complex
 

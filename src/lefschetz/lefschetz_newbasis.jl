@@ -49,7 +49,7 @@ function lefschetz_newbasis(lc::LefschetzComplex, basis::SparseMatrix; maps::Boo
 
     # Construct the new Lefschetz complex
 
-    lcnew = LefschetzComplex(lc.labels, lc.dimensions, bndnew)
+    lcnew = LefschetzComplex(lc.labels, lc.dimensions, bndnew; validate=false)
 
     # Return the results
 

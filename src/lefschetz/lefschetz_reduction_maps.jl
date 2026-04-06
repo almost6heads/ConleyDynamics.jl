@@ -199,7 +199,7 @@ function lefschetz_reduction_maps(lc::LefschetzComplex, redpairs::Vector{Vector{
 
     # Create and return the reduced Lefschetz complex
 
-    lcred = LefschetzComplex(labels, dims, bnd)
+    lcred = LefschetzComplex(labels, dims, bnd; validate=false)
     return lcred, pp, jj, hh
 end
 

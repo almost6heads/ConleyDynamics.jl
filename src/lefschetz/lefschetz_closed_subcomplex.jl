@@ -27,7 +27,7 @@ function lefschetz_closed_subcomplex(lc::LefschetzComplex, subcomp::Vector{Int})
 
     # Create the new Lefschetz complex and return it
 
-    sub_lc = LefschetzComplex(sub_labels, sub_dimensions, sub_boundary)
+    sub_lc = LefschetzComplex(sub_labels, sub_dimensions, sub_boundary; validate=false)
     return sub_lc
 end
 

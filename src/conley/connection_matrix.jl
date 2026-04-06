@@ -136,7 +136,7 @@ function connection_matrix(lc::LefschetzComplex, mvfarg::CellSubsets;
 
     # Create the new Lefschetz complex and return it
 
-    cmCC = LefschetzComplex(cc_labelsO, cc_dimsO, cc_bndO)
+    cmCC = LefschetzComplex(cc_labelsO, cc_dimsO, cc_bndO; validate=false)
  
     # Return the connection matrix information
     

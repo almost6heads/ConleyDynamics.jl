@@ -3,7 +3,7 @@ export Cell, Cells, CellSubsets
 
 """
     LefschetzComplex
-    LefschetzComplex(labels, dimensions, boundary; validate=false)
+    LefschetzComplex(labels, dimensions, boundary; validate=true)
 
 Collect the Lefschetz complex information in a struct.
 
@@ -21,12 +21,12 @@ The coefficient field is specified by the boundary matrix.
 
 The optional keyword argument `validate` controls whether the constructor
 verifies that the boundary matrix squares to zero. By default this check is
-disabled, because complexes created by the library functions (simplicial,
-cubical, or derived via restriction/permutation/basis-change) are guaranteed
-to be valid by construction, and for large complexes the check is expensive.
-Set `validate=true` when constructing a `LefschetzComplex` manually from
-user-provided boundary data, or use [`validate_lefschetz_complex`](@ref) to
-check an existing complex at any point.
+enabled. Internal library functions that are guaranteed to produce a valid
+complex by construction (simplicial, cubical, restriction, permutation,
+basis-change, etc.) pass `validate=false` explicitly to suppress the check,
+since for large complexes the matrix multiplication is expensive. Users
+constructing a `LefschetzComplex` manually can also call
+[`validate_lefschetz_complex`](@ref) to check an existing complex at any point.
 """
 struct LefschetzComplex
     #
@@ -47,7 +47,7 @@ struct LefschetzComplex
     function LefschetzComplex(labels::Vector{String},
                               dimensions::Vector{Int},
                               boundary::SparseMatrix;
-                              validate::Bool=false)
+                              validate::Bool=true)
         #
         # Create a Lefschetz complex instance
         #
