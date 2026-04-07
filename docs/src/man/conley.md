@@ -702,7 +702,9 @@ selected by passing the optional argument `algorithm::String`:
 By default, the function [`connection_matrix`](@ref) uses the parallel
 Morse reduction algorithm `pmorse`. However, if the flag `returnbasis::Bool=true`
 is given the function has to choose the slower matrix-based one, that is,
-it automatically uses `algorithm = "DLMS"`.
+it automatically uses `algorithm = "DLMS"`. A detailed performance comparison
+of all four algorithms, including reproducible timing examples, is provided in
+the section [Comparing the Connection Matrix Algorithms](@ref) below.
 
 The connection matrix is returned in an object with the composite
 data type [`ConleyMorseCM`](@ref). Its docstring is as follows:
@@ -806,6 +808,102 @@ sparse_show(cm)
 
 In this way, one can easily see which Morse sets correspond
 to the columns and rows of the connection matrix.
+
+## Comparing the Connection Matrix Algorithms
+
+All four algorithms implement the same mathematical task and are guaranteed to return
+a valid connection matrix for any given input. However, they differ considerably in
+their underlying approach and their computational behaviour as the size of the Lefschetz
+complex grows. Note that when the connection matrix is not unique, different algorithms
+may return different — but equally valid — connection matrices.
+
+The matrix-reduction algorithms `DLMS` and `DHL` work by directly reducing the boundary
+matrix through column operations, and their structure is relatively straightforward to
+follow. The Morse-theory-based algorithms `HMS` and `pmorse` first compute a discrete
+Morse matching to simplify the complex before performing the reduction, which introduces
+some fixed overhead but can pay off significantly on larger inputs. The parallelized
+algorithm `pmorse` additionally distributes parts of the Morse matching computation
+across multiple threads, and therefore benefits from starting Julia with
+`julia --threads N` for some suitable number of threads `N`.
+
+The following two examples illustrate how the runtime characteristics differ depending
+on the problem size. The timings were obtained on a standard laptop; exact results will
+vary by machine, but the relative scaling behaviour is representative.
+
+### Small Complexes
+
+For a small example one can use the built-in [`example_forman2d`](@ref), which creates
+a Lefschetz complex with 39 cells:
+
+```julia
+using ConleyDynamics
+lc, mvf, coords = example_forman2d()
+for alg in ["DLMS", "DHL", "HMS", "pmorse"]
+    println(alg, ":  ", @elapsed connection_matrix(lc, mvf, algorithm=alg), " s")
+end
+```
+
+Representative timings on this example are as follows:
+
+| Algorithm | Approx. time |
+|-----------|-------------|
+| `DLMS`    | 75 μs       |
+| `DHL`     | 64 μs       |
+| `HMS`     | 1300 μs     |
+| `pmorse`  | 200 μs      |
+
+On small complexes the matrix-reduction algorithms `DLMS` and `DHL` perform very
+efficiently, since the column reduction operates on a small matrix. The Morse-based
+algorithms `HMS` and `pmorse` carry a relative overhead at this scale from constructing
+the Morse matching, which does not yet pay off for such small inputs.
+
+### Large Complexes
+
+For a more demanding example one can use the planar flow from the section
+[Analysis of a Planar System](@ref), with a finer triangulation than used there:
+
+```julia
+using ConleyDynamics, Random
+Random.seed!(1234)
+function planarvf(x::Vector{Float64})
+    x1, x2 = x
+    y1 = x1 * (1.0 - x1*x1 - 3.0*x2*x2)
+    y2 = x2 * (1.0 - 3.0*x1*x1 - x2*x2)
+    return [y1, y2]
+end
+lc, coords = create_simplicial_delaunay(400, 400, 3, 50)
+coordsN = convert_planar_coordinates(coords, [-1.2,-1.2], [1.2,1.2])
+mvf = create_planar_mvf(lc, coordsN, planarvf)
+println("ncells = ", lc.ncells)
+for alg in ["DLMS", "DHL", "HMS", "pmorse"]
+    println(alg, ":  ", @elapsed connection_matrix(lc, mvf, algorithm=alg), " s")
+end
+```
+
+This creates a Lefschetz complex with approximately 71,000 cells. Representative
+timings on this example, using four threads for `pmorse`, are as follows:
+
+| Algorithm        | Approx. time |
+|------------------|-------------|
+| `DLMS`           | 61 s        |
+| `DHL`            | 8.5 s       |
+| `HMS`            | 1.8 s       |
+| `pmorse` (1 thread)  | 1.75 s  |
+| `pmorse` (4 threads) | 1.1 s   |
+
+At this scale the picture changes substantially. The Morse-theory-based algorithms
+scale considerably more favourably than the matrix-reduction approaches. Among the
+matrix-based algorithms, `DHL` — due to Dey, Haas, and Lipinski — is significantly
+more efficient than `DLMS`, which performs a complete similarity transformation of
+the matrix. The algorithm `HMS` due to Harker, Mischaikow, and Spendlove, which
+preprocesses the complex using discrete Morse theory, requires much less time at this
+scale. The parallel algorithm `pmorse` achieves a further reduction in wall-clock time
+when multiple threads are available.
+
+The algorithm `DLMS` is the only one that supports the optional flag `returnbasis=true`,
+which returns the basis of each connection matrix column in terms of the original cell
+labels. When this flag is passed to [`connection_matrix`](@ref), the function
+automatically selects `DLMS` regardless of the `algorithm` keyword.
 
 ## Extracting Subsystems
 
