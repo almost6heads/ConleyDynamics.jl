@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.7.1 (April 7, 2026)
+
+Maintenance release: Added index bounds checking to SparseMatrix access functions
+
 ## v0.7.0 (April 6, 2026)
 
 This release does not contain any breaking changes. But the 
