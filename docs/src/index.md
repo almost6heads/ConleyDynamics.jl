@@ -83,9 +83,11 @@ The [Tutorial](@ref) briefly explains how to get started with
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl).
 More details, including on the underlying mathematics, are provided in
 the following three sections, which cover Lefschetz complexes, homology,
-and Conley theory including connection matrices. After a discussion of all
-included examples in the [Examples](@ref) section, the manual concludes
-with a description of the sparse matrix format underlying the package.
+and Conley theory, including connection matrices and algorithms for their
+computation. After discussing a number of examples in the sections
+[First Examples](@ref) and [Further Examples](@ref), the
+manual concludes with a description of the sparse matrix format
+underlying the package.
 
 ```@contents
 Pages = [
@@ -93,6 +95,7 @@ Pages = [
     "man/lefschetz.md",
     "man/homology.md",
     "man/conley.md",
+    "man/conley_examples.md",
     "man/examples.md",
     "man/sparse.md",
 ]

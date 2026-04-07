@@ -32,6 +32,7 @@ pageslist = ["Overview" => "index.md",
                  "man/lefschetz.md",
                  "man/homology.md",
                  "man/conley.md",
+                 "man/conley_examples.md",
                  "man/examples.md",
                  "man/sparse.md",
                  "man/references.md"
