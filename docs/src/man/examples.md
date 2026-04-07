@@ -1,4 +1,4 @@
-# Examples
+# Further Examples
 
 ```@meta
 DocTestSetup = quote
