@@ -2,7 +2,7 @@ export sparse_get_entry, sparse_set_entry!
 export sparse_get_column
 export sparse_get_nz_column, sparse_get_nz_row
 export getindex, setindex!
-       
+
 """
     sparse_get_entry(matrix::SparseMatrix, ri::Int, ci::Int)
 
@@ -12,6 +12,12 @@ function sparse_get_entry(matrix::SparseMatrix, ri::Int, ci::Int)
     #
     # Get matrix[ri,ci]
     #
+
+    @boundscheck begin
+        if !(1 <= ri <= matrix.nrow) || !(1 <= ci <= matrix.ncol)
+            throw(BoundsError(matrix, (ri, ci)))
+        end
+    end
 
     # Find the location of (ri,ci) in column ci
 
@@ -31,7 +37,7 @@ end
 
 Get the sparse matrix entry at location `(ri,ci)`.
 """
-function Base.getindex(matrix::SparseMatrix, ri::Int, ci::Int)
+@inline function Base.getindex(matrix::SparseMatrix, ri::Int, ci::Int)
     return sparse_get_entry(matrix, ri, ci)
 end
 
@@ -44,6 +50,12 @@ function sparse_set_entry!(matrix::SparseMatrix, ri::Int, ci::Int, val)
     #
     # Set matrix[ri,ci] = val
     #
+
+    @boundscheck begin
+        if !(1 <= ri <= matrix.nrow) || !(1 <= ci <= matrix.ncol)
+            throw(BoundsError(matrix, (ri, ci)))
+        end
+    end
 
     # Determine the location of ri in the column ci, if it exists
 
@@ -95,6 +107,12 @@ function sparse_set_entry!(matrix::SparseMatrix{Int}, ri::Int, ci::Int, val)
     # Set matrix[ri,ci] = val
     #
 
+    @boundscheck begin
+        if !(1 <= ri <= matrix.nrow) || !(1 <= ci <= matrix.ncol)
+            throw(BoundsError(matrix, (ri, ci)))
+        end
+    end
+
     # Determine the location of ri in the column ci, if it exists
 
     index_in_col = findfirst(x -> x==ri, matrix.columns[ci])
@@ -142,7 +160,7 @@ end
 
 Set the sparse matrix entry at location `(ri,ci)` to `val`.
 """
-function Base.setindex!(matrix::SparseMatrix, val, ri::Int, ci::Int)
+@inline function Base.setindex!(matrix::SparseMatrix, val, ri::Int, ci::Int)
     sparse_set_entry!(matrix, ri, ci, val)
     return
 end
@@ -156,6 +174,12 @@ function sparse_get_column(matrix::SparseMatrix, ci::Int)
     #
     # Get matrix[:,ci]
     #
+
+    @boundscheck begin
+        if !(1 <= ci <= matrix.ncol)
+            throw(BoundsError(matrix, (:, ci)))
+        end
+    end
 
     # Initialize the empty column vector
 
@@ -183,6 +207,12 @@ function sparse_get_nz_column(matrix::SparseMatrix, ci::Int)
     # Get all k for which matrix[k,ci]<>0
     #
 
+    @boundscheck begin
+        if !(1 <= ci <= matrix.ncol)
+            throw(BoundsError(matrix, (:, ci)))
+        end
+    end
+
     nzcol = deepcopy(matrix.columns[ci])
     return nzcol
 end
@@ -197,6 +227,12 @@ function sparse_get_nz_row(matrix::SparseMatrix, ri::Int)
     #
     # Get all k for which matrix[ri,k]<>0
     #
+
+    @boundscheck begin
+        if !(1 <= ri <= matrix.nrow)
+            throw(BoundsError(matrix, (ri, :)))
+        end
+    end
 
     nzrow = deepcopy(matrix.rows[ri])
     return nzrow

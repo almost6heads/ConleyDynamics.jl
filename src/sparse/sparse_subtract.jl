@@ -37,7 +37,7 @@ function sparse_subtract(A::SparseMatrix, B::SparseMatrix)
     for m=1:A.ncol
         diffindex = union(A.columns[m],B.columns[m])
         if length(diffindex) > 0
-            for k in diffindex
+            @inbounds for k in diffindex
                 entrydiff = A[k,m] - B[k,m]
                 if !(entrydiff == tzero)
                     push!(r,k)

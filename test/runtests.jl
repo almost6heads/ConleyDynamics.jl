@@ -2,6 +2,7 @@ using ConleyDynamics
 using Test
 
 include("test_sparse.jl")
+include("test_sparse_bounds.jl")
 include("test_lefschetz.jl")
 include("test_homology.jl")
 include("test_mvf.jl")

@@ -37,7 +37,7 @@ function sparse_add(A::SparseMatrix, B::SparseMatrix)
     for m=1:A.ncol
         sumindex = union(A.columns[m],B.columns[m])
         if length(sumindex) > 0
-            for k in sumindex
+            @inbounds for k in sumindex
                 entrysum = A[k,m] + B[k,m]
                 if !(entrysum == tzero)
                     push!(r,k)

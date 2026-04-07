@@ -48,7 +48,7 @@ function sparse_multiply(A::SparseMatrix, B::SparseMatrix)
             dpindex = intersect(rset[k],cset[m])
             if length(dpindex) > 0
                 dotprod = tzero
-                for j in dpindex
+                @inbounds for j in dpindex
                     dotprod += A[k,j] * B[j,m]
                 end
                 if !(dotprod == tzero)

@@ -49,7 +49,7 @@ function cm_reduce_dlms24!(matrix::SparseMatrix, psetvec::Vector{Int};
         jlow = sparse_low(matrix,j)
         if jlow > 0
             for i = jlow:-1:1
-                if !(matrix[i,j] == tzero)
+                if !(@inbounds(matrix[i,j]) == tzero)
                     s = 1
                     found_s = false
                     while (!found_s) & (s <= numcolumns)
@@ -61,8 +61,8 @@ function cm_reduce_dlms24!(matrix::SparseMatrix, psetvec::Vector{Int};
                     end
 
                     if found_s
-                        gamma1 = matrix[i,j]
-                        gamma2 = matrix[i,s]
+                        gamma1 = @inbounds matrix[i,j]
+                        gamma2 = @inbounds matrix[i,s]
                         sparse_add_column!(matrix,j,s,-gamma1,gamma2)
                         if returnbasis
                             sparse_add_column!(basis,j,s,-gamma1,gamma2)
@@ -127,7 +127,7 @@ function cm_reduce_dhl26!(matrix::SparseMatrix, psetvec::Vector{Int})
         jlow = sparse_low(matrix,j)
         if jlow > 0
             for i = jlow:-1:1
-                if !(matrix[i,j] == tzero)
+                if !(@inbounds(matrix[i,j]) == tzero)
                     found_s = false
                     if length(matrix.rows[i]) > 0
                         s = 0  # Needed to make it accessible outside for loop
@@ -141,8 +141,8 @@ function cm_reduce_dhl26!(matrix::SparseMatrix, psetvec::Vector{Int})
                     end
 
                     if found_s
-                        gamma1 = matrix[i,j]
-                        gamma2 = matrix[i,s]
+                        gamma1 = @inbounds matrix[i,j]
+                        gamma2 = @inbounds matrix[i,s]
                         sparse_add_column!(matrix,j,s,-gamma1,gamma2)
                     end
                 end

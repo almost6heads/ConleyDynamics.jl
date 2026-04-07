@@ -126,8 +126,8 @@ function ph_reduce!(matrix::SparseMatrix; returnbasis::Bool=false)
                 partofinterval[j] = true
             else
                 s = lowtocolumn[columnlow]
-                gamma1 = matrix[columnlow,j]
-                gamma2 = matrix[columnlow,s]
+                gamma1 = @inbounds matrix[columnlow,j]
+                gamma2 = @inbounds matrix[columnlow,s]
                 sparse_add_column!(matrix,j,s,-gamma1,gamma2)
                 if returnbasis
                     sparse_add_column!(basis,j,s,-gamma1,gamma2)
