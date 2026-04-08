@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.7.2 (April 8, 2026)
+
+Maintenance release: Bound checking speedup and added error message to plot functions
+
 ## v0.7.1 (April 7, 2026)
 
 Maintenance release: Added index bounds checking to SparseMatrix access functions
