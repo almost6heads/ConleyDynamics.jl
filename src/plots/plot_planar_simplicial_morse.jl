@@ -47,6 +47,11 @@ function plot_planar_simplicial_morse(sc::LefschetzComplex,
     # Create an image of a planar simplicial complex
     #
 
+    # Check that the filename has a valid extension
+    if !(lowercase(fname[end-3:end]) in [".png", ".pdf", ".eps", ".svg"])
+        error("The filename must have one of the following extensions: .png, .pdf, .eps, .svg")
+    end
+
     # Create proper coordinates
     
     cx0 = minimum([c[1] for c in coords])
