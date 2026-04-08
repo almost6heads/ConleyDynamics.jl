@@ -37,7 +37,7 @@ end
 
 Get the sparse matrix entry at location `(ri,ci)`.
 """
-@inline function Base.getindex(matrix::SparseMatrix, ri::Int, ci::Int)
+Base.@propagate_inbounds function Base.getindex(matrix::SparseMatrix, ri::Int, ci::Int)
     return sparse_get_entry(matrix, ri, ci)
 end
 
@@ -160,7 +160,7 @@ end
 
 Set the sparse matrix entry at location `(ri,ci)` to `val`.
 """
-@inline function Base.setindex!(matrix::SparseMatrix, val, ri::Int, ci::Int)
+Base.@propagate_inbounds function Base.setindex!(matrix::SparseMatrix, val, ri::Int, ci::Int)
     sparse_set_entry!(matrix, ri, ci, val)
     return
 end
