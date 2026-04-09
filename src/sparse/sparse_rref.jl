@@ -39,10 +39,10 @@ function sparse_rref!(A::SparseMatrix)
         # Find pivot row: first non-zero entry in this column at or below pivot_row
 
         nonzero_col = A.columns[col]
-        pivot = findfirst(t -> t >= pivot_row, nonzero_col)
+        pivot = searchsortedfirst(nonzero_col, pivot_row)
 
         # No pivot in this column — move to next column
-        if pivot === nothing
+        if pivot > length(nonzero_col)
             continue
         end
 

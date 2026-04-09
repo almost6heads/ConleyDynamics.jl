@@ -15,11 +15,11 @@ function sparse_get_entry(matrix::SparseMatrix, ri::Int, ci::Int)
 
     # Find the location of (ri,ci) in column ci
 
-    index_in_col = findfirst(x -> x==ri, matrix.columns[ci])
+    index_in_col = searchsortedfirst(matrix.columns[ci], ri)
 
     # Determine the value and return it
 
-    if index_in_col == nothing
+    if index_in_col > length(matrix.columns[ci]) || matrix.columns[ci][index_in_col] != ri
         return matrix.zero
     else
         return matrix.entries[ci][index_in_col]
@@ -47,35 +47,36 @@ function sparse_set_entry!(matrix::SparseMatrix, ri::Int, ci::Int, val)
 
     # Determine the location of ri in the column ci, if it exists
 
-    index_in_col = findfirst(x -> x==ri, matrix.columns[ci])
+    index_in_col = searchsortedfirst(matrix.columns[ci], ri)
+    found = index_in_col <= length(matrix.columns[ci]) && matrix.columns[ci][index_in_col] == ri
 
     # Incorporate the value into the matrix
 
     if val == matrix.zero
         # If the entry was present, it has to be removed
-        if !(index_in_col == nothing)
+        if found
             sparse_remove!(matrix, ri, ci)
         end
-    elseif !(index_in_col == nothing)
+    elseif found
         # Entry present, just needs to be updated
         matrix.entries[ci][index_in_col] = val
     else
         # Insert ci into row ri
-        insert_index_row = findfirst(x -> x>ci, matrix.rows[ri])
-        if insert_index_row == nothing
+        insert_index_row = searchsortedfirst(matrix.rows[ri], ci)
+        if insert_index_row > length(matrix.rows[ri])
             push!(matrix.rows[ri], ci)
         else
             insert!(matrix.rows[ri], insert_index_row, ci)
         end
 
         # Insert ri into column ci and add the new entry
-        insert_index_col = findfirst(x -> x>ri, matrix.columns[ci])
-        if insert_index_col == nothing
+        # index_in_col is already the correct insertion point
+        if index_in_col > length(matrix.columns[ci])
             push!(matrix.columns[ci], ri)
             push!(matrix.entries[ci], val)
         else
-            insert!(matrix.columns[ci], insert_index_col, ri)
-            insert!(matrix.entries[ci], insert_index_col, val)
+            insert!(matrix.columns[ci], index_in_col, ri)
+            insert!(matrix.entries[ci], index_in_col, val)
         end
     end
     return
@@ -97,7 +98,8 @@ function sparse_set_entry!(matrix::SparseMatrix{Int}, ri::Int, ci::Int, val)
 
     # Determine the location of ri in the column ci, if it exists
 
-    index_in_col = findfirst(x -> x==ri, matrix.columns[ci])
+    index_in_col = searchsortedfirst(matrix.columns[ci], ri)
+    found = index_in_col <= length(matrix.columns[ci]) && matrix.columns[ci][index_in_col] == ri
 
     # Incorporate the value into the matrix
 
@@ -109,29 +111,29 @@ function sparse_set_entry!(matrix::SparseMatrix{Int}, ri::Int, ci::Int, val)
 
     if val == matrix.zero
         # If the entry was present, it has to be removed
-        if !(index_in_col == nothing)
+        if found
             sparse_remove!(matrix, ri, ci)
         end
-    elseif !(index_in_col == nothing)
+    elseif found
         # Entry present, just needs to be updated
         matrix.entries[ci][index_in_col] = val
     else
         # Insert ci into row ri
-        insert_index_row = findfirst(x -> x>ci, matrix.rows[ri])
-        if insert_index_row == nothing
+        insert_index_row = searchsortedfirst(matrix.rows[ri], ci)
+        if insert_index_row > length(matrix.rows[ri])
             push!(matrix.rows[ri], ci)
         else
             insert!(matrix.rows[ri], insert_index_row, ci)
         end
 
         # Insert ri into column ci and add the new entry
-        insert_index_col = findfirst(x -> x>ri, matrix.columns[ci])
-        if insert_index_col == nothing
+        # index_in_col is already the correct insertion point
+        if index_in_col > length(matrix.columns[ci])
             push!(matrix.columns[ci], ri)
             push!(matrix.entries[ci], val)
         else
-            insert!(matrix.columns[ci], insert_index_col, ri)
-            insert!(matrix.entries[ci], insert_index_col, val)
+            insert!(matrix.columns[ci], index_in_col, ri)
+            insert!(matrix.entries[ci], index_in_col, val)
         end
     end
     return

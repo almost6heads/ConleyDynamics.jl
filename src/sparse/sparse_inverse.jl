@@ -35,8 +35,8 @@ function sparse_inverse(matrix::SparseMatrix)
         # Make sure there is a nonzero entry at (m,m)
 
         if mwork[m,m] == tzero
-            ki = findfirst(x -> x>m, matrix.rows[m])
-            if ki == nothing
+            ki = searchsortedfirst(matrix.rows[m], m+1)
+            if ki > length(matrix.rows[m])
                 error("The matrix is not invertible!")
             end
             k = matrix.rows[m][ki]
