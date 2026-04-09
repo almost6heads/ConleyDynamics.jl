@@ -55,7 +55,7 @@ function sparse_basis_kernel(A::SparseMatrix)
         n = A.ncol
         for k = 1:n
             bvec = sparse_zero(n, 1, p=A.char)
-            bvec[k,1] = A.one
+            @inbounds bvec[k,1] = A.one
             push!(basisvecs, bvec)
         end
         return basisvecs
@@ -83,9 +83,9 @@ function sparse_basis_kernel(A::SparseMatrix)
 
     for kc in kernelcols
         bvec = sparse_zero(n, 1, p=AA.char)
-        bvec[kc,1] = AA.one
+        @inbounds bvec[kc,1] = AA.one
         for j = 1:npivot
-            bvec[pivotcols[j],1] = -AA[j,kc]
+            @inbounds bvec[pivotcols[j],1] = -AA[j,kc]
         end
         push!(basisvecs, bvec)
     end

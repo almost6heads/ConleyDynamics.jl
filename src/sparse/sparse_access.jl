@@ -51,12 +51,6 @@ function sparse_set_entry!(matrix::SparseMatrix, ri::Int, ci::Int, val)
     # Set matrix[ri,ci] = val
     #
 
-    @boundscheck begin
-        if !(1 <= ri <= matrix.nrow) || !(1 <= ci <= matrix.ncol)
-            throw(BoundsError(matrix, (ri, ci)))
-        end
-    end
-
     # Determine the location of ri in the column ci, if it exists
 
     index_in_col = findfirst(x -> x==ri, matrix.columns[ci])
@@ -107,12 +101,6 @@ function sparse_set_entry!(matrix::SparseMatrix{Int}, ri::Int, ci::Int, val)
     # Set matrix[ri,ci] = val
     #
 
-    @boundscheck begin
-        if !(1 <= ri <= matrix.nrow) || !(1 <= ci <= matrix.ncol)
-            throw(BoundsError(matrix, (ri, ci)))
-        end
-    end
-
     # Determine the location of ri in the column ci, if it exists
 
     index_in_col = findfirst(x -> x==ri, matrix.columns[ci])
@@ -161,6 +149,11 @@ end
 Set the sparse matrix entry at location `(ri,ci)` to `val`.
 """
 Base.@propagate_inbounds function Base.setindex!(matrix::SparseMatrix, val, ri::Int, ci::Int)
+    @boundscheck begin
+        if !(1 <= ri <= matrix.nrow) || !(1 <= ci <= matrix.ncol)
+            throw(BoundsError(matrix, (ri, ci)))
+        end
+    end
     sparse_set_entry!(matrix, ri, ci, val)
     return
 end
