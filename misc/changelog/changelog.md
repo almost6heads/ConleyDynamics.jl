@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.7.3 (April 9, 2026)
+
+Another maintenance release: Speed improvements
+
 ## v0.7.2 (April 8, 2026)
 
 Maintenance release: Bound checking speedup and added error message to plot functions
