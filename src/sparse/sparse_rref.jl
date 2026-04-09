@@ -55,16 +55,16 @@ function sparse_rref!(A::SparseMatrix)
         end
 
         # Scale the pivot row so the pivot element becomes 1
-        fac = scalar_inverse(@inbounds(A[pivot_row,col]), p)
+        fac = scalar_inverse(A[pivot_row,col], p)
         for j in A.rows[pivot_row]
-            @inbounds A[pivot_row,j] = scalar_multiply(@inbounds(A[pivot_row,j]), fac, p)
+            A[pivot_row,j] = scalar_multiply(A[pivot_row,j], fac, p)
         end
 
         # Eliminate all other entries in this column (above and below)
         nonzero_col = copy(A.columns[col])
         for row in nonzero_col
             if row != pivot_row
-                sparse_add_row!(A, row, pivot_row, -@inbounds(A[row,col]), tone)
+                sparse_add_row!(A, row, pivot_row, -A[row,col], tone)
             end
         end
 
@@ -144,7 +144,7 @@ function sparse_is_rref(A::SparseMatrix)
 
     # Make sure the pivots are 1
     for k = 1:length(nzrows)-1
-        if !(@inbounds(A[k,minimum(A.rows[k])]) == A.one)
+        if !(A[k,minimum(A.rows[k])] == A.one)
             return false
         end
     end

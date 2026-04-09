@@ -29,7 +29,7 @@ function sparse_show(sm::SparseMatrix)
 
     for m=1:nrows
         pstr = ""
-        @inbounds for k=1:ncols
+        for k=1:ncols
             if sm[m,k] == sm.zero
                 estr = "."
             else
@@ -107,7 +107,7 @@ function sparse_show(sm::SparseMatrix, rlabels::Vector{String}, clabels::Vector{
     for m=1:nrows
         nd   = maxl - length(rlabels[m])
         pstr = repeat(" ",nd) * rlabels[m] * "┆"
-        @inbounds for k=1:ncols
+        for k=1:ncols
             if sm[m,k] == sm.zero
                 estr = "."
             else
@@ -204,7 +204,7 @@ function Base.show(io::IO, ::MIME"text/plain", sm::SparseMatrix)
     end
     for m=1:nrows
         pstr = ""
-        @inbounds for k=1:ncols
+        for k=1:ncols
             if sm[m,k] == sm.zero
                 estr = "."
             else

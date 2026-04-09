@@ -26,7 +26,7 @@ function sparse_scale(sfac, A::SparseMatrix)
     tzero = A.zero
 
     for m=1:A.ncol
-        @inbounds for k in A.columns[m]
+        for k in A.columns[m]
             newentry = sfac * A[k,m]
             if !(newentry == tzero)
                 push!(r,k)

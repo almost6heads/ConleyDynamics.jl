@@ -34,7 +34,7 @@ function sparse_inverse(matrix::SparseMatrix)
 
         # Make sure there is a nonzero entry at (m,m)
 
-        if @inbounds(mwork[m,m]) == tzero
+        if mwork[m,m] == tzero
             ki = findfirst(x -> x>m, matrix.rows[m])
             if ki == nothing
                 error("The matrix is not invertible!")
@@ -50,13 +50,13 @@ function sparse_inverse(matrix::SparseMatrix)
 
         # Scale the m-th column so that mwork[m,m]= 1
 
-        if !(@inbounds(mwork[m,m]) == tone)
-            lambdainv = scalar_inverse(@inbounds(mwork[m,m]), p)
+        if !(mwork[m,m] == tone)
+            lambdainv = scalar_inverse(mwork[m,m], p)
             for k in mwork.columns[m]
-                @inbounds mwork[k,m] = @inbounds(mwork[k,m]) * lambdainv
+                mwork[k,m] = mwork[k,m] * lambdainv
             end
             for k in minv.columns[m]
-                @inbounds minv[k,m]  = @inbounds(minv[k,m])  * lambdainv
+                minv[k,m]  = minv[k,m]  * lambdainv
             end
         end
 
@@ -65,7 +65,7 @@ function sparse_inverse(matrix::SparseMatrix)
         nzentries = setdiff(mwork.rows[m], [m])
 
         for k in nzentries
-            lambda = @inbounds mwork[m,k]
+            lambda = mwork[m,k]
             sparse_add_column!(mwork, k, m, -lambda, tone)
             sparse_add_column!(minv,  k, m, -lambda, tone)
         end
