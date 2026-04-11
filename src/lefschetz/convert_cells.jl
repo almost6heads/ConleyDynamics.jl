@@ -1,4 +1,6 @@
-export convert_cells, convert_cellsubsets
+export convert_cells
+export convert_cellsubsets
+export cellsubsets_to_cells
 
 """
     convert_cells(lc::LefschetzComplex, cl::Vector{Int})
@@ -72,5 +74,38 @@ function convert_cellsubsets(lc::LefschetzComplex, clsub::Vector{Vector{String}}
     end
 
     return newclsub
+end
+
+"""
+    cellsubsets_to_cells(lc::LefschetzComplex, css::CellSubsets)
+
+Convert the cell subsets `css` into a vector of cells, by simply
+taking the union of all subsets. The cells are returned in ordered
+form, based on their index form in `lc`.
+"""
+function cellsubsets_to_cells(lc::LefschetzComplex, css::CellSubsets)
+    #
+    # Convert cell subsets to a vector of cells
+    #
+
+    # Convert to index form
+
+    if css isa Vector{Vector{Int}}
+        cssI = deepcopy(css)
+    else
+        cssI = convert_cellsubsets(lc, css)
+    end
+
+    # Merge the sets
+
+    csI = sort(unique(reduce(vcat, cssI)))
+
+    # Return the result
+
+    if css isa Vector{Vector{Int}}
+        return csI
+    else
+        return convert_cells(lc, csI)
+    end
 end
 

@@ -91,6 +91,8 @@ include("./mvf/mvf_is_acyclic.jl")
 include("./mvf/mvf_length.jl")
 include("./mvf/mvf_critical.jl")
 include("./mvf/mvf_regular.jl")
+include("./mvf/mvf_forward_orbit.jl")
+include("./mvf/mvf_neighborhood.jl")
 
 include("./sparse/sparse_basic_functions.jl")
 include("./sparse/sparse_from_lists.jl")

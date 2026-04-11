@@ -36,6 +36,7 @@ get_cubical_coords
 ```@docs
 convert_cells
 convert_cellsubsets
+cellsubsets_to_cells
 cellsubset_bounding_box
 cellsubset_distance
 cellsubset_planar_area

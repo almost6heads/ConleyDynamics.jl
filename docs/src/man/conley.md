@@ -112,6 +112,35 @@ fields on Lefschetz complexes:
   A Lefschetz complex `lc`, as well as a vector `mvfbase` that defines
   the dynamical transitions in ``\mathcal{D}``. The latter has to have
   type `Vector{Vector{Int}}` or `Vector{Vector{String}}`.
+* The function [`mvf_forward_orbit`](@ref) determines the forward
+  orbit of a given cell or set of cells, with respect to an
+  underlying multivector field. More precisely, it returns all
+  multivectors that can be reached from the source cells, and critical
+  cells in the forward orbit are included as singletons. This function
+  has four different signatures:
+  1. `mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets, cs::Cells)`
+  2. `mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets, c::Cell)`
+  3. `mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets, cs::Cells, n::Int)`
+  4. `mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets, c::Cell, n::Int)`
+  In all cases, the underlying Lefschetz complex is `lc`, and `mvf`
+  denotes the multivector field. In the first and third case, `cs` 
+  is a vector of starting cells, while in the second and fourth case
+  the orbit starts only at a single cell `c`. Finally, the first 
+  two methods determine the complete forward orbit, while the last two
+  only consider at most `n` transitions. While the forward orbit is
+  given as a collection of multivectors, this can easily be converted to
+  a collection of cells using [`cellsubsets_to_cells`](@ref).
+* The function [`mvf_backward_orbit`](@ref) determines the backward
+  orbit of a given cell or set of cells, i.e., it finds all cells which
+  are transported in forward time to the given source cells. This function
+  has also four signatures, completely analogous to the previous one.
+* The function [`mvf_neighborhood`](@ref) computes a multivector
+  neighborhood of a cell or set of cells. It returns all multivectors
+  of the given multivector field that can be reached from the source
+  cells in at most `n` steps forward or backward time. In other words,
+  it computes a neighborhood of the multivectors containing the source
+  cells with a thickness of `n` layers of multivectors. Critical cells
+  in this neighborhood will be returned as singletons.
 * The function [`mvf_length`](@ref) returns the number of all
   multivectors of a given multivector field. This not only includes
   the multivectors explicitly listed in the argument vector `mvf`,

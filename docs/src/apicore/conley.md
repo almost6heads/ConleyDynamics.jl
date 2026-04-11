@@ -8,6 +8,9 @@ mvf_length
 mvf_critical
 mvf_regular
 mvf_is_acyclic
+mvf_forward_orbit
+mvf_backward_orbit
+mvf_neighborhood
 create_mvf_hull
 create_planar_mvf
 create_spatial_mvf

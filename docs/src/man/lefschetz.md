@@ -968,6 +968,11 @@ integer cell indices or by cell labels:
   integer to label format, or vice versa.
 - [`convert_cellsubsets`](@ref) converts a vector of cell
   subsets from integer to label format, and vice versa.
+- [`cellsubsets_to_cells`](@ref) converts a given vector of
+  cell subsets into a vector of cells, by simply taking the
+  union of all subsets. The cells are returned in ordered
+  form, based on their index form in the underlying Lefschetz
+  complex.
 - [`cellsubset_bounding_box`](@ref) computes the bounding box
   for a cell subset, provided coordinates for the vertices
   of the Lefschetz complex are provided. The bounding box is
