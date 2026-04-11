@@ -225,9 +225,11 @@ end
 Create an image of a planar simplicial complex with Morse sets from an
 `EuclideanComplex`.
 
-This method extracts the vertex coordinates from the embedded coordinates
-stored in `ec` and delegates to the standard plotting method. All keyword
-arguments are forwarded unchanged.
+The vertex positions for every cell are taken directly from `ec.coords[k]`,
+which stores the complete vertex coordinates for each cell `k`. This means
+the function works correctly even when some vertices are no longer present
+as cells in the complex (e.g. after subcomplex creation), as long as the
+higher-dimensional cells still carry their coordinates.
 """
 function plot_planar_simplicial_morse(ec::EuclideanComplex,
                                       fname::String,
@@ -239,11 +241,148 @@ function plot_planar_simplicial_morse(ec::EuclideanComplex,
                                       pv::Bool=false,
                                       ci::Bool=false)
     #
-    # Delegate to the LefschetzComplex method after extracting vertex coords
+    # Create an image of a planar simplicial complex with Morse sets from an
+    # EuclideanComplex, using the vertex coordinates stored directly in
+    # ec.coords[k] for each cell k.
     #
-    vertex_coords = [ec.coords[k][1] for k in 1:ec.ncells if ec.dimensions[k] == 0]
-    lc = euclidean_to_lefschetz(ec)
-    plot_planar_simplicial_morse(lc, vertex_coords, fname, morsesets;
-                                 hfac=hfac, vfac=vfac, sfac=sfac,
-                                 pdim=pdim, pv=pv, ci=ci)
+
+    # Check that the filename has a valid extension
+    if !(lowercase(fname[end-3:end]) in [".png", ".pdf", ".eps", ".svg"])
+        error("The filename must have one of the following extensions: .png, .pdf, .eps, .svg")
+    end
+
+    # Collect all vertex positions from ec.coords across all cells
+    all_coords = [c for k in 1:ec.ncells for c in ec.coords[k]]
+
+    cx0 = minimum(c[1] for c in all_coords)
+    cx1 = maximum(c[1] for c in all_coords)
+    cy0 = minimum(c[2] for c in all_coords)
+    cy1 = maximum(c[2] for c in all_coords)
+
+    if iszero(sfac)
+        sfac = 800.0 / maximum([1, cx1-cx0, cy1-cy0])
+    end
+
+    figw  = Int(round((cx1 - cx0) * hfac * sfac))
+    figh  = Int(round((cy1 - cy0) * vfac * sfac))
+    figdx = (cx1 - cx0) * (hfac-1.0) * 0.5 * sfac
+    figdy = (cy1 - cy0) * (vfac-1.0) * 0.5 * sfac
+
+    # For each cell, build a list of normalized Points from ec.coords[k]
+    cell_points = [[Point(figdx + (c[1]-cx0)*(figw-2.0*figdx)/(cx1-cx0),
+                          figdy + (cy1-c[2])*(figh-2.0*figdy)/(cy1-cy0))
+                    for c in ec.coords[k]]
+                   for k in 1:ec.ncells]
+
+    # Create the image
+
+    Drawing(figw, figh, fname)
+    background("white")
+    sethue("black")
+
+    # Plot the simplicial complex
+
+    for k = ec.ncells:-1:1
+        cdim = ec.dimensions[k]
+        if (cdim == 0) && pdim[1]
+            setcolor("royalblue4")
+            setopacity(0.4)
+            circle(cell_points[k][1], 5, action = :fill)
+        elseif (cdim == 1) && pdim[2]
+            setcolor("royalblue3")
+            setopacity(0.4)
+            line(cell_points[k][1], cell_points[k][2])
+            strokepath()
+        elseif (cdim == 2) && pdim[3]
+            setcolor("steelblue1")
+            setopacity(0.4)
+            poly([cell_points[k][1], cell_points[k][2], cell_points[k][3]],
+                 action = :fill; close=true)
+        end
+    end
+
+    # Plot the Morse sets
+
+    if morsesets isa Vector{Vector{Int}}
+        msI = morsesets
+    else
+        msI = convert_cellsubsets(ec, morsesets)
+    end
+
+    # Color code Morse sets if 'ci' is flagged
+    if ci == true
+        col1 = colorant"rgb(51,34,136)"     #color-blind safe 'indigo'
+        col2 = colorant"rgb(221,204,119)"   #color-blind safe 'tan'
+        col3 = colorant"rgb(17,119,51)"     #color-blind safe 'moss green'
+        col4 = colorant"rgb(204,102,119)"  #color-blind safe 'salmon'
+        col5 = colorant"rgb(135,34,85)"     #color-blind safe 'maroon'
+        col6 = colorant"rgb(153,153,51)"    #color-blind safe 'asparagus'
+        c1 = [1,0,0]  #asym stable
+        c2 = [0,1,0]  #1d unstable
+        c3 = [0,0,1]  ### unstable
+        c4 = [1,1,0]  ##  stable periodic
+        c5 = [0,1,1]  # unstable periodic
+
+        # Pass the single Morse set `msI[m]`
+        for m in eachindex(msI)
+            current_ci = conley_index(ec, msI[m])
+
+            if (current_ci == c1)
+                setcolor(col1)
+            elseif (current_ci == c2)
+                setcolor(col2)
+            elseif (current_ci == c3)
+                setcolor(col3)
+            elseif (current_ci == c4)
+                setcolor(col4)
+            elseif (current_ci == c5)
+                setcolor(col5)
+            else
+                setcolor(col6)
+            end
+
+            setopacity(0.6)
+            for k in msI[m]
+                cdim = ec.dimensions[k]
+                if (cdim == 0) && pdim[1]
+                    circle(cell_points[k][1], 5, action = :fill)
+                elseif (cdim == 1) && pdim[2]
+                    line(cell_points[k][1], cell_points[k][2])
+                    strokepath()
+                elseif (cdim == 2) && pdim[3]
+                    poly([cell_points[k][1], cell_points[k][2], cell_points[k][3]],
+                         action = :fill; close=true)
+                end
+            end
+        end
+
+    else # if ci == false
+        col1 = colorant"royalblue4"
+        col2 = colorant"royalblue3"
+        col3 = colorant"steelblue1"
+        cols = distinguishable_colors(length(msI), [col1,col2,col3], dropseed=true)
+
+        for m in eachindex(msI)
+            setcolor(cols[m])
+            setopacity(0.6)
+            for k in msI[m]
+                cdim = ec.dimensions[k]
+                if (cdim == 0) && pdim[1]
+                    circle(cell_points[k][1], 5, action = :fill)
+                elseif (cdim == 1) && pdim[2]
+                    line(cell_points[k][1], cell_points[k][2])
+                    strokepath()
+                elseif (cdim == 2) && pdim[3]
+                    poly([cell_points[k][1], cell_points[k][2], cell_points[k][3]],
+                         action = :fill; close=true)
+                end
+            end
+        end
+    end
+
+    # Finish the drawing, and preview if desired
+    finish()
+    if pv
+        preview()
+    end
 end

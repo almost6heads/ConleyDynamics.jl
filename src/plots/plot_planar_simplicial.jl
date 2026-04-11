@@ -244,11 +244,13 @@ end
                            fname::String;
                            kwargs...)
 
-Create an image of a planar simplicial complex from a `EuclideanComplex`.
+Create an image of a planar simplicial complex from an `EuclideanComplex`.
 
-This method extracts the vertex coordinates from the embedded coordinates
-stored in `ec` and delegates to the standard plotting method. All keyword
-arguments are forwarded unchanged.
+The vertex positions for every cell are taken directly from `ec.coords[k]`,
+which stores the complete vertex coordinates for each cell `k`. This means
+the function works correctly even when some vertices are no longer present
+as cells in the complex (e.g. after subcomplex creation), as long as the
+higher-dimensional cells still carry their coordinates.
 """
 function plot_planar_simplicial(ec::EuclideanComplex,
                                 fname::String;
@@ -261,11 +263,151 @@ function plot_planar_simplicial(ec::EuclideanComplex,
                                 pdim::Vector{Bool}=[true,true,true],
                                 pv::Bool=false)
     #
-    # Delegate to the LefschetzComplex method after extracting vertex coords
+    # Create an image of a planar simplicial complex from an EuclideanComplex,
+    # using the vertex coordinates stored directly in ec.coords[k] for each cell k.
     #
-    vertex_coords = [ec.coords[k][1] for k in 1:ec.ncells if ec.dimensions[k] == 0]
-    lc = euclidean_to_lefschetz(ec)
-    plot_planar_simplicial(lc, vertex_coords, fname;
-                           mvf=mvf, labeldir=labeldir, labeldis=labeldis,
-                           hfac=hfac, vfac=vfac, sfac=sfac, pdim=pdim, pv=pv)
+
+    # Check that the filename has a valid extension
+    if !(lowercase(fname[end-3:end]) in [".png", ".pdf", ".eps", ".svg"])
+        error("The filename must have one of the following extensions: .png, .pdf, .eps, .svg")
+    end
+
+    # Collect all vertex positions from ec.coords across all cells
+    all_coords = [c for k in 1:ec.ncells for c in ec.coords[k]]
+
+    cx0 = minimum(c[1] for c in all_coords)
+    cx1 = maximum(c[1] for c in all_coords)
+    cy0 = minimum(c[2] for c in all_coords)
+    cy1 = maximum(c[2] for c in all_coords)
+
+    if iszero(sfac)
+        sfac = 800.0 / maximum([1, cx1-cx0, cy1-cy0])
+    end
+
+    figw  = Int(round((cx1 - cx0) * hfac * sfac))
+    figh  = Int(round((cy1 - cy0) * vfac * sfac))
+    figdx = (cx1 - cx0) * (hfac-1.0) * 0.5 * sfac
+    figdy = (cy1 - cy0) * (vfac-1.0) * 0.5 * sfac
+
+    # For each cell, build a list of normalized Points from ec.coords[k]
+    cell_points = [[Point(figdx + (c[1]-cx0)*(figw-2.0*figdx)/(cx1-cx0),
+                          figdy + (cy1-c[2])*(figh-2.0*figdy)/(cy1-cy0))
+                    for c in ec.coords[k]]
+                   for k in 1:ec.ncells]
+
+    # If necessary prepare for the Forman vector field plot
+
+    if length(mvf) > 0
+
+        # First make sure that the multivector field has type Int
+
+        if typeof(mvf[1][1]) == String
+            mvfI = convert_cellsubsets(ec, mvf)
+        else
+            mvfI = mvf
+        end
+
+        # Find the barycenters
+
+        barycs = Vector{Point}()
+        for k = 1:ec.ncells
+            cdim = ec.dimensions[k]
+            if cdim == 0
+                push!(barycs, cell_points[k][1])
+            elseif cdim == 1
+                push!(barycs, midpoint(cell_points[k][1], cell_points[k][2]))
+            elseif cdim == 2
+                push!(barycs, trianglecenter(cell_points[k][1], cell_points[k][2], cell_points[k][3]))
+            end
+        end
+
+        # Preprocess the Forman vector field
+
+        invector = fill(false, ec.ncells)
+        for k = 1:length(mvfI)
+            if !(length(mvfI[k]) == 2)
+                error("The multivector field is not a Forman vector field!")
+            end
+            invector[mvfI[k][1]] = true
+            invector[mvfI[k][2]] = true
+        end
+
+        critical = Vector{Int}()
+        for k = 1:ec.ncells
+            if invector[k] == false
+                push!(critical, k)
+            end
+        end
+    end
+
+    # Create the image
+
+    Drawing(figw, figh, fname)
+    background("white")
+    sethue("black")
+
+    # Plot the simplicial complex
+
+    for k = ec.ncells:-1:1
+        cdim = ec.dimensions[k]
+        if (cdim == 0) && pdim[1]
+            setcolor("royalblue4")
+            circle(cell_points[k][1], 5, action = :fill)
+        elseif (cdim == 1) && pdim[2]
+            setcolor("royalblue3")
+            line(cell_points[k][1], cell_points[k][2])
+            strokepath()
+        elseif (cdim == 2) && pdim[3]
+            setcolor("steelblue1")
+            poly([cell_points[k][1], cell_points[k][2], cell_points[k][3]],
+                 action = :fill; close=true)
+        end
+    end
+
+    if length(mvf) > 0
+
+        # Plot the critical cells
+
+        for m = 1:length(critical)
+            k = critical[m]
+            setcolor("red3")
+            circle(barycs[k], 5, action = :fill)
+        end
+
+        # Plot the arrows
+
+        for m = 1:length(mvf)
+            k1 = mvfI[m][1]
+            k2 = mvfI[m][2]
+            cdim1 = ec.dimensions[k1]
+            cdim2 = ec.dimensions[k2]
+            setcolor("red3")
+            if cdim1 < cdim2
+                arrow(barycs[k1], barycs[k2], linewidth=3, arrowheadlength=10)
+            elseif cdim1 > cdim2
+                arrow(barycs[k2], barycs[k1], linewidth=3, arrowheadlength=10)
+            else
+                error("The multivector field is not a Forman vector field!")
+            end
+        end
+    end
+
+    # Display the vertex labels
+
+    if length(labeldir) > 0
+        setcolor("black")
+        for k = 1:ec.ncells
+            if ec.dimensions[k] == 0
+                label(ec.labels[k], pi*(4.0-labeldir[k])/2.0, cell_points[k][1],
+                      offset=labeldis)
+            end
+        end
+    end
+
+    # Finish the drawing, and preview if desired
+
+    finish()
+    if pv
+        preview()
+    end
 end
