@@ -13,6 +13,12 @@ description, etc.
 
 Release notes:
 
+## v0.7.4 (April 10, 2026)
+
+- Added `mvf_forward_orbit` and `mvf_backward_orbit`
+- Added `mvf_neighborhood`
+- Added `cellsubsets_to_cells`
+
 ## v0.7.3 (April 9, 2026)
 
 Another maintenance release: Speed improvements
