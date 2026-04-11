@@ -747,6 +747,50 @@ of this section.
 
 ![A randomly perturbed cubical complex](img/lefschetzex6.png)
 
+## Euclidean Complexes
+
+All of the above-described Lefschetz complex types were abstract in the
+sense that there is no actual geometric realization associated with them.
+For certain applications, however, such as plotting a complex or using
+a complex for the analysis of planar and spatial ordinary differential
+equations, the complex has to be *embedded* in a suitable *Euclidean
+space*. One can usually achieve such an embedding by providing coordinates
+for each of the vertices of the complex, which then anchor the complex in
+the Euclidean space. This approach works extremely well for simplicial
+and cubical complexes, since both of these complex types are *closed*
+in the sense that the geometric realization of any higher-dimensional
+cell can be inferred from the vertex locations.
+
+Unfortunately, however, we will encounter situations in which one would
+like to use subcomplexes of simplicial or cubical complexes, which are
+no longer closed in the above sense. For such a complex it is generally
+not possible to deduce the location of, for example, an edge, by looking
+at the location of its vertices -- since one or both vertices might be
+missing from the complex. As of version `v0.8.0`, the package
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
+provides a second complex datatype to address this issue:
+
+```@docs; canonical=false
+EuclideanComplex
+```
+
+This complex struct has the same fields as a Lefschetz complex, with 
+completely analogous meanings. In addition, however, it includes the
+field `coords::Vector{Vector{Vector{Float64}}}`. This vector contains
+embedding information for every cell of the complex, by providing the
+locations of all determining vertices -- regardless of whether they
+are still contained in the complex or not.
+
+Both [`LefschetzComplex`](@ref) and [`EuclideanComplex`](@ref) are
+subtypes of the new abstract type [`AbstractComplex`](@ref). All
+topology, homology, and dynamics functions accept any
+[`AbstractComplex`](@ref). However, if one of these functions
+manipulates the collection of cells, the coordinate vector in a
+[`EuclideanComplex`](@ref) is automatically updated as well.
+Finally, it is possible to transition between the two complex types
+using the functions [`lefschetz_to_euclidean`](@ref) and
+[`euclidean_to_lefschetz`](@ref).
+
 ## Lefschetz Complex Operations
 
 Once a Lefschetz complex has been created, there are a number
@@ -950,13 +994,20 @@ dealing with them:
   of all these connected components, as ``k`` ranges from ``1`` to ``N``,
   forms the multivector field `mvf` that is returned by the function.
 
-There is also one *helper function* which can sometimes 
-be useful:
+There are also a few *helper functions* which implement various
+conversion tasks:
 
 - [`lefschetz_gfp_conversion`](@ref) changes the base field
   of the given Lefschetz complex from the rationals
   ``\mathbb{Q}`` to a finite field ``GF(p)``. Note that it
   is not possible to perform the reverse conversion.
+- [`euclidean_to_lefschetz`](@ref) converts a [`EuclideanComplex`](@ref)
+  to a [`LefschetzComplex`](@ref) by removing the coordinate field.
+- [`lefschetz_to_euclidean`](@ref) converts a [`LefschetzComplex`](@ref)
+  to a [`EuclideanComplex`](@ref) by adding a user-provided coordinate
+  field.
+- [`rescale_coords`](@ref) produces a new [`EuclideanComplex`](@ref)
+  from an existing one by rescaling the coordinates.
 
 In addition,
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)

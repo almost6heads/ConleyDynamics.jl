@@ -62,5 +62,8 @@ lefschetz_filtration_mvf
 
 ```@docs
 lefschetz_gfp_conversion
+lefschetz_to_euclidean
+euclidean_to_lefschetz
+rescale_coords
 ```
 

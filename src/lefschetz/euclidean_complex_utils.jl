@@ -3,7 +3,7 @@ export euclidean_to_lefschetz, lefschetz_to_euclidean, rescale_coords
 """
     euclidean_to_lefschetz(ec::EuclideanComplex) -> LefschetzComplex
 
-Convert an `EuclideanComplex` to a `LefschetzComplex` by stripping the
+Convert a `EuclideanComplex` to a `LefschetzComplex` by stripping the
 embedded coordinates. All other fields are shared unchanged.
 """
 function euclidean_to_lefschetz(ec::EuclideanComplex)
@@ -65,7 +65,7 @@ end
     rescale_coords(ec::EuclideanComplex,
                    a::Vector{<:Real}, b::Vector{<:Real}) -> EuclideanComplex
 
-Rescale the coordinates of an `EuclideanComplex` so that component `j`
+Rescale the coordinates of a `EuclideanComplex` so that component `j`
 maps from its current range `[min_j, max_j]` to `[a[j], b[j]]`.
 
 `a` and `b` must be vectors of length equal to the spatial dimension
@@ -161,3 +161,4 @@ function rescale_coords(ec::EuclideanComplex, a::Real, b::Real)
 
     return rescale_coords(ec, fill(Float64(a), d), fill(Float64(b), d))
 end
+

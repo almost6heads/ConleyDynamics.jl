@@ -42,7 +42,7 @@ end
 Extract a closed subcomplex from a Lefschetz complex. The subcomplex is
 the closure of the collection of cells given in `subcomp`.
 
-If `lc` is an `EuclideanComplex`, the returned subcomplex is also an
+If `lc` is a `EuclideanComplex`, the returned subcomplex is also an
 `EuclideanComplex` with the coordinates restricted to the subcomplex cells.
 """
 function lefschetz_closed_subcomplex(lc::AbstractComplex, subcomp::Vector{String})

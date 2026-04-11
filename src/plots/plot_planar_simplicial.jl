@@ -244,7 +244,7 @@ end
                            fname::String;
                            kwargs...)
 
-Create an image of a planar simplicial complex from an `EuclideanComplex`.
+Create an image of a planar simplicial complex from a `EuclideanComplex`.
 
 This method extracts the vertex coordinates from the embedded coordinates
 stored in `ec` and delegates to the standard plotting method. All keyword

@@ -401,7 +401,6 @@ determined as follows:
 
 ```@example T1
 cm = connection_matrix(sc, formanvf)
-fieldnames(typeof(cm))
 ```
 
 This command calculates the connection matrix over the finite field
@@ -412,7 +411,15 @@ simplicial complex `sc`. By default, if one uses the function
 characteristic `p`, the simplicial complex is created over the
 finite field ``\mathbb{Z}_2``, i.e., with `p=2`.
 
-The `connection_matrix` function returns a struct which
+The variable `cm` is an involved struct which stores various information
+about the connection matrix. The above output provides a quick overview,
+which includes the fieldnames. These can also be shown via
+
+```@example T1
+fieldnames(typeof(cm))
+```
+
+More precisely, the `connection_matrix` function returns a struct which
 contains the following information regarding the global dynamics of the
 combinatorial dynamical system:
 
@@ -470,6 +477,13 @@ the command
 
 ```@example T1
 println(cm.labels)
+```
+
+The above two commands can also be combined in the following way, which
+provides a more informative display of the connection matrix:
+
+```@example T1
+sparse_show(cm)
 ```
 
 The right-most column contains two nonzero entries, and they imply that there
@@ -601,6 +615,13 @@ Finally, the connection matrix has the form
 full_from_sparse(cmlogo.matrix)
 ```
 
+While this command only shows the connection matrix itself, the following
+method provides also information about the column and row labels
+
+```@example T2
+sparse_show(cmlogo)
+```
+
 Notice that in this example, only the connection between the Morse
 set `ABC` and the large index 1 Morse set comprising almost all 
 of the simplicial complex can be detected algebraically. In fact,
@@ -705,6 +726,84 @@ plot_planar_simplicial_morse(lc, coordsN, fname, cm.morse, pv=true)
 ```
 
 ![Morse sets of a planar vector field](img/tutorialplanar.png)
+
+!!! warning "Deprecation warning"
+    The above-described method of manually supplying a coordinate
+    vector for a Lefschetz complex for the purpose of multivector
+    field creation or plotting will eventually be removed from the
+    package. While this approach is direct and simple, it leads to
+    unexpected problems if one wants to work with subcomplexes
+    of a Lefschetz complex that are no longer closed. To remedy this,
+    starting with version `v0.8.0` of
+    [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
+    an alternative workflow is introduced, based on the new complex
+    type [`EuclideanComplex`](@ref). For the time being, both the old
+    and the new workflow are supported, but the old one will be removed
+    in a future release.
+
+In the above example, the abstract simplicial complex is embedded in the
+plane for the purpose of creating a multivector field from a classical
+vector field. This embedding is achieved by not only providing a
+Lefschetz complex `lc`, but also a coordinate vector `coords` for the
+vertex coordinates.
+
+Starting with version `v0.8.0` of 
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
+there is another workflow possibility, which will be briefly described
+in the following. The creation of the vector field proceeds as before:
+
+```@example T4
+using ..ConleyDynamics # hide
+using Random # hide
+Random.seed!(1234) # hide
+function planarvf(x::Vector{Float64})
+    #
+    # Sample planar vector field with nontrivial Morse decomposition
+    #
+    x1, x2 = x
+    y1 = x1 * (1.0 - x1*x1 - 3.0*x2*x2)
+    y2 = x2 * (1.0 - 3.0*x1*x1 - x2*x2)
+    return [y1, y2]
+end
+```
+
+Instead of creating a separate Lefschetz complex and associated 
+coordinates, the following commands generate a [`EuclideanComplex`](@ref):
+
+```@example T4
+ec = create_simplicial_delaunay(300, 300, 10, 30, euclidean=true)
+ec = rescale_coords(ec, -1.5, 1.5)
+```
+
+As the output shows, a Euclidean complex has the same fields as a
+Lefschetz complex, but adds to that a field that contains coordinates
+for every cell in the complex. Moreover, the function
+[`rescale_coords`](@ref) can be used to transform the values chosen
+by the Delaunay function to the square ``[-3/2, 3/2]^2``.
+
+Since the variable `ec` contains both the Lefschetz complex and the
+coordinate information, the multivector field which describes the flow
+behavior through the edges of the triangulation, as well as its
+connection matrix, can be computed using the commands
+
+```@example T4
+mvf = create_planar_mvf(ec, planarvf);
+cm  = connection_matrix(ec, mvf)
+```
+
+The produced connection matrix has the same form as the one above,
+up to a potential permutation of the rows and columns:
+
+```@example T4
+cm.matrix
+```
+
+Finally, visualizing the Morse sets is achiebd using the command
+
+```julia
+fname = "tutorialplanar.pdf"
+plot_planar_simplicial_morse(ec, fname, cm.morse, pv=true)
+```
 
 ## [References](@id reftutorial)
 

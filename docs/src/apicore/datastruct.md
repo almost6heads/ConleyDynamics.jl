@@ -12,8 +12,11 @@ ConleyDynamics
 ## Lefschetz Complex Type
 
 ```@docs
+AbstractComplex
 LefschetzComplex
-Base.show(io::IO, ::MIME"text/plain", lc::LefschetzComplex)
+EuclideanComplex
+Base.show(::IO, ::MIME"text/plain", ::LefschetzComplex)
+Base.show(::IO, ::MIME"text/plain", ::EuclideanComplex)
 ```
 
 ## Cell Subset Types

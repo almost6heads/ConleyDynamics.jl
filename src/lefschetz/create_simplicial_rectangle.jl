@@ -20,7 +20,7 @@ When `euclidean=false` (default), the function returns:
 * A simplicial complex `sc::LefschetzComplex`.
 * A vector `coords::Vector{Vector{Float64}}` of vertex coordinates.
 
-When `euclidean=true`, it returns an `EuclideanComplex` with embedded
+When `euclidean=true`, it returns a `EuclideanComplex` with embedded
 coordinates.
 """
 function create_simplicial_rectangle(nx::Int, ny::Int; p::Int=2, euclidean::Bool=false)

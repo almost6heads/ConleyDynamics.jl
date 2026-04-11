@@ -162,7 +162,7 @@ end
 """
     create_planar_mvf(ec::EuclideanComplex, vf)
 
-Create a planar multivector field from an `EuclideanComplex` and a regular
+Create a planar multivector field from a `EuclideanComplex` and a regular
 vector field `vf`.
 
 This method extracts the vertex coordinates from the embedded coordinates

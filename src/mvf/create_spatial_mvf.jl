@@ -135,7 +135,7 @@ end
 """
     create_spatial_mvf(ec::EuclideanComplex, vf)
 
-Create a spatial multivector field from an `EuclideanComplex` and a regular
+Create a spatial multivector field from a `EuclideanComplex` and a regular
 vector field `vf`.
 
 This method extracts the vertex coordinates from the embedded coordinates

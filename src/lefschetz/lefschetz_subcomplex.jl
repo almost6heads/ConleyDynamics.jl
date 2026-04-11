@@ -6,7 +6,7 @@ export lefschetz_subcomplex
 Extract a subcomplex from a Lefschetz complex. The subcomplex has to be
 locally closed, and is given by the collection of cells in `subcomp`.
 
-If `lc` is an `EuclideanComplex`, the returned subcomplex is also an
+If `lc` is a `EuclideanComplex`, the returned subcomplex is also an
 `EuclideanComplex` with the coordinates restricted to the subcomplex cells.
 """
 function lefschetz_subcomplex(lc::AbstractComplex, subcomp::Vector{Int})
@@ -48,7 +48,7 @@ end
 Extract a subcomplex from a Lefschetz complex. The subcomplex has to be
 locally closed, and is given by the collection of cells in `subcomp`.
 
-If `lc` is an `EuclideanComplex`, the returned subcomplex is also an
+If `lc` is a `EuclideanComplex`, the returned subcomplex is also an
 `EuclideanComplex` with the coordinates restricted to the subcomplex cells.
 """
 function lefschetz_subcomplex(lc::AbstractComplex, subcomp::Vector{String})

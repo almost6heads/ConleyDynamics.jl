@@ -15,7 +15,7 @@ When `euclidean=false` (default), the function returns:
 * A cubical complex `cc::LefschetzComplex`
 * A vector `coords::Vector{Vector{Float64}}` of vertex coordinates
 
-When `euclidean=true`, it returns an `EuclideanComplex` with embedded
+When `euclidean=true`, it returns a `EuclideanComplex` with embedded
 coordinates.
 
 If the optional parameter `randomize` is assigned a positive real

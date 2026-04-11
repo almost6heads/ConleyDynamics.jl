@@ -287,7 +287,7 @@ end
 
 Create a label from a cube's coordinate information.
 
-The dimension of the ambient Eucliden space is `pointdim`, while the field
+The dimension of the ambient Euclidean space is `pointdim`, while the field
 length for each coordinate is `pointlen`. The vector `pointinfo` has to be of
 length at least two times `pointdim`. The first `pointdim` entries contain the
 coordinates of the anchor point, while the next `pointdim` entries are either 0

@@ -159,7 +159,7 @@ end
                               vertex_coords::Vector{<:Vector{<:Real}};
                               p::Int=2)
 
-Initialize an `EuclideanComplex` from a simplicial complex with embedded
+Initialize a `EuclideanComplex` from a simplicial complex with embedded
 vertex coordinates. The complex is over the rationals if `p=0`, and over
 `GF(p)` if `p>0`.
 
@@ -185,7 +185,7 @@ end
                               vertex_coords::Vector{<:Vector{<:Real}};
                               p::Int=2)
 
-Initialize an `EuclideanComplex` from a simplicial complex with embedded
+Initialize a `EuclideanComplex` from a simplicial complex with embedded
 vertex coordinates (String-simplex variant).
 """
 function create_simplicial_complex(labels::Vector{String},

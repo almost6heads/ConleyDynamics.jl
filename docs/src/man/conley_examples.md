@@ -64,21 +64,23 @@ To analyze the resulting global dynamical behavior, we first create a
 simplicial mesh covering the square ``[-6/5, 6/5]^2`` using the commands
 
 ```@example Cmorseinterval
-lc, coords = create_simplicial_delaunay(300, 300, 5, 50);
-coordsN = convert_planar_coordinates(coords,[-1.2,-1.2], [1.2,1.2]);
-lc.ncells
+ec = create_simplicial_delaunay(300, 300, 5, 50, euclidean=true);
+ec = rescale_coords(ec, [-1.2,-1.2], [1.2,1.2]);
+ec.ncells
 ```
 
 The integer in the output gives the number of cells in the created Lefschetz
 complex ``X``. Note that we are using a Delaunay triangulation over an initial
 box of size ``300 \times 300``, where the target triangle size is about 5.
-This box is then rescaled to cover the above square. We can then create a 
-multivector field on the simplicial complex `lc` and find its Morse
-decomposition using the commands
+This box is then rescaled to cover the above square. We would like to point
+out that in the above form, the commands produce a `EuclideanComplex`, which
+has the coordinates of all cells embedded. We can then create a multivector
+field on the simplicial complex `ec` and find its Morse decomposition
+using the commands
 
 ```@example Cmorseinterval
-mvf = create_planar_mvf(lc, coordsN, planarvf);
-morsedecomp = morse_sets(lc, mvf);
+mvf = create_planar_mvf(ec, planarvf);
+morsedecomp = morse_sets(ec, mvf);
 length(morsedecomp)
 ```
 
@@ -88,7 +90,7 @@ finds exactly nine Morse sets. Their Conley indices can be computed
 and stored in a `Vector{Vector{Int}}` using the command
 
 ```@example Cmorseinterval
-conleyindices = [conley_index(lc, mset) for mset in morsedecomp]
+conleyindices = [conley_index(ec, mset) for mset in morsedecomp]
 ```
 
 These Conley indices correspond to the dynamical behavior near the
@@ -137,9 +139,9 @@ can be computed as follows:
 ```@example Cmorseinterval
 subset1 = findall(x -> x[2]+x[3]>0, conleyindices);
 subset2 = findall(x -> x[1]+x[2]>0, conleyindices);
-lcsub1 = morse_interval(lc, mvf, morsedecomp[subset1]);
-lcsub2 = morse_interval(lc, mvf, morsedecomp[subset2]);
-[length(subset1), length(subset2), length(lcsub1), length(lcsub2)]
+ecsub1 = morse_interval(ec, mvf, morsedecomp[subset1]);
+ecsub2 = morse_interval(ec, mvf, morsedecomp[subset2]);
+[length(subset1), length(subset2), length(ecsub1), length(ecsub2)]
 ```
 
 The output shows that we have in fact extracted five and eight
@@ -152,22 +154,23 @@ correspond to the two isolated invariant sets for these intervals.
 We can now restrict the combinatorial dynamics to these subsets. 
 Note that since they are both isolated invariant sets, they are
 locally closed in ``X``, and therefore the restrictions provide
-us with two new Lefschetz complexes `lcr1` and `lcr2`, along with
-induced multivector fields `mvfr1` and `mvfr2`, respectively. In
+us with two new Lefschetz complexes `ecr1` and `ecr2`, which have
+the type `EuclideanComplex`, along with induced multivector
+fields `mvfr1` and `mvfr2`, respectively. In
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl),
 this is achieved using the commands
 
 ```@example Cmorseinterval
-lcr1, mvfr1 = restrict_dynamics(lc, mvf, lcsub1);
-lcr2, mvfr2 = restrict_dynamics(lc, mvf, lcsub2);
-[lcr1.ncells, lcr2.ncells]
+ecr1, mvfr1 = restrict_dynamics(ec, mvf, ecsub1);
+ecr2, mvfr2 = restrict_dynamics(ec, mvf, ecsub2);
+[ecr1.ncells, ecr2.ncells]
 ```
 
 It is now easy to find the connection matrices for these two
 intervals. The first connection matrix is given by
 
 ```@example Cmorseinterval
-cmr1 = connection_matrix(lcr1, mvfr1);
+cmr1 = connection_matrix(ecr1, mvfr1);
 cmr1.conley
 ```
 
@@ -181,7 +184,7 @@ equilibria. Similarly, the second connection matrix can
 be determined as
 
 ```@example Cmorseinterval
-cmr2 = connection_matrix(lcr2, mvfr2);
+cmr2 = connection_matrix(ecr2, mvfr2);
 cmr2.conley
 ```
 
@@ -201,12 +204,12 @@ can plot an underlying simplicial complex together with any collection
 of cell subsets. For our purposes, we use the following commands:
 
 ```julia
-show1 = [[lcr1.labels]; cmr1.morse];
-show2 = [[lcr2.labels]; cmr2.morse];
+show1 = [[ecr1.labels]; cmr1.morse];
+show2 = [[ecr2.labels]; cmr2.morse];
 fname1 = "/Users/wanner/Desktop/invariantinterval2d1.png"
 fname2 = "/Users/wanner/Desktop/invariantinterval2d2.png"
-plot_planar_simplicial_morse(lc, coordsN, fname1, show1, vfac=1.1, hfac=2.0)
-plot_planar_simplicial_morse(lc, coordsN, fname2, show2, vfac=1.1, hfac=2.0)
+plot_planar_simplicial_morse(ec, fname1, show1, vfac=1.1, hfac=2.0)
+plot_planar_simplicial_morse(ec, fname2, show2, vfac=1.1, hfac=2.0)
 ```
 
 The variable `show1` collects not only the Morse sets that
