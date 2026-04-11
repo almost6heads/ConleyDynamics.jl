@@ -1,7 +1,7 @@
 export extract_multivectors
 
 """
-    extract_multivectors(lc::LefschetzComplex, mvf::Vector{Vector{Int}},
+    extract_multivectors(lc::AbstractComplex, mvf::Vector{Vector{Int}},
                          scells::Vector{Int})
 
 Extract all multivectors containing a provided selection of cells.
@@ -9,7 +9,7 @@ Extract all multivectors containing a provided selection of cells.
 The function returns all multivectors which contain at least one of the cells
 in the input vector `scells`. The return argument has type `Vector{Vector{Int}}`.
 """
-function extract_multivectors(lc::LefschetzComplex, mvf::Vector{Vector{Int}},
+function extract_multivectors(lc::AbstractComplex, mvf::Vector{Vector{Int}},
                               scells::Vector{Int})
     #
     # Extract all multivectors containing the provided cells
@@ -42,7 +42,7 @@ function extract_multivectors(lc::LefschetzComplex, mvf::Vector{Vector{Int}},
 end
 
 """
-    extract_multivectors(lc::LefschetzComplex, mvf::Vector{Vector{String}},
+    extract_multivectors(lc::AbstractComplex, mvf::Vector{Vector{String}},
                          scells::Vector{String})
 
 Extract all multivectors containing a provided selection of cells.
@@ -50,7 +50,7 @@ Extract all multivectors containing a provided selection of cells.
 The function returns all multivectors which contain at least one of the cells
 in the input vector `scells`. The return argument has type `Vector{Vector{String}}`.
 """
-function extract_multivectors(lc::LefschetzComplex, mvf::Vector{Vector{String}},
+function extract_multivectors(lc::AbstractComplex, mvf::Vector{Vector{String}},
                               scells::Vector{String})
     #
     # Extract all multivectors containing the provided cells

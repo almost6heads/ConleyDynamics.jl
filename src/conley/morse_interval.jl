@@ -1,7 +1,7 @@
 export morse_interval
 
 """
-    morse_interval(lc::LefschetzComplex, mvf::CellSubsets,
+    morse_interval(lc::AbstractComplex, mvf::CellSubsets,
                    ms::CellSubsets)
 
 Find the isolated invariant set for a Morse set interval.
@@ -16,7 +16,7 @@ using the function `morse_sets`!
 The function returns the smallest isolated invariant set which contains
 the Morse sets and their connections as a `Vector{Int}`.
 """
-function morse_interval(lc::LefschetzComplex, mvf::CellSubsets,
+function morse_interval(lc::AbstractComplex, mvf::CellSubsets,
                         ms::CellSubsets)
     #
     # Find the isolated invariant set for a Morse set interval

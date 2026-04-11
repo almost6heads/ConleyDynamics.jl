@@ -1,7 +1,7 @@
 export create_spatial_mvf
 
 """
-    create_spatial_mvf(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}}, vf)
+    create_spatial_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf)
 
 Create a spatial multivector field from a regular vector field.
 
@@ -69,7 +69,7 @@ full_from_sparse(cm.matrix)
 finally show that this vector field gives rise to a Morse decomposition
 with three Morse sets, and two connecting orbits.
 """
-function create_spatial_mvf(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}}, vf)
+function create_spatial_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Create a spatial multivector field from a regular vector field
     #
@@ -132,13 +132,36 @@ function create_spatial_mvf(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real
     return mvf
 end
 
+"""
+    create_spatial_mvf(ec::EuclideanComplex, vf)
+
+Create a spatial multivector field from an `EuclideanComplex` and a regular
+vector field `vf`.
+
+This method extracts the vertex coordinates from the embedded coordinates
+of `ec` and delegates to the standard `create_spatial_mvf` implementation.
+"""
+function create_spatial_mvf(ec::EuclideanComplex, vf)
+    #
+    # Build a coords_by_index vector (indexed by cell index, vertex cells filled)
+    #
+    lc = euclidean_to_lefschetz(ec)
+    coords_by_index = [Vector{Float64}() for _ in 1:ec.ncells]
+    for k in 1:ec.ncells
+        if ec.dimensions[k] == 0
+            coords_by_index[k] = ec.coords[k][1]
+        end
+    end
+    return create_spatial_mvf(lc, coords_by_index, vf)
+end
+
 ############################
 #                          #
 #   Auxilliary functions   #
 #                          #
 ############################
 
-function spatial_mvf_vertex2region(vindex::Int, lc::LefschetzComplex,
+function spatial_mvf_vertex2region(vindex::Int, lc::AbstractComplex,
                                    coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Find the 3d regions which can be entered from a vertex
@@ -189,7 +212,7 @@ end
 
 ###############################################################################
 
-function spatial_mvf_edge2region(eindex::Int, lc::LefschetzComplex,
+function spatial_mvf_edge2region(eindex::Int, lc::AbstractComplex,
                                  coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Find the 3d regions which can be entered from an edge
@@ -309,7 +332,7 @@ end
 
 ###############################################################################
 
-function spatial_mvf_face2region(findex::Int, lc::LefschetzComplex,
+function spatial_mvf_face2region(findex::Int, lc::AbstractComplex,
                                  coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Find the 3d regions which can be entered from a face

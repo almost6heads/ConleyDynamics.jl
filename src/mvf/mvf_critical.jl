@@ -1,7 +1,7 @@
 export mvf_critical
 
 """
-    mvf_critical(lc::LefschetzComplex, mvf::CellSubsets)
+    mvf_critical(lc::AbstractComplex, mvf::CellSubsets)
 
 Determines all critical multivectors.
 
@@ -29,7 +29,7 @@ julia> mvf_critical(lc, mvf)
  ["DE"]
 ```
 """
-function mvf_critical(lc::LefschetzComplex, mvf::CellSubsets)
+function mvf_critical(lc::AbstractComplex, mvf::CellSubsets)
     #
     # Find all critical multivectors
     #

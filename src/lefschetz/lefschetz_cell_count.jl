@@ -1,7 +1,7 @@
 export lefschetz_cell_count
 
 """
-    lefschetz_cell_count(lc::LefschetzComplex; bounds::Bool=false)
+    lefschetz_cell_count(lc::AbstractComplex; bounds::Bool=false)
 
 Returns the number of cells in each dimension.
 
@@ -13,7 +13,7 @@ function also returns two integer vectors `lo` and `hi`. These
 contain the beginning and end indices of the cells in each 
 dimension.
 """
-function lefschetz_cell_count(lc::LefschetzComplex; bounds::Bool=false)
+function lefschetz_cell_count(lc::AbstractComplex; bounds::Bool=false)
     #
     # Return the number of cells in each dimension
     #

@@ -1,7 +1,7 @@
 export forman_conley_maps
 
 """
-    forman_conley_maps(lc::LefschetzComplex, fvf::CellSubsets)
+    forman_conley_maps(lc::AbstractComplex, fvf::CellSubsets)
 
 Compute the maps associated with the Conley complex of a Forman
 gradient field 
@@ -68,7 +68,7 @@ julia> sparse_show(jj*pp - lc.boundary*hh - hh*lc.boundary)
  . . . . . . 1
 ```
 """
-function forman_conley_maps(lc::LefschetzComplex, fvf::CellSubsets)
+function forman_conley_maps(lc::AbstractComplex, fvf::CellSubsets)
     #
     # Compute the chain maps and chain homotopy which take a 
     # Lefschetz complex with Forman gradient vector field to

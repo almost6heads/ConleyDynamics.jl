@@ -153,6 +153,53 @@ function create_simplicial_complex(labels::Vector{String},
     return lc
 end
 
+"""
+    create_simplicial_complex(labels::Vector{String},
+                              simplices::Vector{Vector{Int}},
+                              vertex_coords::Vector{<:Vector{<:Real}};
+                              p::Int=2)
+
+Initialize an `EuclideanComplex` from a simplicial complex with embedded
+vertex coordinates. The complex is over the rationals if `p=0`, and over
+`GF(p)` if `p>0`.
+
+The vector `labels` contains a label for every vertex, `simplices` contains
+all the highest-dimensional simplices, and `vertex_coords` contains the
+Euclidean coordinates of each vertex (indexed by vertex index, i.e.,
+`vertex_coords[k]` gives the coordinate of vertex `k`).
+"""
+function create_simplicial_complex(labels::Vector{String},
+                                   simplices::Vector{Vector{Int}},
+                                   vertex_coords::Vector{<:Vector{<:Real}};
+                                   p::Int=2)
+    #
+    # Create an EuclideanComplex for a simplicial complex with coordinates.
+    #
+    lc = create_simplicial_complex(labels, simplices; p=p)
+    return lefschetz_to_euclidean(lc, vertex_coords)
+end
+
+"""
+    create_simplicial_complex(labels::Vector{String},
+                              simplices::Vector{Vector{String}},
+                              vertex_coords::Vector{<:Vector{<:Real}};
+                              p::Int=2)
+
+Initialize an `EuclideanComplex` from a simplicial complex with embedded
+vertex coordinates (String-simplex variant).
+"""
+function create_simplicial_complex(labels::Vector{String},
+                                   simplices::Vector{Vector{String}},
+                                   vertex_coords::Vector{<:Vector{<:Real}};
+                                   p::Int=2)
+    #
+    # Create an EuclideanComplex for a simplicial complex with coordinates.
+    # This is an alternative method for simplices in String format.
+    #
+    newsimplices = convert_simplices(simplices, labels)
+    return create_simplicial_complex(labels, newsimplices, vertex_coords; p=p)
+end
+
 ############################
 #                          #
 #   Auxilliary functions   #

@@ -1,7 +1,7 @@
 export isoinvset_information
 
 """
-    isoinvset_information(lc::LefschetzComplex, mvf::CellSubsets, iis::Cells)
+    isoinvset_information(lc::AbstractComplex, mvf::CellSubsets, iis::Cells)
 
 Compute basic information about an isolated invariant set.
 
@@ -15,7 +15,7 @@ the return dictionary. These describe the following information:
 - `"N multivectors"` contains the number of multivectors
   in the isolated invariant set.
 """
-function isoinvset_information(lc::LefschetzComplex, mvf::CellSubsets, iis::Cells)
+function isoinvset_information(lc::AbstractComplex, mvf::CellSubsets, iis::Cells)
     #
     # Compute basic information about an isolated invariant set
     #

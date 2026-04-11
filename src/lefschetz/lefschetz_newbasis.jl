@@ -1,7 +1,7 @@
 export lefschetz_newbasis, lefschetz_newbasis_maps
 
 """
-    lefschetz_newbasis(lc::LefschetzComplex, basis::SparseMatrix; maps::Bool=false)
+    lefschetz_newbasis(lc::AbstractComplex, basis::SparseMatrix; maps::Bool=false)
 
 Create a new Lefschetz complex via change of basis.
 
@@ -14,7 +14,7 @@ optional parameter `maps = true` is passed, the the function also returns
 the chain maps `pp` and `jj` which are the isomorphisms from `lc` to `lcnew`,
 and vice versa, as well as the zero chain homotopy `hh`.
 """
-function lefschetz_newbasis(lc::LefschetzComplex, basis::SparseMatrix; maps::Bool=false)
+function lefschetz_newbasis(lc::AbstractComplex, basis::SparseMatrix; maps::Bool=false)
     #
     # Create a new Lefschetz complex via change of basis
     #
@@ -64,7 +64,7 @@ function lefschetz_newbasis(lc::LefschetzComplex, basis::SparseMatrix; maps::Boo
 end
 
 """
-    lefschetz_newbasis_maps(lc::LefschetzComplex, basis::SparseMatrix)
+    lefschetz_newbasis_maps(lc::AbstractComplex, basis::SparseMatrix)
 
 Create a new Lefschetz complex via change of basis and return the
 associated chain maps.
@@ -77,6 +77,6 @@ replaced. The function returns the new Lefschetz complex `lcnew`, as well as
 the chain maps `pp` and `jj` which are the isomorphisms from `lc` to `lcnew`,
 and vice versa.
 """
-lefschetz_newbasis_maps(lc::LefschetzComplex, basis::SparseMatrix) =
+lefschetz_newbasis_maps(lc::AbstractComplex, basis::SparseMatrix) =
   lefschetz_newbasis(lc, basis, maps=true)
 

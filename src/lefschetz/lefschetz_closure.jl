@@ -1,11 +1,11 @@
 export lefschetz_closure
 
 """
-    lefschetz_closure(lc::LefschetzComplex, subcomp::Vector{Int})
+    lefschetz_closure(lc::AbstractComplex, subcomp::Vector{Int})
 
 Compute the closure of a Lefschetz complex subset.
 """
-function lefschetz_closure(lc::LefschetzComplex, subcomp::Vector{Int})
+function lefschetz_closure(lc::AbstractComplex, subcomp::Vector{Int})
     #
     # Compute the closure of a Lefschetz complex subset
     #
@@ -33,11 +33,11 @@ function lefschetz_closure(lc::LefschetzComplex, subcomp::Vector{Int})
 end
 
 """
-    lefschetz_closure(lc::LefschetzComplex, subcomp::Vector{String})
+    lefschetz_closure(lc::AbstractComplex, subcomp::Vector{String})
 
 Compute the closure of a Lefschetz complex subset.
 """
-function lefschetz_closure(lc::LefschetzComplex, subcomp::Vector{String})
+function lefschetz_closure(lc::AbstractComplex, subcomp::Vector{String})
     #
     # Compute the closure of a Lefschetz complex subset
     #

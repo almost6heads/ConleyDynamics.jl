@@ -1,7 +1,7 @@
 export create_planar_mvf
 
 """
-    create_planar_mvf(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}}, vf)
+    create_planar_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf)
 
 Create a planar multivector field from a regular vector field.
 
@@ -111,7 +111,7 @@ plot_planar_cubical_morse(lc2, fname2, cm2.morse, pv=true)
 In this case, one obtains three Morse sets: One is a stable equilibrium,
 one is an unstable periodic orbit, and the last is a stable periodic orbit.
 """
-function create_planar_mvf(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}}, vf)
+function create_planar_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Create a planar multivector field from a regular vector field
     #
@@ -159,13 +159,36 @@ function create_planar_mvf(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}
     return mvf
 end
 
+"""
+    create_planar_mvf(ec::EuclideanComplex, vf)
+
+Create a planar multivector field from an `EuclideanComplex` and a regular
+vector field `vf`.
+
+This method extracts the vertex coordinates from the embedded coordinates
+of `ec` and delegates to the standard `create_planar_mvf` implementation.
+"""
+function create_planar_mvf(ec::EuclideanComplex, vf)
+    #
+    # Build a coords_by_index vector (indexed by cell index, vertex cells filled)
+    #
+    lc = euclidean_to_lefschetz(ec)
+    coords_by_index = [Vector{Float64}() for _ in 1:ec.ncells]
+    for k in 1:ec.ncells
+        if ec.dimensions[k] == 0
+            coords_by_index[k] = ec.coords[k][1]
+        end
+    end
+    return create_planar_mvf(lc, coords_by_index, vf)
+end
+
 ############################
 #                          #
 #   Auxilliary functions   #
 #                          #
 ############################
 
-function planar_mvf_vertex2region(vindex::Int, lc::LefschetzComplex,
+function planar_mvf_vertex2region(vindex::Int, lc::AbstractComplex,
                                   coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Find the 2d regions which can be entered from a vertex
@@ -217,7 +240,7 @@ end
 
 ###############################################################################
 
-function planar_mvf_edge2region(eindex::Int, lc::LefschetzComplex,
+function planar_mvf_edge2region(eindex::Int, lc::AbstractComplex,
                                 coords::Vector{<:Vector{<:Real}}, vf)
     #
     # Find the 2d regions which can be entered from an edge

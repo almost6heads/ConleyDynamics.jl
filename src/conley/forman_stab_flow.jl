@@ -1,7 +1,7 @@
 export forman_stab_flow
 
 """
-    forman_stab_flow(lc::LefschetzComplex, fvf::CellSubsets; maxit::Int=25)
+    forman_stab_flow(lc::AbstractComplex, fvf::CellSubsets; maxit::Int=25)
 
 Compute Forman's stabilized combinatorial flow and the associated chain
 homotopy which relates it to the identity.
@@ -51,7 +51,7 @@ julia> full_from_sparse(phiI)
  0  0  0  0  0  0  1
 ```
 """
-function forman_stab_flow(lc::LefschetzComplex, fvf::CellSubsets; maxit::Int=25)
+function forman_stab_flow(lc::AbstractComplex, fvf::CellSubsets; maxit::Int=25)
     #
     # Compute Forman's stabilized combinatorial flow and the
     # associated chain homotopy which relates it to the identity

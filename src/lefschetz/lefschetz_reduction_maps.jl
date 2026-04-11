@@ -2,7 +2,7 @@ export lefschetz_reduction_maps
 export compose_reductions
 
 """
-    lefschetz_reduction_maps(lc::LefschetzComplex, redpairs::Vector{Vector{Int}})
+    lefschetz_reduction_maps(lc::AbstractComplex, redpairs::Vector{Vector{Int}})
 
 Apply a sequence of elementary reductions to a Lefschetz complex and return
 the associated chain maps.
@@ -68,7 +68,7 @@ julia> sparse_nz_count(ii + bnd*hh + hh*bnd - jj*pp)
 0
 ```
 """
-function lefschetz_reduction_maps(lc::LefschetzComplex, redpairs::Vector{Vector{Int}})
+function lefschetz_reduction_maps(lc::AbstractComplex, redpairs::Vector{Vector{Int}})
     #
     # Apply a sequence of elementary reductions to a Lefschetz complex
     # and compute the associated chain maps
@@ -204,7 +204,7 @@ function lefschetz_reduction_maps(lc::LefschetzComplex, redpairs::Vector{Vector{
 end
 
 """
-    lefschetz_reduction_maps(lc::LefschetzComplex, redpairs::Vector{Vector{String}})
+    lefschetz_reduction_maps(lc::AbstractComplex, redpairs::Vector{Vector{String}})
 
 Apply a sequence of elementary reductions to a Lefschetz complex and return
 the chain maps.
@@ -216,7 +216,7 @@ to differ by one, and once the pair is reached in the reduction sequence, one ce
 has to be a face of the other. The function returns a new Lefschetz complex, where
 all cells in `redpairs` have been removed, as well as the involved chain maps.
 """
-function lefschetz_reduction_maps(lc::LefschetzComplex, redpairs::Vector{Vector{String}})
+function lefschetz_reduction_maps(lc::AbstractComplex, redpairs::Vector{Vector{String}})
     #
     # Apply a sequence of elementary reductions to a Lefschetz complex
     # and return the associated chain maps
@@ -232,7 +232,7 @@ function lefschetz_reduction_maps(lc::LefschetzComplex, redpairs::Vector{Vector{
 end
 
 """
-    lefschetz_reduction_maps(lc::LefschetzComplex, r1::Int, r2::Int)
+    lefschetz_reduction_maps(lc::AbstractComplex, r1::Int, r2::Int)
 
 Apply a single elementary reduction to a Lefschetz complex and return
 the chain maps.
@@ -241,11 +241,11 @@ This method expects that the two cells `r1` and `r2` which form the
 reduction pair are given in index form. The function returns the reduced
 Lefschetz complex, as well as the involved chain maps.
 """
-lefschetz_reduction_maps(lc::LefschetzComplex, r1::Int, r2::Int) =
+lefschetz_reduction_maps(lc::AbstractComplex, r1::Int, r2::Int) =
    lefschetz_reduction_maps(lc,[[r1,r2]])
 
 """
-    lefschetz_reduction_maps(lc::LefschetzComplex, r1::String, r2::String)
+    lefschetz_reduction_maps(lc::AbstractComplex, r1::String, r2::String)
 
 Apply a single elementary reduction to a Lefschetz complex and return
 the chain maps.
@@ -254,7 +254,7 @@ This method expects that the two cells `r1` and `r2` which form the
 reduction pair are given in label form. The function returns the reduced
 Lefschetz complex, as well as the involved chain maps.
 """
-lefschetz_reduction_maps(lc::LefschetzComplex, r1::String, r2::String) =
+lefschetz_reduction_maps(lc::AbstractComplex, r1::String, r2::String) =
    lefschetz_reduction_maps(lc,[[r1,r2]])
 
 """

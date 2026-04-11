@@ -1,7 +1,7 @@
 export ph_matrix_reduce
 
 """
-    ph_matrix_reduce(lc::LefschetzComplex, filtration::Vector{Int})
+    ph_matrix_reduce(lc::AbstractComplex, filtration::Vector{Int})
 
 Compute the persistent homology of a Lefschetz complex filtration over
 the field associated with the Lefschetz complex boundary matrix.
@@ -15,7 +15,7 @@ function returns the starting filtration values for infinite length
 persistence intervals in `phsingles`, and the birth- and death-filtration
 values for finite length persistence intervals in `phpairs`.
 """
-function ph_matrix_reduce(lc::LefschetzComplex, filtration::Vector{Int})
+function ph_matrix_reduce(lc::AbstractComplex, filtration::Vector{Int})
     #
     # Compute the persistent homology of a Lefschetz complex filtration
     #

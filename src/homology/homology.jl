@@ -1,7 +1,7 @@
 export homology
 
 """
-    homology(lc::LefschetzComplex; [algorithm::String])
+    homology(lc::AbstractComplex; [algorithm::String])
 
 Compute the homology of a Lefschetz complex.
 
@@ -21,7 +21,7 @@ passing the optional argument `algorithm::String`:
 
 By default, the function uses the Morse reduction algorithm `morse`.
 """
-function homology(lc::LefschetzComplex; algorithm::String="morse")
+function homology(lc::AbstractComplex; algorithm::String="morse")
     #
     # Compute the homology of a Lefschetz complex
     #
@@ -36,7 +36,7 @@ function homology(lc::LefschetzComplex; algorithm::String="morse")
 end
 
 """
-    homology(lc::LefschetzComplex, subc::Cells; [algorithm::String])
+    homology(lc::AbstractComplex, subc::Cells; [algorithm::String])
 
 Compute the homology of a Lefschetz complex, given as a subcomplex.
 
@@ -59,7 +59,7 @@ algorithms, by passing the optional argument `algorithm::String`:
 
 By default, the function uses the Morse reduction algorithm `morse`.
 """
-function homology(lc::LefschetzComplex, subc::Cells;
+function homology(lc::AbstractComplex, subc::Cells;
                   algorithm::String="morse")
     #
     # Compute the homology of a Lefschetz complex

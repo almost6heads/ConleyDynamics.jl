@@ -1,7 +1,7 @@
 export planar_nontransverse_edges
 
 """
-    planar_nontransverse_edges(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}}, vf;
+    planar_nontransverse_edges(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf;
                                npts::Int=100)
 
 Find all edges of a planar Lefschetz complex which are not flow transverse.
@@ -12,7 +12,7 @@ determines how many points along an edge are evaluated for the transversality ch
 The function returns a list of nontransverse edges as `Vector{Int}`, which contains
 the edge indices.
 """
-function planar_nontransverse_edges(lc::LefschetzComplex, coords::Vector{<:Vector{<:Real}}, vf;
+function planar_nontransverse_edges(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf;
                                     npts::Int=100)
     #
     # Find all edges of a planar Lefschetz complex which are not flow transverse

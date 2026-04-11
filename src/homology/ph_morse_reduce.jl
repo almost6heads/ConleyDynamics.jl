@@ -1,7 +1,7 @@
 export ph_morse_reduce
 
 """
-    ph_morse_reduce(lc::LefschetzComplex, filtration::Vector{Int};
+    ph_morse_reduce(lc::AbstractComplex, filtration::Vector{Int};
                     [parallel::Bool])
 
 Compute the persistent homology of a Lefschetz complex filtration over
@@ -18,7 +18,7 @@ values for finite length persistence intervals in `phpairs`. This
 function uses an algorithm based on Morse reductions. If the optional
 argument `parallel=true` is added, then a parallelized version is used.
 """
-function ph_morse_reduce(lc::LefschetzComplex, filtration::Vector{Int};
+function ph_morse_reduce(lc::AbstractComplex, filtration::Vector{Int};
                          parallel::Bool=false)
     #
     # Compute the persistent homology of a Lefschetz complex filtration

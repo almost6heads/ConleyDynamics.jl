@@ -1,7 +1,7 @@
 export validate_lefschetz_complex
 
 """
-    validate_lefschetz_complex(lc::LefschetzComplex)
+    validate_lefschetz_complex(lc::AbstractComplex)
 
 Check whether the boundary matrix of `lc` satisfies `∂² = 0`.
 
@@ -20,7 +20,7 @@ julia> validate_lefschetz_complex(lc)
 true
 ```
 """
-function validate_lefschetz_complex(lc::LefschetzComplex)
+function validate_lefschetz_complex(lc::AbstractComplex)
     #
     # Check whether the boundary matrix squares to zero
     #

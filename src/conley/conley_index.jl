@@ -1,7 +1,7 @@
 export conley_index
 
 """
-    conley_index(lc::LefschetzComplex, subcomp::Vector{String})
+    conley_index(lc::AbstractComplex, subcomp::Vector{String})
 
 Determine the Conley index of a Lefschetz complex subset.
 
@@ -9,7 +9,7 @@ The function raises an error if the subset `subcomp` is not
 locally closed. The computations are performed over the field
 associated with the Lefschetz complex boundary matrix.
 """
-function conley_index(lc::LefschetzComplex, subcomp::Vector{String})
+function conley_index(lc::AbstractComplex, subcomp::Vector{String})
     #
     # Determine the Conley index of a Lefschetz complex subset
     #
@@ -42,7 +42,7 @@ function conley_index(lc::LefschetzComplex, subcomp::Vector{String})
 end
 
 """
-    conley_index(lc::LefschetzComplex, subcomp::Vector{Int})
+    conley_index(lc::AbstractComplex, subcomp::Vector{Int})
 
 Determine the Conley index of a Lefschetz complex subset.
 
@@ -50,7 +50,7 @@ The function raises an error if the subset `subcomp` is not
 locally closed. The computations are performed over the field
 associated with the Lefschetz complex boundary matrix.
 """
-function conley_index(lc::LefschetzComplex, subcomp::Vector{Int})
+function conley_index(lc::AbstractComplex, subcomp::Vector{Int})
     #
     # Determine the Conley index of a Lefschetz complex subset
     #

@@ -1,7 +1,7 @@
 export plot_planar_simplicial
 
 """
-    plot_planar_simplicial(sc::LefschetzComplex,
+    plot_planar_simplicial(sc::AbstractComplex,
                            coords::Vector{<:Vector{<:Real}},
                            fname::String;
                            [mvf::CellSubsets=Vector{Vector{Int}}([]),]
@@ -59,7 +59,7 @@ plot_planar_simplicial(sc, coords, fname, labeldir=ldir, labeldis=10, pv=true)
 
 This command puts all labels in the North-East direction at a distance of 10.
 """
-function plot_planar_simplicial(sc::LefschetzComplex,
+function plot_planar_simplicial(sc::AbstractComplex,
                                 coords::Vector{<:Vector{<:Real}},
                                 fname::String;
                                 mvf::CellSubsets=Vector{Vector{Int}}([]),
@@ -239,3 +239,33 @@ function plot_planar_simplicial(sc::LefschetzComplex,
     end
 end
 
+"""
+    plot_planar_simplicial(ec::EuclideanComplex,
+                           fname::String;
+                           kwargs...)
+
+Create an image of a planar simplicial complex from an `EuclideanComplex`.
+
+This method extracts the vertex coordinates from the embedded coordinates
+stored in `ec` and delegates to the standard plotting method. All keyword
+arguments are forwarded unchanged.
+"""
+function plot_planar_simplicial(ec::EuclideanComplex,
+                                fname::String;
+                                mvf::CellSubsets=Vector{Vector{Int}}([]),
+                                labeldir::Vector{<:Real}=Vector{Int}([]),
+                                labeldis::Real=8,
+                                hfac::Real=1.2,
+                                vfac::Real=1.2,
+                                sfac::Real=0,
+                                pdim::Vector{Bool}=[true,true,true],
+                                pv::Bool=false)
+    #
+    # Delegate to the LefschetzComplex method after extracting vertex coords
+    #
+    vertex_coords = [ec.coords[k][1] for k in 1:ec.ncells if ec.dimensions[k] == 0]
+    lc = euclidean_to_lefschetz(ec)
+    plot_planar_simplicial(lc, vertex_coords, fname;
+                           mvf=mvf, labeldir=labeldir, labeldis=labeldis,
+                           hfac=hfac, vfac=vfac, sfac=sfac, pdim=pdim, pv=pv)
+end

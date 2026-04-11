@@ -1,11 +1,11 @@
 export lefschetz_is_closed
 
 """
-    lefschetz_is_closed(lc::LefschetzComplex, subcomp::Vector{Int})
+    lefschetz_is_closed(lc::AbstractComplex, subcomp::Vector{Int})
 
 Determine whether a Lefschetz complex subset is closed.
 """
-function lefschetz_is_closed(lc::LefschetzComplex, subcomp::Vector{Int})
+function lefschetz_is_closed(lc::AbstractComplex, subcomp::Vector{Int})
     #
     # Determine whether a Lefschetz complex subset is closed
     #
@@ -23,11 +23,11 @@ function lefschetz_is_closed(lc::LefschetzComplex, subcomp::Vector{Int})
 end
 
 """
-    lefschetz_is_closed(lc::LefschetzComplex, subcomp::Vector{String})
+    lefschetz_is_closed(lc::AbstractComplex, subcomp::Vector{String})
 
 Determine whether a Lefschetz complex subset is closed.
 """
-function lefschetz_is_closed(lc::LefschetzComplex, subcomp::Vector{String})
+function lefschetz_is_closed(lc::AbstractComplex, subcomp::Vector{String})
     #
     # Determine whether a Lefschetz complex subset is closed
     #

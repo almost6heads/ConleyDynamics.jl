@@ -2,7 +2,7 @@ export forman_gpaths
 export forman_path_weight
 
 """
-    forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets, x::Cell)
+    forman_gpaths(lc::AbstractComplex, fvf::CellSubsets, x::Cell)
 
 Find all Forman gradient paths starting at a source cell.
 
@@ -16,7 +16,7 @@ cell of dimension `dim(x) + 1` is an arrow target which is succeeded
 by a cell in its boundary which is the source of a different arrow,
 as long as such a cell exists.
 """
-function forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets, x::Cell)
+function forman_gpaths(lc::AbstractComplex, fvf::CellSubsets, x::Cell)
     #
     # Find all Forman gradient paths starting from x
     #
@@ -106,7 +106,7 @@ function forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets, x::Cell)
 end
 
 """
-    forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets,
+    forman_gpaths(lc::AbstractComplex, fvf::CellSubsets,
                        x::Cell, y::Cell)
 
 Find all Forman gradient paths between two cells.
@@ -135,7 +135,7 @@ satisfy one of the following three conditions:
 
 In all other cases an empty collection is returned.
 """
-function forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets,
+function forman_gpaths(lc::AbstractComplex, fvf::CellSubsets,
                        x::Cell, y::Cell)
     #
     # Find all Forman gradient paths starting at x and ending in y
@@ -268,7 +268,7 @@ function forman_gpaths(lc::LefschetzComplex, fvf::CellSubsets,
 end
 
 """
-    forman_path_weight(lc::LefschetzComplex, path::Cells)
+    forman_path_weight(lc::AbstractComplex, path::Cells)
 
 Compute the weight of a Forman gradient path.
 
@@ -279,7 +279,7 @@ last cell in the path differ by at most 1. In case they
 have equal dimension, and the path has length larger
 than 1, the first cell has to be an arrow source.
 """
-function forman_path_weight(lc::LefschetzComplex, path::Cells)
+function forman_path_weight(lc::AbstractComplex, path::Cells)
     #
     # Compute the weight of a Forman gradient path
     #
@@ -351,7 +351,7 @@ function forman_path_weight(lc::LefschetzComplex, path::Cells)
 end
 
 """
-    forman_path_weight(lc::LefschetzComplex, paths::CellSubsets)
+    forman_path_weight(lc::AbstractComplex, paths::CellSubsets)
 
 Accumulated weight of a collection of Forman gradient paths.
 
@@ -359,7 +359,7 @@ For the Lefschetz complex `lc` this function computes the
 sum of the weights of the collection of Forman gradient
 paths given in `paths`.
 """
-function forman_path_weight(lc::LefschetzComplex, paths::CellSubsets)
+function forman_path_weight(lc::AbstractComplex, paths::CellSubsets)
     #
     # Compute the accumulated weight of Forman gradient paths
     #

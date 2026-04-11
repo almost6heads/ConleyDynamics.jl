@@ -1,7 +1,7 @@
 export mvf_is_acyclic
 
 """
-    mvf_is_acyclic(lc::LefschetzComplex, mvf::CellSubsets)
+    mvf_is_acyclic(lc::AbstractComplex, mvf::CellSubsets)
 
 Determine whether a multivector field is acyclic.
 
@@ -9,7 +9,7 @@ The function returns a boolean which indicates whether a
 multivector field forms an acyclic partition of the Lefschetz
 complex `lc` or not.
 """
-function mvf_is_acyclic(lc::LefschetzComplex, mvf::CellSubsets)
+function mvf_is_acyclic(lc::AbstractComplex, mvf::CellSubsets)
     #
     # Determine whether a multivector field is acyclic
     #

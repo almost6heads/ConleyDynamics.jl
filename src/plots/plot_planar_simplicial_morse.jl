@@ -1,7 +1,7 @@
 export plot_planar_simplicial_morse
 
 """
-    plot_planar_simplicial_morse(sc::LefschetzComplex,
+    plot_planar_simplicial_morse(sc::AbstractComplex,
                                  coords::Vector{<:Vector{<:Real}},
                                  fname::String,
                                  morsesets::CellSubsets;
@@ -33,7 +33,7 @@ to saving the file a preview is displayed. Lastly, passing the argument
 `ci=true` will color code the Morse sets according to their respective
 Conley indices.
 """
-function plot_planar_simplicial_morse(sc::LefschetzComplex,
+function plot_planar_simplicial_morse(sc::AbstractComplex,
                                        coords::Vector{<:Vector{<:Real}},
                                        fname::String,
                                        morsesets::CellSubsets;
@@ -214,4 +214,36 @@ function plot_planar_simplicial_morse(sc::LefschetzComplex,
     if pv
         preview()
     end
+end
+
+"""
+    plot_planar_simplicial_morse(ec::EuclideanComplex,
+                                 fname::String,
+                                 morsesets::CellSubsets;
+                                 kwargs...)
+
+Create an image of a planar simplicial complex with Morse sets from an
+`EuclideanComplex`.
+
+This method extracts the vertex coordinates from the embedded coordinates
+stored in `ec` and delegates to the standard plotting method. All keyword
+arguments are forwarded unchanged.
+"""
+function plot_planar_simplicial_morse(ec::EuclideanComplex,
+                                      fname::String,
+                                      morsesets::CellSubsets;
+                                      hfac::Real=1.2,
+                                      vfac::Real=1.2,
+                                      sfac::Real=0,
+                                      pdim::Vector{Bool}=[false,true,true],
+                                      pv::Bool=false,
+                                      ci::Bool=false)
+    #
+    # Delegate to the LefschetzComplex method after extracting vertex coords
+    #
+    vertex_coords = [ec.coords[k][1] for k in 1:ec.ncells if ec.dimensions[k] == 0]
+    lc = euclidean_to_lefschetz(ec)
+    plot_planar_simplicial_morse(lc, vertex_coords, fname, morsesets;
+                                 hfac=hfac, vfac=vfac, sfac=sfac,
+                                 pdim=pdim, pv=pv, ci=ci)
 end

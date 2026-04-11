@@ -1,11 +1,11 @@
 export lefschetz_openhull
 
 """
-    lefschetz_openhull(lc::LefschetzComplex, subcomp::Vector{Int})
+    lefschetz_openhull(lc::AbstractComplex, subcomp::Vector{Int})
 
 Compute the open hull of a Lefschetz complex subset.
 """
-function lefschetz_openhull(lc::LefschetzComplex, subcomp::Vector{Int})
+function lefschetz_openhull(lc::AbstractComplex, subcomp::Vector{Int})
     #
     # Compute the open hull of a Lefschetz complex subset
     #
@@ -33,11 +33,11 @@ function lefschetz_openhull(lc::LefschetzComplex, subcomp::Vector{Int})
 end
 
 """
-    lefschetz_openhull(lc::LefschetzComplex, subcomp::Vector{String})
+    lefschetz_openhull(lc::AbstractComplex, subcomp::Vector{String})
 
 Compute the open hull of a Lefschetz complex subset.
 """
-function lefschetz_openhull(lc::LefschetzComplex, subcomp::Vector{String})
+function lefschetz_openhull(lc::AbstractComplex, subcomp::Vector{String})
     #
     # Compute the open hull of a Lefschetz complex subset
     #

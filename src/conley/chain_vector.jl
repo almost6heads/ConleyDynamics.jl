@@ -1,7 +1,7 @@
 export chain_vector
 
 """
-    chain_vector(lc::LefschetzComplex, chcells::Vector{Int})
+    chain_vector(lc::AbstractComplex, chcells::Vector{Int})
 
 Create a sparse vector representing a chain.
 
@@ -9,7 +9,7 @@ This function returns a sparse matrix in the form of a column vector,
 which has a `1` in every cell location indicated by the entries in the
 input argument `chcells`.
 """
-function chain_vector(lc::LefschetzComplex, chcells::Vector{Int})
+function chain_vector(lc::AbstractComplex, chcells::Vector{Int})
     #
     # Create a sparse vector representing a chain
     #
@@ -31,7 +31,7 @@ function chain_vector(lc::LefschetzComplex, chcells::Vector{Int})
 end
 
 """
-    chain_vector(lc::LefschetzComplex, chcells::Vector{String})
+    chain_vector(lc::AbstractComplex, chcells::Vector{String})
 
 Create a sparse vector representing a chain.
 
@@ -39,7 +39,7 @@ This function returns a sparse matrix in the form of a column vector,
 which has a `1` for every cell indicated by the labels listed in the
 input argument `chcells`.
 """
-function chain_vector(lc::LefschetzComplex, chcells::Vector{String})
+function chain_vector(lc::AbstractComplex, chcells::Vector{String})
     #
     # Create a sparse vector representing a chain
     #
@@ -50,27 +50,27 @@ function chain_vector(lc::LefschetzComplex, chcells::Vector{String})
 end
 
 """
-    chain_vector(lc::LefschetzComplex, chcell::Int)
+    chain_vector(lc::AbstractComplex, chcell::Int)
 
 Create a sparse vector representing a chain.
 
 This function returns a sparse matrix in the form of a column vector,
 which has a `1` at the cell index specified in the second argument.
 """
-chain_vector(lc::LefschetzComplex, chcell::Int) = chain_vector(lc,[chcell])
+chain_vector(lc::AbstractComplex, chcell::Int) = chain_vector(lc,[chcell])
 
 """
-    chain_vector(lc::LefschetzComplex, chcell::String)
+    chain_vector(lc::AbstractComplex, chcell::String)
 
 Create a sparse vector representing a chain.
 
 This function returns a sparse matrix in the form of a column vector,
 which has a `1` at the cell specified by the second argument.
 """
-chain_vector(lc::LefschetzComplex, chcell::String) = chain_vector(lc,[chcell])
+chain_vector(lc::AbstractComplex, chcell::String) = chain_vector(lc,[chcell])
 
 """
-    chain_vector(lc::LefschetzComplex, chcells::Vector{Int}, chcoeff)
+    chain_vector(lc::AbstractComplex, chcells::Vector{Int}, chcoeff)
 
 Create a sparse vector representing a chain.
 
@@ -79,7 +79,7 @@ has the entry `chcoeff[k]` in the `chcells[k]`-th row. In other words, it
 constructs the vector representation of the chain consisting of the cells
 specified in `chcells`, with coefficients as specified in `chcoeff`.
 """
-function chain_vector(lc::LefschetzComplex, chcells::Vector{Int}, chcoeff)
+function chain_vector(lc::AbstractComplex, chcells::Vector{Int}, chcoeff)
     #
     # Create a sparse vector representing a chain
     #
@@ -100,7 +100,7 @@ function chain_vector(lc::LefschetzComplex, chcells::Vector{Int}, chcoeff)
 end
 
 """
-    chain_vector(lc::LefschetzComplex, chcells::Vector{String}, chcoeff)
+    chain_vector(lc::AbstractComplex, chcells::Vector{String}, chcoeff)
 
 Create a sparse vector representing a chain.
 
@@ -110,7 +110,7 @@ has the entry `chcoeff[k]` in the row corresponding to the cell with label
 chain consisting of the cells specified in `chcells`, with coefficients as
 specified in `chcoeff`.
 """
-function chain_vector(lc::LefschetzComplex, chcells::Vector{String}, chcoeff)
+function chain_vector(lc::AbstractComplex, chcells::Vector{String}, chcoeff)
     #
     # Create a sparse vector representing a chain
     #
@@ -121,24 +121,24 @@ function chain_vector(lc::LefschetzComplex, chcells::Vector{String}, chcoeff)
 end
 
 """
-    chain_vector(lc::LefschetzComplex, chcell::Int, chcoeff)
+    chain_vector(lc::AbstractComplex, chcell::Int, chcoeff)
 
 Create a sparse vector representing a chain.
 
 This short-cut method specifies a chain consiting of one cell and its
 coefficient. The cell is given as its index.
 """
-chain_vector(lc::LefschetzComplex, chcell::Int, chcoeff) =
+chain_vector(lc::AbstractComplex, chcell::Int, chcoeff) =
    chain_vector(lc,[chcell],[chcoeff])
 
 """
-    chain_vector(lc::LefschetzComplex, chcell::String, chcoeff)
+    chain_vector(lc::AbstractComplex, chcell::String, chcoeff)
 
 Create a sparse vector representing a chain.
 
 This short-cut method specifies a chain consiting of one cell and its
 coefficient. The cell is given via its label.
 """
-chain_vector(lc::LefschetzComplex, chcell::String, chcoeff) =
+chain_vector(lc::AbstractComplex, chcell::String, chcoeff) =
    chain_vector(lc,[chcell],[chcoeff])
 

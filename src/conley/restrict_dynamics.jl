@@ -1,7 +1,7 @@
 export restrict_dynamics
 
 """
-    restrict_dynamics(lc::LefschetzComplex, mvf::CellSubsets, lcsub::Cells)
+    restrict_dynamics(lc::AbstractComplex, mvf::CellSubsets, lcsub::Cells)
 
 Restrict a multivector field to a Lefschetz subcomplex.
 
@@ -11,7 +11,7 @@ associated Lefschetz subcomplex `lcreduced` and the induced multivector
 field `mvfreduced` on the subcomplex. The multivectors of the new multivector
 field are the intersections of the original multivectors and the subcomplex.
 """
-function restrict_dynamics(lc::LefschetzComplex, mvf::CellSubsets, lcsub::Cells)
+function restrict_dynamics(lc::AbstractComplex, mvf::CellSubsets, lcsub::Cells)
     #
     # Restrict a multivector field to a Lefschetz subcomplex
     #

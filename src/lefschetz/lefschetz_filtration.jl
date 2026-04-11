@@ -1,7 +1,7 @@
 export lefschetz_filtration
 
 """
-    lefschetz_filtration(lc::LefschetzComplex, fvalues::Vector{Int})
+    lefschetz_filtration(lc::AbstractComplex, fvalues::Vector{Int})
 
 Compute a filtration on a Lefschetz subset.
 
@@ -39,7 +39,7 @@ julia> phint
  []
 ```
 """
-function lefschetz_filtration(lc::LefschetzComplex, fvalues::Vector{Int})
+function lefschetz_filtration(lc::AbstractComplex, fvalues::Vector{Int})
     #
     # Compute a Lefschetz complex filtration
     #
@@ -83,7 +83,7 @@ function lefschetz_filtration(lc::LefschetzComplex, fvalues::Vector{Int})
 end
 
 """
-    lefschetz_filtration(lc::LefschetzComplex, strfilt::Vector{Vector{String}})
+    lefschetz_filtration(lc::AbstractComplex, strfilt::Vector{Vector{String}})
 
 Compute a filtration on a Lefschetz subset.
 
@@ -123,7 +123,7 @@ julia> phint
  []
 ```
 """
-function lefschetz_filtration(lc::LefschetzComplex, strfilt::Vector{Vector{String}})
+function lefschetz_filtration(lc::AbstractComplex, strfilt::Vector{Vector{String}})
     #
     # Compute a Lefschetz complex filtration
     #

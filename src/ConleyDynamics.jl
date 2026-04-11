@@ -44,6 +44,7 @@ include("./homology/homology.jl")
 include("./homology/relative_homology.jl")
 
 include("./lefschetz/convert_cells.jl")
+include("./lefschetz/euclidean_complex_utils.jl")
 include("./lefschetz/convert_coordinates.jl")
 include("./lefschetz/create_lefschetz_gf2.jl")
 include("./lefschetz/create_simplicial_complex.jl")

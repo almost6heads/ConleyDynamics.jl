@@ -1,11 +1,11 @@
 export lefschetz_field
 
 """
-    fieldstr = lefschetz_field(lc::LefschetzComplex)
+    fieldstr = lefschetz_field(lc::AbstractComplex)
 
 Returns the Lefschetz complex coefficient field.
 """
-function lefschetz_field(lc::LefschetzComplex)
+function lefschetz_field(lc::AbstractComplex)
     #
     # Return the Lefschetz complex coefficient field
     #

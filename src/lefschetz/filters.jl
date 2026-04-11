@@ -3,7 +3,7 @@ export filter_shallow_pairs
 export filter_induced_mvf
 
 """
-    create_random_filter(lc::LefschetzComplex)
+    create_random_filter(lc::AbstractComplex)
 
 Create a random injective filter on a Lefschetz complex.
 
@@ -15,7 +15,7 @@ assignment is random, but all filter values of cells of dimension
 The function returns the filter as `Vector{Int}`, with indices
 corresponding to the cell indices in the Lefschetz complex.
 """
-function create_random_filter(lc::LefschetzComplex)
+function create_random_filter(lc::AbstractComplex)
     #
     # Create a random injective filter on a Lefschetz complex
     #
@@ -43,7 +43,7 @@ function create_random_filter(lc::LefschetzComplex)
 end
 
 """
-    filter_shallow_pairs(lc::LefschetzComplex, phi)
+    filter_shallow_pairs(lc::AbstractComplex, phi)
 
 Find all shallow pairs for a filter.
 
@@ -56,7 +56,7 @@ If the filter is injective, these pairs give rise to a Forman
 vector field on the underlying Lefschetz complex. For noninjective
 filters this is not true in general.
 """
-function filter_shallow_pairs(lc::LefschetzComplex, phi)
+function filter_shallow_pairs(lc::AbstractComplex, phi)
     #
     # Find all shallow pairs for a filter
     #
@@ -75,7 +75,7 @@ function filter_shallow_pairs(lc::LefschetzComplex, phi)
 end
 
 """
-    filter_induced_mvf(lc::LefschetzComplex, phi)
+    filter_induced_mvf(lc::AbstractComplex, phi)
 
 Compute the multivector field induced by a filter.
 
@@ -84,7 +84,7 @@ property that every shallow pair is contained in a multivector.
 For injective filters this is a Forman vector field, but in the
 noninjective case it can be a general multivector field.
 """
-function filter_induced_mvf(lc::LefschetzComplex, phi)
+function filter_induced_mvf(lc::AbstractComplex, phi)
     #
     # Compute the multivector field induced by a filter
     #
@@ -99,7 +99,7 @@ end
 #                             #
 ###############################
 
-function phi_bd(lc::LefschetzComplex, phi, y::Int)
+function phi_bd(lc::AbstractComplex, phi, y::Int)
     #
     # Compute the phi boundary of a cell y
     #
@@ -118,7 +118,7 @@ function phi_bd(lc::LefschetzComplex, phi, y::Int)
     return phi_bd_cells
 end
 
-function phi_cbd(lc::LefschetzComplex, phi, x::Int)
+function phi_cbd(lc::AbstractComplex, phi, x::Int)
     #
     # Compute the phi coboundary of a cell x
     #

@@ -2,7 +2,7 @@ export mvf_forward_orbit
 export mvf_backward_orbit
 
 """
-    mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+    mvf_forward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                       sources::Cells)
 
 Determine the forward orbit of a collection of cells.
@@ -12,7 +12,7 @@ that can be reached from the cells in `sources` in forward time.
 Critical cells in the forward orbit will be returned as singletons.
 The return type of the multivectors is the same as the type of `mvf`.
 """
-function mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+function mvf_forward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                            sources::Cells)
     #
     # Determine the forward orbit of a collection of cells
@@ -21,7 +21,7 @@ function mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
 end
 
 """
-    mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+    mvf_forward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                       source::Cell)
 
 Determine the forward orbit of a single cell.
@@ -31,7 +31,7 @@ that can be reached from the cell `source` in forward time. Critical
 cells in the forward orbit will be returned as singletons. The return
 type of the multivectors is the same as the type of `mvf`.
 """
-function mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+function mvf_forward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                            source::Cell)
     #
     # Determine the forward orbit of a cell
@@ -40,7 +40,7 @@ function mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
 end
 
 """
-    mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+    mvf_forward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                       sources::Cells, nsteps::Int)
 
 Determine a time-restricted forward orbit of a collection of cells.
@@ -51,7 +51,7 @@ transitions in forward time. Critical cells in the forward orbit will
 be returned as singletons. The return type of the multivectors is the
 same as the type of `mvf`.
 """
-function mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+function mvf_forward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                            sources::Cells, nsteps::Int)
     #
     # Determine the forward orbit of a collection of cells
@@ -120,7 +120,7 @@ function mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
 end
 
 """
-    mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+    mvf_forward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                       source::Cell, nsteps::Int)
 
 Determine a time-restricted forward orbit of a single cell.
@@ -131,7 +131,7 @@ transitions in forward time. Critical cells in the forward orbit will
 be returned as singletons. The return type of the multivectors is the
 same as the type of `mvf`.
 """
-function mvf_forward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+function mvf_forward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                            source::Cell, nsteps::Int)
     #
     # Determine the forward orbit of a cell
@@ -143,7 +143,7 @@ end
 ######################################################################
 
 """
-    mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+    mvf_backward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                        sources::Cells)
 
 Determine the backward orbit of a collection of cells.
@@ -155,7 +155,7 @@ in forward time. Critical cells in the backward orbit will be returned
 as singletons. The return type of the multivectors is the same as
 the type of `mvf`.
 """
-function mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+function mvf_backward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                             sources::Cells)
     #
     # Determine the backward orbit of a collection of cells
@@ -164,7 +164,7 @@ function mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
 end
 
 """
-    mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+    mvf_backward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                        source::Cell)
 
 Determine the backward orbit of a single cell.
@@ -175,7 +175,7 @@ words, it contains all multivectors that flow to `source` in forward
 time. Critical cells in the backward orbit will be returned as singletons.
 The return type of the multivectors is the same as the type of `mvf`.
 """
-function mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+function mvf_backward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                             source::Cell)
     #
     # Determine the backward orbit of a cell
@@ -184,7 +184,7 @@ function mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
 end
 
 """
-    mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+    mvf_backward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                        sources::Cells, nsteps::Int)
 
 Determine a time-restricted backward orbit of a collection of cells.
@@ -197,7 +197,7 @@ in forward time. Critical cells in the backward orbit will be returned
 as singletons. The return type of the multivectors is the same as the
 type of `mvf`.
 """
-function mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+function mvf_backward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                             sources::Cells, nsteps::Int)
     #
     # Determine the backward orbit of a collection of cells
@@ -266,7 +266,7 @@ function mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
 end
 
 """
-    mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+    mvf_backward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                        source::Cell, nsteps::Int)
 
 Determine a time-restricted backward orbit of a single cell.
@@ -279,7 +279,7 @@ transitions in forward time. Critical cells in the backward orbit
 will be returned as singletons. The return type of the multivectors
 is the same as the type of `mvf`.
 """
-function mvf_backward_orbit(lc::LefschetzComplex, mvf::CellSubsets,
+function mvf_backward_orbit(lc::AbstractComplex, mvf::CellSubsets,
                             source::Cell, nsteps::Int)
     #
     # Determine the backward orbit of a cell

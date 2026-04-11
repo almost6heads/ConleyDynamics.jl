@@ -317,7 +317,7 @@ function cube_label(pointdim::Int, pointlen::Int, pointinfo::Vector{Int})
 end
 
 """
-    get_cubical_coords(cc::LefschetzComplex)
+    get_cubical_coords(cc::AbstractComplex)
 
 Compute the vertex coordinates for a cubical complex.
 
@@ -326,7 +326,7 @@ returns a vector of coordinates for the vertices of the complex, that
 can then be used for plotting.
 ```
 """
-function get_cubical_coords(cc::LefschetzComplex)
+function get_cubical_coords(cc::AbstractComplex)
     #
     # Compute the vertex coordinates for a cubical complex
     #

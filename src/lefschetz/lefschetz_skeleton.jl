@@ -1,13 +1,13 @@
 export lefschetz_skeleton
 
 """
-    lefschetz_skeleton(lc::LefschetzComplex, subcomp::Vector{Int}, skdim::Int)
+    lefschetz_skeleton(lc::AbstractComplex, subcomp::Vector{Int}, skdim::Int)
 
 Compute the `skdim`-dimensional skeleton of a Lefschetz complex subset.
 
 The computed skeleton is for the closure of the subcomplex given by `subcomp`.
 """
-function lefschetz_skeleton(lc::LefschetzComplex, subcomp::Vector{Int}, skdim::Int)
+function lefschetz_skeleton(lc::AbstractComplex, subcomp::Vector{Int}, skdim::Int)
     #
     # Compute the skdim-dimensional skeleton of a Lefschetz complex subset
     #
@@ -32,13 +32,13 @@ function lefschetz_skeleton(lc::LefschetzComplex, subcomp::Vector{Int}, skdim::I
 end
 
 """
-    lefschetz_skeleton(lc::LefschetzComplex, subcomp::Vector{String}, skdim::Int)
+    lefschetz_skeleton(lc::AbstractComplex, subcomp::Vector{String}, skdim::Int)
 
 Compute the `skdim`-dimensional skeleton of a Lefschetz complex subset.
 
 The computed skeleton is for the closure of the subcomplex given by `subcomp`.
 """
-function lefschetz_skeleton(lc::LefschetzComplex, subcomp::Vector{String}, skdim::Int)
+function lefschetz_skeleton(lc::AbstractComplex, subcomp::Vector{String}, skdim::Int)
     #
     # Compute the skdim-dimensional skeleton  of a Lefschetz complex subset
     #
@@ -54,13 +54,13 @@ function lefschetz_skeleton(lc::LefschetzComplex, subcomp::Vector{String}, skdim
 end
 
 """
-    lefschetz_skeleton(lc::LefschetzComplex, skdim::Int)
+    lefschetz_skeleton(lc::AbstractComplex, skdim::Int)
 
 Compute the `skdim`-dimensional skeleton of a Lefschetz complex.
 
 The computed skeleton is for the full Lefschetz complex.
 """
-function lefschetz_skeleton(lc::LefschetzComplex, skdim::Int)
+function lefschetz_skeleton(lc::AbstractComplex, skdim::Int)
     #
     # Compute the skdim-dimensional skeleton of a Lefschetz complex
     #

@@ -1,7 +1,7 @@
 export create_mvf_hull
 
 """
-    create_mvf_hull(lc::LefschetzComplex, mvfbase::Vector{Vector{Int}})
+    create_mvf_hull(lc::AbstractComplex, mvfbase::Vector{Vector{Int}})
 
 Create the smallest multivector field containing the given sets.
 
@@ -14,7 +14,7 @@ If the sets in `mvfbase` are poorly chosen, one might end up with
 extremely large multivectors due to the above potential merging of
 locally closed hulls.
 """
-function create_mvf_hull(lc::LefschetzComplex, mvfbase::Vector{Vector{Int}})
+function create_mvf_hull(lc::AbstractComplex, mvfbase::Vector{Vector{Int}})
     #
     # Create the smallest multivector field containing the given sets
     #
@@ -74,7 +74,7 @@ function create_mvf_hull(lc::LefschetzComplex, mvfbase::Vector{Vector{Int}})
 end
 
 """
-    create_mvf_hull(lc::LefschetzComplex, mvfbase::Vector{Vector{String}})
+    create_mvf_hull(lc::AbstractComplex, mvfbase::Vector{Vector{String}})
 
 Create the smallest multivector field containing the given sets.
 
@@ -87,7 +87,7 @@ If the sets in `mvfbase` are poorly chosen, one might end up with
 extremely large multivectors due to the above potential merging of
 locally closed hulls.
 """
-function create_mvf_hull(lc::LefschetzComplex, mvfbase::Vector{Vector{String}})
+function create_mvf_hull(lc::AbstractComplex, mvfbase::Vector{Vector{String}})
     #
     # Convert a multivector field from label to index form
     #

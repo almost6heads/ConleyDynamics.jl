@@ -1,7 +1,7 @@
 export permute_lefschetz_complex
 
 """
-    permute_lefschetz_complex(lc::LefschetzComplex,
+    permute_lefschetz_complex(lc::AbstractComplex,
                               permutation::Vector{Int})
 
 Permute the indices of a Lefschetz complex.
@@ -14,7 +14,7 @@ cells by dimension, otherwise an error is raised. In other words,
 the permutation has to decompose into permutations within each dimension.
 This is automatically done if no permutation is explicitly specified.
 """
-function permute_lefschetz_complex(lc::LefschetzComplex,
+function permute_lefschetz_complex(lc::AbstractComplex,
                                    perm::Vector{Int}=Vector{Int}([]))
     #
     # Create a Lefschetz complex which permutes the cell indices
@@ -49,11 +49,16 @@ function permute_lefschetz_complex(lc::LefschetzComplex,
     dimensions2 = dimensions1[perm]
     boundary2   = sparse_permute(boundary1, perm, perm)
 
-    # Create the permuted Lefschetz complex
+    # Create the permuted complex (preserving EuclideanComplex if applicable)
 
-    lc2 = LefschetzComplex(labels2, dimensions2, boundary2; validate=false)
-    
-    # Return the permuted Lefschetz complex
+    if lc isa EuclideanComplex
+        coords2 = lc.coords[perm]
+        lc2 = EuclideanComplex(labels2, dimensions2, boundary2, coords2; validate=false)
+    else
+        lc2 = LefschetzComplex(labels2, dimensions2, boundary2; validate=false)
+    end
+
+    # Return the permuted complex
 
     return lc2
 end

@@ -2,27 +2,30 @@ export create_simplicial_delaunay
 
 """
     create_simplicial_delaunay(boxw::Real, boxh::Real, pdist::Real, attmpt::Int;
-                               p::Int=2)
+                               p::Int=2, euclidean::Bool=false)
 
 Create a planar Delaunay triangulation inside a box. The complex is
 over the rationals if `p=0`, and over `GF(p)` if `p>0`.
 
 The function selects a random sample of points inside the rectangular
-box `[0,boxw] x [0,boxh]`, while trying to maintain a minimum distance 
+box `[0,boxw] x [0,boxh]`, while trying to maintain a minimum distance
 of `pdist` between the points. The argument `attmpt` specifies the number
 of attempts when trying to add points. A standard value is 20, and larger
 values tend to fill holes better, but at the expense of runtime. From the
-random sample, the function then creates a Delaunay triangulation, and
-returns the following objects:
+random sample, the function then creates a Delaunay triangulation.
 
+When `euclidean=false` (default), the function returns:
 * A simplicial complex `sc::LefschetzComplex`.
 * A vector `coords::Vector{Vector{Float64}}` of vertex coordinates.
+
+When `euclidean=true`, it returns an `EuclideanComplex` with embedded
+coordinates.
 
 Note that the function does not provide a full triangulation
 of the given rectangle. Close to the boundary there will be gaps.
 """
 function create_simplicial_delaunay(boxw::Real, boxh::Real, pdist::Real, attmpt::Int;
-                                    p::Int=2)
+                                    p::Int=2, euclidean::Bool=false)
     #
     # Create a planar Delaunay triangulation
     #
@@ -68,32 +71,40 @@ function create_simplicial_delaunay(boxw::Real, boxh::Real, pdist::Real, attmpt:
         push!(simplices, sort(csimp))
     end
 
-    # Create the simplicial complex, and return it 
-    # together with the coordinates
+    # Create the simplicial complex and return it
 
     sc = create_simplicial_complex(labels, simplices, p=p)
-    return sc, coords
+
+    if euclidean
+        return create_simplicial_complex(labels, simplices, coords; p=p)
+    else
+        return sc, coords
+    end
 end
 
 """
     create_simplicial_delaunay(boxw::Real, boxh::Real, npoints::Int;
-                               p::Int=2)
+                               p::Int=2, euclidean::Bool=false)
 
 Create a planar Delaunay triangulation inside a box. The complex is
 over the rationals if `p=0`, and over `GF(p)` if `p>0`.
 
 The function selects a random sample of `npoints` points inside the rectangular
 box `[0,boxw] x [0,boxh]`. From the random sample, the function then creates a
-Delaunay triangulation, and returns the following objects:
+Delaunay triangulation.
 
+When `euclidean=false` (default), the function returns:
 * A simplicial complex `sc::LefschetzComplex`.
 * A vector `coords::Vector{Vector{Float64}}` of vertex coordinates.
+
+When `euclidean=true`, it returns an `EuclideanComplex` with embedded
+coordinates.
 
 Note that the function does not provide a full triangulation
 of the given rectangle. Close to the boundary there will be gaps.
 """
 function create_simplicial_delaunay(boxw::Real, boxh::Real, npoints::Int;
-                                    p::Int=2)
+                                    p::Int=2, euclidean::Bool=false)
     #
     # Create a planar Delaunay triangulation
     #
@@ -133,10 +144,13 @@ function create_simplicial_delaunay(boxw::Real, boxh::Real, npoints::Int;
         push!(simplices, sort(csimp))
     end
 
-    # Create the simplicial complex, and return it 
-    # together with the coordinates
+    # Create the simplicial complex and return it
 
-    sc = create_simplicial_complex(labels, simplices, p=p)
-    return sc, coords
+    if euclidean
+        return create_simplicial_complex(labels, simplices, coords; p=p)
+    else
+        sc = create_simplicial_complex(labels, simplices, p=p)
+        return sc, coords
+    end
 end
 

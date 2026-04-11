@@ -1,7 +1,7 @@
 export forman_comb_flow
 
 """
-    forman_comb_flow(lc::LefschetzComplex, fvf::Vector{Vector{String}})
+    forman_comb_flow(lc::AbstractComplex, fvf::Vector{Vector{String}})
 
 Compute Forman's combinatorial flow and the associated chain homotopy.
 
@@ -51,7 +51,7 @@ julia> full_from_sparse(phi*phi)
  0  0  0  0  0  0  1
 ```
 """
-function forman_comb_flow(lc::LefschetzComplex, fvf::Vector{Vector{Int}})
+function forman_comb_flow(lc::AbstractComplex, fvf::Vector{Vector{Int}})
     #
     # Compute the matrix representation of Forman's combinatorial
     # flow, as well as the associated chain homotopy
@@ -90,14 +90,14 @@ function forman_comb_flow(lc::LefschetzComplex, fvf::Vector{Vector{Int}})
 end
 
 """
-    forman_comb_flow(lc::LefschetzComplex, fvf::Vector{Vector{String}})
+    forman_comb_flow(lc::AbstractComplex, fvf::Vector{Vector{String}})
 
 Compute Forman's combinatorial flow and the associated chain homotopy.
 
 This function returns matrix representations of Forman's combinatorial 
 flow `phi`, and of the associated chain homotopy `gamma`.
 """
-function forman_comb_flow(lc::LefschetzComplex, fvf::Vector{Vector{String}})
+function forman_comb_flow(lc::AbstractComplex, fvf::Vector{Vector{String}})
     #
     # Compute the matrix representation of Forman's combinatorial
     # flow, as well as the associated chain homotopy

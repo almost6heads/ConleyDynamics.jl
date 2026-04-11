@@ -1,7 +1,7 @@
 export chain_support
 
 """
-    chain_support(lc::LefschetzComplex, cvec::SparseMatrix; coeff::Bool=false)
+    chain_support(lc::AbstractComplex, cvec::SparseMatrix; coeff::Bool=false)
 
 Determine the support of a chain given as a sparse vector.
 
@@ -12,7 +12,7 @@ in the chain. If one passes the optional parameter `coeff=true`, then the
 function returns two arguments: In addition to the vector of labels as
 above, it also returns the vector of associated coefficients.
 """
-function chain_support(lc::LefschetzComplex, cvec::SparseMatrix; coeff::Bool=false)
+function chain_support(lc::AbstractComplex, cvec::SparseMatrix; coeff::Bool=false)
     #
     # Determine the support of a chain given as a sparse vector
     #

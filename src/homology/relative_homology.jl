@@ -1,7 +1,7 @@
 export relative_homology
 
 """
-    relative_homology(lc::LefschetzComplex,subc::Cells)
+    relative_homology(lc::AbstractComplex,subc::Cells)
 
 Compute the relative homology of a Lefschetz complex with
 respect to a subcomplex. The computation is performed over
@@ -12,7 +12,7 @@ can be given either as indices or labels. The homology is
 returned as a vector `betti` of Betti numbers, where `betti[k]`
 is the Betti number in dimension `k-1`.
 """
-function relative_homology(lc::LefschetzComplex,subc::Cells)
+function relative_homology(lc::AbstractComplex,subc::Cells)
     #
     # Compute the homology of a Lefschetz complex
     #
@@ -45,7 +45,7 @@ function relative_homology(lc::LefschetzComplex,subc::Cells)
     end
 end
 
-function relative_homology(lc::LefschetzComplex, subc::Vector{Any})
+function relative_homology(lc::AbstractComplex, subc::Vector{Any})
     if length(subc) == 0
         return relative_homology(lc, Vector{Int}([]))
     else
@@ -54,7 +54,7 @@ function relative_homology(lc::LefschetzComplex, subc::Vector{Any})
 end
 
 """
-    relative_homology(lc::LefschetzComplex,subc::Cells,subc0::Cells)
+    relative_homology(lc::AbstractComplex,subc::Cells,subc0::Cells)
 
 Compute the relative homology of a Lefschetz complex with
 respect to a subcomplex. The computation is performed over
@@ -66,7 +66,7 @@ In this implementation, relative homology of the pair
 returned as a vector `betti` of Betti numbers, where `betti[k]`
 is the Betti number in dimension `k-1`.
 """
-function relative_homology(lc::LefschetzComplex,subc::Cells,subc0::Cells)
+function relative_homology(lc::AbstractComplex,subc::Cells,subc0::Cells)
     #
     # Compute the homology of a Lefschetz complex
     #
@@ -124,7 +124,7 @@ function relative_homology(lc::LefschetzComplex,subc::Cells,subc0::Cells)
     return betti
 end
 
-function relative_homology(lc::LefschetzComplex,
+function relative_homology(lc::AbstractComplex,
                            subc::Union{Vector{Int},Vector{String}},
                            subc0::Vector{Any})
     if length(subc0) == 0

@@ -1,7 +1,7 @@
 export mvf_neighborhood
 
 """
-    mvf_neighborhood(lc::LefschetzComplex, mvf::CellSubsets,
+    mvf_neighborhood(lc::AbstractComplex, mvf::CellSubsets,
                      sources::Cells, n::Int)
 
 Determine a multivector neighborhood of a set of cells.
@@ -14,7 +14,7 @@ thickness of `n` layers of multivectors. Critical cells in this
 neighborhood will be returned as singletons. The return type of the
 multivectors is the same as the type of `mvf`.
 """
-function mvf_neighborhood(lc::LefschetzComplex, mvf::CellSubsets,
+function mvf_neighborhood(lc::AbstractComplex, mvf::CellSubsets,
                           sources::Cells, n::Int)
     #
     # Determine a multivector neighborhood of a set of cells
@@ -83,7 +83,7 @@ function mvf_neighborhood(lc::LefschetzComplex, mvf::CellSubsets,
 end
 
 """
-    mvf_neighborhood(lc::LefschetzComplex, mvf::CellSubsets,
+    mvf_neighborhood(lc::AbstractComplex, mvf::CellSubsets,
                      source::Cell, n::Int)
 
 Determine a multivector neighborhood of a cell.
@@ -96,7 +96,7 @@ of `n` layers of multivectors. Critical cells in this neighborhood
 will be returned as singletons. The return type of the multivectors
 is the same as the type of `mvf`.
 """
-function mvf_neighborhood(lc::LefschetzComplex, mvf::CellSubsets,
+function mvf_neighborhood(lc::AbstractComplex, mvf::CellSubsets,
                           source::Cell, n::Int)
     #
     # Determine a multivector neighborhood of a cell

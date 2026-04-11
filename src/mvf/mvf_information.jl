@@ -1,7 +1,7 @@
 export mvf_information
 
 """
-    mvf_information(lc::LefschetzComplex, mvf::CellSubsets)
+    mvf_information(lc::AbstractComplex, mvf::CellSubsets)
 
 Extract basic information about a multivector field.
 
@@ -18,7 +18,7 @@ In the last two cases, the dictionary entries are vectors of pairs
 `(length,frequency)`, where each pair indicates that there are
 `frequency` multivectors of length `length`.
 """
-function mvf_information(lc::LefschetzComplex, mvf::CellSubsets)
+function mvf_information(lc::AbstractComplex, mvf::CellSubsets)
     #
     # Extract basic information about a multivector field
     #

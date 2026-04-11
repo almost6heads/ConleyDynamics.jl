@@ -1,7 +1,7 @@
 export remove_exit_set
 
 """
-    remove_exit_set(lc::LefschetzComplex, mvf::CellSubsets)
+    remove_exit_set(lc::AbstractComplex, mvf::CellSubsets)
 
 Exit set removal for a multivector field on a Lefschetz subcomplex.
 
@@ -17,7 +17,7 @@ returns the restricted Lefschetz complex and multivector field obtained
 by removing the closure of the exit set. In the latter case, unexpected
 results might be obtained.
 """
-function remove_exit_set(lc::LefschetzComplex, mvf::CellSubsets)
+function remove_exit_set(lc::AbstractComplex, mvf::CellSubsets)
     #
     # Exit set removal for a multivector field on a Lefschetz subcomplex
     #

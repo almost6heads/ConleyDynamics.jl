@@ -1,7 +1,7 @@
 export mvf_length
 
 """
-    mvf_length(lc::LefschetzComplex, mvf::CellSubsets)
+    mvf_length(lc::AbstractComplex, mvf::CellSubsets)
 
 Number of multivectors in a multivector field.
 
@@ -26,7 +26,7 @@ julia> mvf_length(lc, mvf)
 8
 ```
 """
-function mvf_length(lc::LefschetzComplex, mvf::CellSubsets)
+function mvf_length(lc::AbstractComplex, mvf::CellSubsets)
     #
     # Find the number of multivectors in a
     # multivector field

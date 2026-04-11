@@ -1,13 +1,13 @@
 export lefschetz_clomo_pair
 
 """
-    lefschetz_clomopair(lc::LefschetzComplex, subcomp::Vector{Int})
+    lefschetz_clomopair(lc::AbstractComplex, subcomp::Vector{Int})
 
 Determine the closure-mouth-pair associated with a Lefschetz complex subset.
 
 The function returns the pair `(closure,mouth)`.
 """
-function lefschetz_clomo_pair(lc::LefschetzComplex, subcomp::Vector{Int})
+function lefschetz_clomo_pair(lc::AbstractComplex, subcomp::Vector{Int})
     #
     # Determine the closure-mouth-pair for a Lefschetz complex subset
     #
@@ -18,13 +18,13 @@ function lefschetz_clomo_pair(lc::LefschetzComplex, subcomp::Vector{Int})
 end
 
 """
-    lefschetz_clomopair(lc::LefschetzComplex, subcomp::Vector{String})
+    lefschetz_clomopair(lc::AbstractComplex, subcomp::Vector{String})
 
 Determine the closure-mouth-pair associated with a Lefschetz complex subset.
 
 The function returns the pair `(closure,mouth)`.
 """
-function lefschetz_clomo_pair(lc::LefschetzComplex, subcomp::Vector{String})
+function lefschetz_clomo_pair(lc::AbstractComplex, subcomp::Vector{String})
     #
     # Determine the closure-mouth-pair for a Lefschetz complex subset
     #

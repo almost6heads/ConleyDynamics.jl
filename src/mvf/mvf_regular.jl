@@ -1,7 +1,7 @@
 export mvf_regular
 
 """
-    mvf_regular(lc::LefschetzComplex, mvf::CellSubsets)
+    mvf_regular(lc::AbstractComplex, mvf::CellSubsets)
 
 Determines all regular multivectors.
 
@@ -30,7 +30,7 @@ julia> mvf_regular(lc, mvf)
  ["E", "EF"]
 ```
 """
-function mvf_regular(lc::LefschetzComplex, mvf::CellSubsets)
+function mvf_regular(lc::AbstractComplex, mvf::CellSubsets)
     #
     # Find all regular multivectors
     #

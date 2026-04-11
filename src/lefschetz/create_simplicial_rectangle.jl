@@ -1,7 +1,7 @@
 export create_simplicial_rectangle
 
 """
-    create_simplicial_rectangle(nx::Int, ny::Int; p::Int=2)
+    create_simplicial_rectangle(nx::Int, ny::Int; p::Int=2, euclidean::Bool=false)
 
 Create a simplicial complex covering a rectangle in the plane. The
 complex is over the rationals if `p=0`, and over `GF(p)` if `p>0`.
@@ -13,14 +13,17 @@ the center point of the square. Labels have the following meaning:
 - The label `XXXYYYb` corresponds to the point `(XXX, YYY)`.
 - The label `XXXYYYc` corresponds to `(XXX + 1/2, YYY + 1/2)`.
 
-The number of characters in `XXX` and `YYY` matches the number 
-of digits of the larger number of `nx` and `ny`. The function
-returns the following objects:
+The number of characters in `XXX` and `YYY` matches the number
+of digits of the larger number of `nx` and `ny`.
 
+When `euclidean=false` (default), the function returns:
 * A simplicial complex `sc::LefschetzComplex`.
 * A vector `coords::Vector{Vector{Float64}}` of vertex coordinates.
+
+When `euclidean=true`, it returns an `EuclideanComplex` with embedded
+coordinates.
 """
-function create_simplicial_rectangle(nx::Int, ny::Int; p::Int=2)
+function create_simplicial_rectangle(nx::Int, ny::Int; p::Int=2, euclidean::Bool=false)
     #
     # Create a Lefschetz complex struct for a simplicial rectangle.
     #
@@ -75,7 +78,11 @@ function create_simplicial_rectangle(nx::Int, ny::Int; p::Int=2)
 
     # Create the simplicial complex and return it
 
-    sc = create_simplicial_complex(labels,triangles,p=p)
-    return sc, coords
+    if euclidean
+        return create_simplicial_complex(labels, triangles, coords; p=p)
+    else
+        sc = create_simplicial_complex(labels, triangles, p=p)
+        return sc, coords
+    end
 end
 

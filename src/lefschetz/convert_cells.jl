@@ -3,12 +3,12 @@ export convert_cellsubsets
 export cellsubsets_to_cells
 
 """
-    convert_cells(lc::LefschetzComplex, cl::Vector{Int})
+    convert_cells(lc::AbstractComplex, cl::Vector{Int})
 
 Convert cell list `cl` in the Lefschetz complex `lc` from 
 index form to label form.
 """
-function convert_cells(lc::LefschetzComplex, cl::Vector{Int})
+function convert_cells(lc::AbstractComplex, cl::Vector{Int})
     #
     # Convert a cell list from index to label form
     #
@@ -17,12 +17,12 @@ function convert_cells(lc::LefschetzComplex, cl::Vector{Int})
 end
 
 """
-    convert_cells(lc::LefschetzComplex, cl::Vector{String})
+    convert_cells(lc::AbstractComplex, cl::Vector{String})
 
 Convert cell list `cl` in the Lefschetz complex `lc` from 
 label form to index form.
 """
-function convert_cells(lc::LefschetzComplex, cl::Vector{String})
+function convert_cells(lc::AbstractComplex, cl::Vector{String})
     #
     # Convert a cell list from label to index form
     #
@@ -31,12 +31,12 @@ function convert_cells(lc::LefschetzComplex, cl::Vector{String})
 end
 
 """
-    convert_cellsubsets(lc::LefschetzComplex, clsub::Vector{Vector{Int}})
+    convert_cellsubsets(lc::AbstractComplex, clsub::Vector{Vector{Int}})
 
 Convert CellSubsets `clsub` in the Lefschetz complex `lc` from 
 index form to label form.
 """
-function convert_cellsubsets(lc::LefschetzComplex, clsub::Vector{Vector{Int}})
+function convert_cellsubsets(lc::AbstractComplex, clsub::Vector{Vector{Int}})
     #
     # Convert a CellSubsets from index to label form
     #
@@ -54,12 +54,12 @@ function convert_cellsubsets(lc::LefschetzComplex, clsub::Vector{Vector{Int}})
 end
 
 """
-    convert_cellsubsets(lc::LefschetzComplex, clsub::Vector{Vector{String}})
+    convert_cellsubsets(lc::AbstractComplex, clsub::Vector{Vector{String}})
 
 Convert CellSubsets `clsub` in the Lefschetz complex `lc` from 
 label form to index form.
 """
-function convert_cellsubsets(lc::LefschetzComplex, clsub::Vector{Vector{String}})
+function convert_cellsubsets(lc::AbstractComplex, clsub::Vector{Vector{String}})
     #
     # Convert a CellSubsets from label to index form
     #
@@ -77,13 +77,13 @@ function convert_cellsubsets(lc::LefschetzComplex, clsub::Vector{Vector{String}}
 end
 
 """
-    cellsubsets_to_cells(lc::LefschetzComplex, css::CellSubsets)
+    cellsubsets_to_cells(lc::AbstractComplex, css::CellSubsets)
 
 Convert the cell subsets `css` into a vector of cells, by simply
 taking the union of all subsets. The cells are returned in ordered
 form, based on their index form in `lc`.
 """
-function cellsubsets_to_cells(lc::LefschetzComplex, css::CellSubsets)
+function cellsubsets_to_cells(lc::AbstractComplex, css::CellSubsets)
     #
     # Convert cell subsets to a vector of cells
     #

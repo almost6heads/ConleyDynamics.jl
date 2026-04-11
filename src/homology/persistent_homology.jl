@@ -1,7 +1,7 @@
 export persistent_homology
 
 """
-    persistent_homology(lc::LefschetzComplex, filtration::Vector{Int};
+    persistent_homology(lc::AbstractComplex, filtration::Vector{Int};
                         [algorithm::String])
 
 Compute the persistent homology of a Lefschetz complex filtration over
@@ -28,7 +28,7 @@ argument `algorithm::String`:
 
 By default, the function uses the Morse reduction algorithm `morse`.
 """
-function persistent_homology(lc::LefschetzComplex, filtration::Vector{Int};
+function persistent_homology(lc::AbstractComplex, filtration::Vector{Int};
                              algorithm::String="matrix")
     #
     # Compute the persistent homology of a Lefschetz complex filtration

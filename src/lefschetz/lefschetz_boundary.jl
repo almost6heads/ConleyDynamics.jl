@@ -1,13 +1,13 @@
 export lefschetz_boundary, lefschetz_coboundary
 
 """
-    lefschetz_boundary(lc::LefschetzComplex, cellI::Int)
+    lefschetz_boundary(lc::AbstractComplex, cellI::Int)
 
 Compute the support of the boundary of a Lefschetz complex cell.
 
 This method returns the boundary support as a `Vector{Int}`.
 """
-function lefschetz_boundary(lc::LefschetzComplex, cellI::Int)
+function lefschetz_boundary(lc::AbstractComplex, cellI::Int)
     #
     # Compute the support of the boundary of a Lefschetz complex cell
     #
@@ -30,13 +30,13 @@ function lefschetz_boundary(lc::LefschetzComplex, cellI::Int)
 end
 
 """
-    lefschetz_boundary(lc::LefschetzComplex, cellS::String)
+    lefschetz_boundary(lc::AbstractComplex, cellS::String)
 
 Compute the support of the boundary of a Lefschetz complex cell.
 
 This method returns the boundary support as a `Vector{String}`.
 """
-function lefschetz_boundary(lc::LefschetzComplex, cellS::String)
+function lefschetz_boundary(lc::AbstractComplex, cellS::String)
     #
     # Compute the support of the boundary of a Lefschetz complex cell
     #
@@ -57,13 +57,13 @@ function lefschetz_boundary(lc::LefschetzComplex, cellS::String)
 end
 
 """
-    lefschetz_coboundary(lc::LefschetzComplex, cellI::Int)
+    lefschetz_coboundary(lc::AbstractComplex, cellI::Int)
 
 Compute the support of the coboundary of a Lefschetz complex cell.
 
 This method returns the boundary support as a `Vector{Int}`.
 """
-function lefschetz_coboundary(lc::LefschetzComplex, cellI::Int)
+function lefschetz_coboundary(lc::AbstractComplex, cellI::Int)
     #
     # Compute the support of the coboundary of a Lefschetz complex cell
     #
@@ -86,13 +86,13 @@ function lefschetz_coboundary(lc::LefschetzComplex, cellI::Int)
 end
 
 """
-    lefschetz_coboundary(lc::LefschetzComplex, cellS::String)
+    lefschetz_coboundary(lc::AbstractComplex, cellS::String)
 
 Compute the support of the coboundary of a Lefschetz complex cell.
 
 This method returns the boundary support as a `Vector{String}`.
 """
-function lefschetz_coboundary(lc::LefschetzComplex, cellS::String)
+function lefschetz_coboundary(lc::AbstractComplex, cellS::String)
     #
     # Compute the support of the coboundary of a Lefschetz complex cell
     #

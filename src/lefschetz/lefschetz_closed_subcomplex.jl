@@ -1,12 +1,12 @@
 export lefschetz_closed_subcomplex
 
 """
-    lefschetz_closed_subcomplex(lc::LefschetzComplex, subcomp::Vector{Int})
+    lefschetz_closed_subcomplex(lc::AbstractComplex, subcomp::Vector{Int})
 
 Extract a closed subcomplex from a Lefschetz complex. The subcomplex is
 the closure of the collection of cells given in `subcomp`.
 """
-function lefschetz_closed_subcomplex(lc::LefschetzComplex, subcomp::Vector{Int})
+function lefschetz_closed_subcomplex(lc::AbstractComplex, subcomp::Vector{Int})
     #
     # Extract a subcomplex of a Lefschetz complex
     #
@@ -25,19 +25,27 @@ function lefschetz_closed_subcomplex(lc::LefschetzComplex, subcomp::Vector{Int})
     bnd = lc.boundary
     sub_boundary = sparse_minor(bnd, clsubcomp, clsubcomp)
 
-    # Create the new Lefschetz complex and return it
+    # Create the new complex and return it
 
-    sub_lc = LefschetzComplex(sub_labels, sub_dimensions, sub_boundary; validate=false)
-    return sub_lc
+    if lc isa EuclideanComplex
+        sub_coords = lc.coords[clsubcomp]
+        return EuclideanComplex(sub_labels, sub_dimensions, sub_boundary,
+                                sub_coords; validate=false)
+    else
+        return LefschetzComplex(sub_labels, sub_dimensions, sub_boundary; validate=false)
+    end
 end
 
 """
-    lefschetz_closed_subcomplex(lc::LefschetzComplex, subcomp::Vector{String})
+    lefschetz_closed_subcomplex(lc::AbstractComplex, subcomp::Vector{String})
 
 Extract a closed subcomplex from a Lefschetz complex. The subcomplex is
 the closure of the collection of cells given in `subcomp`.
+
+If `lc` is an `EuclideanComplex`, the returned subcomplex is also an
+`EuclideanComplex` with the coordinates restricted to the subcomplex cells.
 """
-function lefschetz_closed_subcomplex(lc::LefschetzComplex, subcomp::Vector{String})
+function lefschetz_closed_subcomplex(lc::AbstractComplex, subcomp::Vector{String})
     #
     # Extract a subcomplex of a Lefschetz complex
     #

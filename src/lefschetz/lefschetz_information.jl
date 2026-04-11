@@ -1,7 +1,7 @@
 export lefschetz_information
 
 """
-    lefschetz_information(lc::LefschetzComplex)
+    lefschetz_information(lc::AbstractComplex)
 
 Extract basic information about a Lefschetz complex.
 
@@ -18,7 +18,7 @@ the information in the form of a `Dict{String,Any}`. You can use the command
 In the last case, the dictionary entry is a vector of pairs
 `(dimension, cell count)`.
 """
-function lefschetz_information(lc::LefschetzComplex)
+function lefschetz_information(lc::AbstractComplex)
     #
     # Extract basic information about a Lefschetz complex
     #

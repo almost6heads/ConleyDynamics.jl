@@ -1,7 +1,7 @@
 export connection_matrix
 
 """
-    connection_matrix(lc::LefschetzComplex, mvf::CellSubsets;
+    connection_matrix(lc::AbstractComplex, mvf::CellSubsets;
                       [algorithm::String],
                       [returnbasis::Bool])
 
@@ -31,7 +31,7 @@ algorithm `pmorse`. If the flag `returnbasis::Bool=true` is given,
 then the function automatically chooses the slower matrix-based
 `algorithm = "DLMS"`.
 """
-function connection_matrix(lc::LefschetzComplex, mvfarg::CellSubsets;
+function connection_matrix(lc::AbstractComplex, mvfarg::CellSubsets;
                            algorithm::String="pmorse",
                            returnbasis::Bool=false)
     #

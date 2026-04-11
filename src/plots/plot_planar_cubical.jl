@@ -1,7 +1,7 @@
 export plot_planar_cubical
 
 """
-    plot_planar_cubical(cc::LefschetzComplex,
+    plot_planar_cubical(cc::AbstractComplex,
                         coords::Vector{<:Vector{<:Real}},
                         fname::String;
                         [hfac::Real=1.2,]
@@ -49,7 +49,7 @@ vertices or rectangles, then one can use:
 plot_planar_cubical(cc, coords, fname, pv=true, pdim=[false,true,false])
 ```
 """
-function plot_planar_cubical(cc::LefschetzComplex,
+function plot_planar_cubical(cc::AbstractComplex,
                              coords::Vector{<:Vector{<:Real}},
                              fname::String;
                              hfac::Real=1.2,
@@ -152,7 +152,7 @@ function plot_planar_cubical(cc::LefschetzComplex,
 end
 
 """
-    plot_planar_cubical(cc::LefschetzComplex,
+    plot_planar_cubical(cc::AbstractComplex,
                         fname::String;
                         [hfac::Real=1.2,]
                         [vfac::Real=1.2,]
@@ -165,7 +165,7 @@ Create an image of a planar cubical complex.
 This is an alternative method which does not require the specification
 of the vertex coordinates. They will be taken from the cube vertex labels.
 """
-function plot_planar_cubical(cc::LefschetzComplex,
+function plot_planar_cubical(cc::AbstractComplex,
                              fname::String;
                              hfac::Real=1.2,
                              vfac::Real=1.2,
@@ -198,8 +198,34 @@ function plot_planar_cubical(cc::LefschetzComplex,
     end
 
     # Call the method with coordinates
-    
+
     plot_planar_cubical(cc,coords,fname,
         hfac=hfac,vfac=vfac,cubefac=cubefac,pdim=pdim,pv=pv)
 end
 
+"""
+    plot_planar_cubical(ec::EuclideanComplex,
+                        fname::String;
+                        kwargs...)
+
+Create an image of a planar cubical complex from an `EuclideanComplex`.
+
+This method extracts the vertex coordinates from the embedded coordinates
+stored in `ec` and delegates to the standard plotting method. All keyword
+arguments are forwarded unchanged.
+"""
+function plot_planar_cubical(ec::EuclideanComplex,
+                             fname::String;
+                             hfac::Real=1.2,
+                             vfac::Real=1.2,
+                             cubefac::Real=0,
+                             pdim::Vector{Bool}=[true,true,true],
+                             pv::Bool=false)
+    #
+    # Delegate to the LefschetzComplex method after extracting vertex coords
+    #
+    vertex_coords = [ec.coords[k][1] for k in 1:ec.ncells if ec.dimensions[k] == 0]
+    lc = euclidean_to_lefschetz(ec)
+    plot_planar_cubical(lc, vertex_coords, fname;
+                        hfac=hfac, vfac=vfac, cubefac=cubefac, pdim=pdim, pv=pv)
+end

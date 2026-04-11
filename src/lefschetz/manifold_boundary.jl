@@ -1,7 +1,7 @@
 export manifold_boundary
 
 """
-    manifold_boundary(lc::LefschetzComplex)
+    manifold_boundary(lc::AbstractComplex)
 
 Extract the manifold boundary from a Lefschetz complex.
 
@@ -10,7 +10,7 @@ compact d-dimensional manifold with boundary. It returns a
 list of all cells which lie on the topological boundary of
 the manifold, in the form of a `Vector{Int}`.
 """
-function manifold_boundary(lc::LefschetzComplex)
+function manifold_boundary(lc::AbstractComplex)
     #
     # Extract the manifold boundary from a Lefschetz complex
     #

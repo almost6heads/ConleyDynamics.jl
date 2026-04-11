@@ -1,7 +1,7 @@
 export lefschetz_lchull
 
 """
-    lefschetz_lchull(lc::LefschetzComplex, subcomp::Vector{Int})
+    lefschetz_lchull(lc::AbstractComplex, subcomp::Vector{Int})
 
 Compute the locally closed hull of a Lefschetz complex subset.
 
@@ -9,7 +9,7 @@ The locally closed hull is the smallest locally closed set which
 contains the given cells. It is the intersection of the closure
 and the open hull.
 """
-function lefschetz_lchull(lc::LefschetzComplex, subcomp::Vector{Int})
+function lefschetz_lchull(lc::AbstractComplex, subcomp::Vector{Int})
     #
     # Compute the locally closed hull of a Lefschetz complex subset
     #
@@ -26,7 +26,7 @@ function lefschetz_lchull(lc::LefschetzComplex, subcomp::Vector{Int})
 end
 
 """
-    lefschetz_lchull(lc::LefschetzComplex, subcomp::Vector{String})
+    lefschetz_lchull(lc::AbstractComplex, subcomp::Vector{String})
 
 Compute the locally closed hull of a Lefschetz complex subset.
 
@@ -34,7 +34,7 @@ The locally closed hull is the smallest locally closed set which
 contains the given cells. It is the intersection of the closure
 and the open hull.
 """
-function lefschetz_lchull(lc::LefschetzComplex, subcomp::Vector{String})
+function lefschetz_lchull(lc::AbstractComplex, subcomp::Vector{String})
     #
     # Compute the locally closed hull of a Lefschetz complex subset
     #

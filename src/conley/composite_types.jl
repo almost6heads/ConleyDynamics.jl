@@ -1,5 +1,16 @@
-export LefschetzComplex, ConleyMorseCM
+export LefschetzComplex, EuclideanComplex, ConleyMorseCM
+export AbstractComplex
 export Cell, Cells, CellSubsets
+
+"""
+    AbstractComplex
+
+Abstract base type for Lefschetz complexes.
+
+Both `LefschetzComplex` and `EuclideanComplex` are subtypes of `AbstractComplex`.
+All topology, homology, and dynamics functions accept any `AbstractComplex`.
+"""
+abstract type AbstractComplex end
 
 """
     LefschetzComplex
@@ -28,7 +39,7 @@ since for large complexes the matrix multiplication is expensive. Users
 constructing a `LefschetzComplex` manually can also call
 [`validate_lefschetz_complex`](@ref) to check an existing complex at any point.
 """
-struct LefschetzComplex
+struct LefschetzComplex <: AbstractComplex
     #
     # Fields that have to be declared
     #
@@ -117,6 +128,110 @@ struct ConleyMorseCM{T}
 end
 
 """
+    EuclideanComplex
+    EuclideanComplex(labels, dimensions, boundary, coords; validate=true)
+
+A Lefschetz complex with embedded Euclidean coordinates for every cell.
+
+The struct shares the fields of `LefschetzComplex`:
+* `labels::Vector{String}`: Vector of labels associated with cell indices
+* `dimensions::Vector{Int}`: Vector of cell dimensions
+* `boundary::SparseMatrix`: Boundary matrix, columns give the cell boundaries
+* `ncells::Int`: Number of cells
+* `dim::Int`: Dimension of the complex (must satisfy `dim ≤ 3`)
+* `indices::Dict{String,Int}`: Dictionary for finding cell index from label
+
+In addition it carries:
+* `coords::Vector{Vector{Vector{Float64}}}`: Per-cell vertex coordinates.
+  `coords[k]` is the list of vertex coordinate vectors needed to draw cell `k`:
+  - Vertex: `[[x,y]]` (length 1)
+  - Edge: `[[x1,y1],[x2,y2]]` (length 2)
+  - Triangle: `[[x1,y1],[x2,y2],[x3,y3]]` (length 3)
+  - Cubical 2-cell: `[[x1,y1],[x2,y2],[x3,y3],[x4,y4]]` (length 4)
+
+An `EuclideanComplex` can be created from an existing `LefschetzComplex` using
+[`lefschetz_to_euclidean`](@ref), and converted back using
+[`euclidean_to_lefschetz`](@ref).
+"""
+struct EuclideanComplex <: AbstractComplex
+    #
+    # Fields that have to be declared
+    #
+    labels::Vector{String}
+    dimensions::Vector{Int}
+    boundary::SparseMatrix
+    #
+    # Fields that will be created
+    #
+    ncells::Int
+    dim::Int
+    indices::Dict{String,Int}
+    #
+    # Embedded coordinates
+    #
+    coords::Vector{Vector{Vector{Float64}}}
+    #
+    # Inner constructor
+    #
+    function EuclideanComplex(labels::Vector{String},
+                              dimensions::Vector{Int},
+                              boundary::SparseMatrix,
+                              coords::Vector{Vector{Vector{Float64}}};
+                              validate::Bool=true)
+        #
+        # Create a EuclideanComplex instance
+        #
+
+        # Perform basic length checks
+
+        ncells = length(labels)
+        if !(ncells == length(dimensions))
+            error("Input vectors need to have the same length!")
+        end
+        if !(sparse_size(boundary,1) == sparse_size(boundary,2))
+            error("The boundary matrix has to be square!")
+        end
+        if !(sparse_size(boundary,1) == ncells)
+            error("The boundary matrix size has to be the number of cells!")
+        end
+        if !(length(coords) == ncells)
+            error("The coords vector length has to be the number of cells!")
+        end
+
+        # Make sure the cell dimensions increase
+
+        for k in 1:ncells-1
+            if dimensions[k] > dimensions[k+1]
+                error("The cells dimensions cannot decrease!")
+            end
+        end
+        dim = dimensions[ncells]
+
+        # Check that the dimension does not exceed 3
+
+        if dim > 3
+            error("EuclideanComplex only supports complexes of dimension at most 3!")
+        end
+
+        # Optionally verify that the boundary matrix squares to zero
+
+        if validate
+            if !sparse_is_zero(sparse_multiply(boundary, boundary))
+                error("Boundary matrix does not square to zero: invalid complex.")
+            end
+        end
+
+        # Create the label to indices dictionary
+
+        indices = Dict{String,Int}([(labels[k],k) for k in 1:ncells])
+
+        # Create the composite type
+
+        new(labels, dimensions, boundary, ncells, dim, indices, coords)
+    end
+end
+
+"""
     Cell = Union{Int,String}
 
 A cell of a Lefschetz complex.
@@ -170,6 +285,25 @@ function Base.show(io::IO, ::MIME"text/plain", lc::LefschetzComplex)
     println(io, "  ncells:   " * string(lc.ncells))
     print(io, "  boundary: field " * lefschetz_field(lc) *
               ", sparsity " * string(sparse_sparsity(lc.boundary)))
+end
+
+"""
+    Base.show(io::IO, ::MIME"text/plain", ec::EuclideanComplex)
+
+Display EuclideanComplex information when hitting return in REPL.
+"""
+function Base.show(io::IO, ::MIME"text/plain", ec::EuclideanComplex)
+    #
+    # Display information for a Euclidean complex
+    #
+
+    pstr = string(typeof(ec)) * ": struct with the following fields:"
+    println(io, pstr)
+    println(io, "  labels, indices, dimensions, coords")
+    println(io, "  dim:      " * string(ec.dim))
+    println(io, "  ncells:   " * string(ec.ncells))
+    print(io, "  boundary: field " * lefschetz_field(ec) *
+              ", sparsity " * string(sparse_sparsity(ec.boundary)))
 end
 
 """

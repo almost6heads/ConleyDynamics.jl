@@ -1,11 +1,11 @@
 export lefschetz_interior
 
 """
-    lefschetz_interior(lc::LefschetzComplex, subcomp::Vector{Int})
+    lefschetz_interior(lc::AbstractComplex, subcomp::Vector{Int})
 
 Compute the interior of a Lefschetz complex subset.
 """
-function lefschetz_interior(lc::LefschetzComplex, subcomp::Vector{Int})
+function lefschetz_interior(lc::AbstractComplex, subcomp::Vector{Int})
     #
     # Compute the interior of a Lefschetz complex subset
     #
@@ -29,11 +29,11 @@ function lefschetz_interior(lc::LefschetzComplex, subcomp::Vector{Int})
 end
 
 """
-    lefschetz_interior(lc::LefschetzComplex, subcomp::Vector{String})
+    lefschetz_interior(lc::AbstractComplex, subcomp::Vector{String})
 
 Compute the interior of a Lefschetz complex subset.
 """
-function lefschetz_interior(lc::LefschetzComplex, subcomp::Vector{String})
+function lefschetz_interior(lc::AbstractComplex, subcomp::Vector{String})
     #
     # Compute the interior of a Lefschetz complex subset
     #

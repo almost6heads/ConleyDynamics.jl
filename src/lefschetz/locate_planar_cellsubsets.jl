@@ -14,7 +14,7 @@ export segment_intersects_circle
 
 Locate cell subsets relative to a planar rectangle.
 
-For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+For the Lefschetz complex `lc::AbstractComplex`, whose vertices
 have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
 and the cell subsets in `csubsets::CellSubsets` this function
 extracts the indices of all cell subset closures which lie in the
@@ -26,7 +26,7 @@ and `rmax::Vector{<:Real}`, respectively. The function returns
 * `indexB::Vector{Int}`: indices of cell subset closures which
   intersect the rectangle boundary.
 """
-function locate_planar_cellsubsets(lc::LefschetzComplex,
+function locate_planar_cellsubsets(lc::AbstractComplex,
                                    coords::Vector{<:Vector{<:Real}},
                                    csubsets::CellSubsets,
                                    rmin::Vector{<:Real},
@@ -52,7 +52,7 @@ end
 
 Locate cell subsets relative to a planar circle.
 
-For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+For the Lefschetz complex `lc::AbstractComplex`, whose vertices
 have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
 and the cell subsets in `csubsets::CellSubsets` this function
 extracts the indices of all cell subset closures which lie in the
@@ -64,7 +64,7 @@ returns
 * `indexB::Vector{Int}`: indices of cell subset closures which
   intersect the circle.
 """
-function locate_planar_cellsubsets(lc::LefschetzComplex,
+function locate_planar_cellsubsets(lc::AbstractComplex,
                                    coords::Vector{<:Vector{<:Real}},
                                    csubsets::CellSubsets,
                                    c::Vector{<:Real},
@@ -90,7 +90,7 @@ end
 
 Determine the location of a cell subset relative to a rectangle.
 
-For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+For the Lefschetz complex `lc::AbstractComplex`, whose vertices
 have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
 this function determines the location of the closure of the
 cellsubset given in `csubset::Cells` relative to the rectangle
@@ -100,7 +100,7 @@ and `rmax::Vector{<:Real}`, respectively. The function returns
 * 2 of the set intersects the rectangle boundary, and
 * 3 if the set lies in the exterior of the rectangle.
 """
-function cellsubset_location_rectangle(lc::LefschetzComplex,
+function cellsubset_location_rectangle(lc::AbstractComplex,
                                        coords::Vector{<:Vector{<:Real}},
                                        csubset::Cells,
                                        rmin::Vector{<:Real},
@@ -164,7 +164,7 @@ end
 
 Determine the location of a cell subset relative to a circle.
 
-For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+For the Lefschetz complex `lc::AbstractComplex`, whose vertices
 have the coordinates given in `coords::Vector{<:Vector{<:Real}}`, this
 function determines the location of the closure of the cellsubset
 given in `csubset::Cells` relative to the circle specified by the
@@ -174,7 +174,7 @@ The function returns
 * 2 of the set intersects the circle, and
 * 3 if the set lies in the exterior of the circle.
 """
-function cellsubset_location_circle(lc::LefschetzComplex,
+function cellsubset_location_circle(lc::AbstractComplex,
                                     coords::Vector{<:Vector{<:Real}},
                                     csubset::Cells,
                                     c::Vector{<:Real},
@@ -239,14 +239,14 @@ end
 
 Compute the bounding box for a cell subset.
 
-For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+For the Lefschetz complex `lc::AbstractComplex`, whose vertices
 have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
 this function computes the smallest enclosing box for the
 closure of the cell subset given in `csubset::Cells`. The function
 returns the coordinates `bmin` and `bmax` of the minimal
 and maximal corners of the box, respectively.
 """
-function cellsubset_bounding_box(lc::LefschetzComplex,
+function cellsubset_bounding_box(lc::AbstractComplex,
                                  coords::Vector{<:Vector{<:Real}},
                                  csubset::Cells)
     #
@@ -281,13 +281,13 @@ end
 
 Compute the distance of a cell subset from a point.
 
-For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+For the Lefschetz complex `lc::AbstractComplex`, whose vertices
 have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
 this function computes the smallest distance of the vertices in
 the closure of the cell subset given in `csubset::Cells` from the 
 point given in `dpoint::Vector{<:Real}`.
 """
-function cellsubset_distance(lc::LefschetzComplex,
+function cellsubset_distance(lc::AbstractComplex,
                              coords::Vector{<:Vector{<:Real}},
                              csubset::Cells,
                              dpoint::Vector{<:Real})
@@ -318,7 +318,7 @@ end
 
 Compute the area of a planar cell subset.
 
-For the Lefschetz complex `lc::LefschetzComplex`, whose vertices
+For the Lefschetz complex `lc::AbstractComplex`, whose vertices
 have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
 this function computes the area of the cell subset given in
 `csubset::Cells`. The function assumes that the complex is
@@ -326,7 +326,7 @@ two-dimensional and that the maximal 2-cells in the cell subset
 are all polygonal with straight boundary edges. If these conditions
 are not met an error is raised.
 """
-function cellsubset_planar_area(lc::LefschetzComplex,
+function cellsubset_planar_area(lc::AbstractComplex,
                                 coords::Vector{<:Vector{<:Real}},
                                 csubset::Cells)
     #

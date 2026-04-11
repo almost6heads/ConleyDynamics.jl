@@ -2,7 +2,7 @@ export forman_all_cell_types
 export forman_critical_cells
 
 """
-    forman_all_cell_types(lc::LefschetzComplex, fvf::CellSubsets)
+    forman_all_cell_types(lc::AbstractComplex, fvf::CellSubsets)
 
 Find all cell types of a Forman vector field.
 
@@ -31,7 +31,7 @@ julia> println(t)
 ["ab", "bc"]
 ```
 """
-function forman_all_cell_types(lc::LefschetzComplex, fvf::CellSubsets)
+function forman_all_cell_types(lc::AbstractComplex, fvf::CellSubsets)
     #
     # Find all cell types of a Forman vector field
     #
@@ -101,7 +101,7 @@ function forman_all_cell_types(lc::LefschetzComplex, fvf::CellSubsets)
 end
 
 """
-    forman_critical_cells(lc::LefschetzComplex, fvf::CellSubsets)
+    forman_critical_cells(lc::AbstractComplex, fvf::CellSubsets)
 
 Find all critical cells of a Forman vector field.
 
@@ -124,7 +124,7 @@ julia> println(c)
 ["a", "d", "cd"]
 ```
 """
-function forman_critical_cells(lc::LefschetzComplex, fvf::CellSubsets)
+function forman_critical_cells(lc::AbstractComplex, fvf::CellSubsets)
     #
     # Find all critical cells of a Forman vector field
     #

@@ -1,7 +1,7 @@
 export plot_planar_cubical_morse
 
 """
-    plot_planar_cubical_morse(cc::LefschetzComplex,
+    plot_planar_cubical_morse(cc::AbstractComplex,
                               coords::Vector{<:Vector{<:Real}},
                               fname::String,
                               morsesets::CellSubsets;
@@ -30,7 +30,7 @@ specifies in which dimensions cells are drawn; the default only shows edges
 and squares. Finally if one passes the argument `pv=true`, then in addition
 to saving the file a preview is displayed.
 """
-function plot_planar_cubical_morse(cc::LefschetzComplex,
+function plot_planar_cubical_morse(cc::AbstractComplex,
                                    coords::Vector{<:Vector{<:Real}},
                                    fname::String,
                                    morsesets::CellSubsets;
@@ -170,7 +170,7 @@ function plot_planar_cubical_morse(cc::LefschetzComplex,
 end
 
 """
-    plot_planar_cubical_morse(cc::LefschetzComplex,
+    plot_planar_cubical_morse(cc::AbstractComplex,
                               fname::String,
                               morsesets::CellSubsets;
                               [hfac::Real=1.2,]
@@ -185,7 +185,7 @@ Morse sets, or also selected multivectors.
 This is an alternative method which does not require the specification
 of the vertex coordinates. They will be taken from the cube vertex labels.
 """
-function plot_planar_cubical_morse(cc::LefschetzComplex,
+function plot_planar_cubical_morse(cc::AbstractComplex,
                                    fname::String,
                                    morsesets::CellSubsets;
                                    hfac::Real=1.2,
@@ -219,8 +219,37 @@ function plot_planar_cubical_morse(cc::LefschetzComplex,
     end
 
     # Call the method with coordinates
-    
+
     plot_planar_cubical_morse(cc,coords,fname,morsesets,
         hfac=hfac,vfac=vfac,cubefac=cubefac,pdim=pdim,pv=pv)
 end
 
+"""
+    plot_planar_cubical_morse(ec::EuclideanComplex,
+                              fname::String,
+                              morsesets::CellSubsets;
+                              kwargs...)
+
+Create an image of a planar cubical complex with Morse sets from an
+`EuclideanComplex`.
+
+This method extracts the vertex coordinates from the embedded coordinates
+stored in `ec` and delegates to the standard plotting method. All keyword
+arguments are forwarded unchanged.
+"""
+function plot_planar_cubical_morse(ec::EuclideanComplex,
+                                   fname::String,
+                                   morsesets::CellSubsets;
+                                   hfac::Real=1.2,
+                                   vfac::Real=1.2,
+                                   cubefac::Real=0,
+                                   pdim::Vector{Bool}=[false,true,true],
+                                   pv::Bool=false)
+    #
+    # Delegate to the LefschetzComplex method after extracting vertex coords
+    #
+    vertex_coords = [ec.coords[k][1] for k in 1:ec.ncells if ec.dimensions[k] == 0]
+    lc = euclidean_to_lefschetz(ec)
+    plot_planar_cubical_morse(lc, vertex_coords, fname, morsesets;
+                              hfac=hfac, vfac=vfac, cubefac=cubefac, pdim=pdim, pv=pv)
+end

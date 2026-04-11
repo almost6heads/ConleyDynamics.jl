@@ -1,7 +1,7 @@
 export lefschetz_neighbors
 
 """
-    lefschetz_neighbors(lc::LefschetzComplex, subcomp::Vector{Int})
+    lefschetz_neighbors(lc::AbstractComplex, subcomp::Vector{Int})
 
 Find all cells neighboring a Lefschetz complex subset.
 
@@ -11,7 +11,7 @@ In other words, if one adds a neighbor to the set `subcomp`, then
 the number of connected components of the combined set does not
 increase. It could, however, decrease.
 """
-function lefschetz_neighbors(lc::LefschetzComplex, subcomp::Vector{Int})
+function lefschetz_neighbors(lc::AbstractComplex, subcomp::Vector{Int})
     #
     # Find the neighbors of a Lefschetz complex subset
     #
@@ -31,7 +31,7 @@ function lefschetz_neighbors(lc::LefschetzComplex, subcomp::Vector{Int})
 end
 
 """
-    lefschetz_neighbors(lc::LefschetzComplex, subcomp::Vector{String})
+    lefschetz_neighbors(lc::AbstractComplex, subcomp::Vector{String})
 
 Find all cells neighboring a Lefschetz complex subset.
 
@@ -41,7 +41,7 @@ In other words, if one adds a neighbor to the set `subcomp`, then
 the number of connected components of the combined set does not
 increase. It could, however, decrease.
 """
-function lefschetz_neighbors(lc::LefschetzComplex, subcomp::Vector{String})
+function lefschetz_neighbors(lc::AbstractComplex, subcomp::Vector{String})
     #
     # Find the neighbors of a Lefschetz complex subset
     #
