@@ -220,6 +220,21 @@ in `show1`. Similarly, we determine the support of the second
 isolated invariant set, together with the Morse sets of `cmr2`.
 The remaining four commands create two images.
 
+Note, however, that this example uses the data type `EuclideanComplex`,
+which has the correct coordinate information for plotting embedded.
+Therefore, one can also only plot the restricted complexes, together
+with their Morse sets. For this, one just has to change the first
+argument in each of the above two plot commands as follows:
+
+```julia
+show3 = cmr1.morse;
+show4 = cmr2.morse;
+fname3 = "/Users/wanner/Desktop/invariantinterval2d3.png"
+fname4 = "/Users/wanner/Desktop/invariantinterval2d4.png"
+plot_planar_simplicial_morse(ecr1, fname3, show3, vfac=1.1, hfac=2.0)
+plot_planar_simplicial_morse(ecr2, fname4, show4, vfac=1.1, hfac=2.0)
+```
+
 ![Interval support for the first interval](img/invariantinterval2d1.png)
 
 The first image shows the five Morse sets surrounding the stationary
