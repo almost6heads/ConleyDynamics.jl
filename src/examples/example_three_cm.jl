@@ -1,7 +1,7 @@
 export example_three_cm
 
 """
-    lc, mvf, coords = example_three_cm(mvftype)
+    lc, mvf = example_three_cm(mvftype)
 
 Create the simplicial complex and multivector field for the example
 from Figure 2.2 in the connection matrix book by *Mrozek & Wanner*.
@@ -10,8 +10,9 @@ Depending on the value of `mvftype`, return the periodic orbit (0=default)
 or one of the three gradient (1,2,3) examples.
 
 The function returns the Lefschetz complex `lc` over the rational field
-and the multivector field `mvf`. If desired for plotting, the third
-return value `coords` gives a vector of coordinates for the vertices.
+and the multivector field `mvf`. If desired for plotting, the function
+can be invoked with the optional argument `euclidean=true`, which creates
+`lc` as a `EuclideanComplex` with embedded coordinates.
 
 # Examples
 ```jldoctest
@@ -34,7 +35,7 @@ julia> full_from_sparse(cm.matrix)
  0  0  0   0   0  0   0   0
 ```
 """
-function example_three_cm(mvftype=0)
+function example_three_cm(mvftype=0; euclidean::Bool=false)
     #
     # Create the combinatorial vector field information for the example in
     # Figure 2 of the connection matrix paper by Mrozek & Wanner. The function
@@ -89,9 +90,12 @@ function example_three_cm(mvftype=0)
     bndmatrix[[16,17,18],22] = [1; -1; 1]     # EFG
 
     # Construct the Lefschetz complex struct
-    
+   
     lc = LefschetzComplex(labelvec, sdvec,
-                          sparse_from_full(bndmatrix, p=0))
+                              sparse_from_full(bndmatrix, p=0))
+    if euclidean
+        lc = lefschetz_to_euclidean(lc, coords)
+    end
 
     # Create the common part of the combinatorial vector fields
     
@@ -123,6 +127,6 @@ function example_three_cm(mvftype=0)
 
     # Return the example data
 
-    return lc, strmvf, coords
+    return lc, strmvf
 end
 

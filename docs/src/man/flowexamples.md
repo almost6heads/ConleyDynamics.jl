@@ -594,7 +594,7 @@ of references cited throughout this documentation. This section cites
 the following references:
 
 ```@bibliography
-Pages = ["conley_examples.md"]
+Pages = ["flowexamples.md"]
 Canonical = false
 ```
 

@@ -1,7 +1,7 @@
 export example_nonunique
 
 """
-    lc1, lc2, mvf, coords1, coords2 = example_nonunique()
+    lc1, lc2, mvf = example_nonunique()
 
 Create two representations of a simplicial complex and one multivector
 field which illustrates nonunique connection matrices.
@@ -10,9 +10,10 @@ The two complexes `lc1` and `lc2` represent the same simplicial
 complex over GF(2), but differ in the ordering of the labels.
 
 The function returns the Lefschetz complexes `lc1` and `lc2`, as well
-as the multivector field `mvf`. If desired for plotting, the fourth
-and fifth return values `coords1` and `coords2` give vectors of
-coordinates for the vertices of the two complexes.
+as the multivector field `mvf`. If desired for plotting, the function
+can be invoked with the optional argument `euclidean=true`. In that
+case, `lc1` and `lc2` are created as `EuclideanComplex` with embedded
+coordinates.
 
 # Examples
 ```jldoctest
@@ -51,7 +52,7 @@ julia> print(cm2.labels)
 ["2", "8", "78", "29", "45", "67", "168", "349", "789"]
 ```
 """
-function example_nonunique()
+function example_nonunique(; euclidean::Bool=false)
     # Create two representations of a simplicial complex and one
     # multivector field which illustrates nonunique connection matrices
 
@@ -63,9 +64,6 @@ function example_nonunique()
                     [5,6,7],[4,5,7]]
     strsimplices = convert_simplices(intsimplices, labels)
 
-    coords1 = [[0,100],[150,0],[300,100],[250,200],[150,300],
-               [50,200],[150,200],[100,100],[200,100]]
-
     # Create the multivector field using string labels
 
     mvf = [["1","12"], ["3","23"], ["4","34"], ["5","56"], ["6","16"],
@@ -76,18 +74,29 @@ function example_nonunique()
     # Create the first simplicial complex
     
     labels1 = labels
-    lc1 = create_simplicial_complex(labels1, strsimplices, p=2)
+    coords1 = [[0,100],[150,0],[300,100],[250,200],[150,300],
+               [50,200],[150,200],[100,100],[200,100]]
+
+    if !euclidean
+        lc1 = create_simplicial_complex(labels1, strsimplices, p=2)
+    else
+        lc1 = create_simplicial_complex(labels1, strsimplices, coords1, p=2)
+    end
 
     # Create the second simplicial complex, via vertex reordering
 
     labels2 = ["1", "2", "3", "4", "5", "6", "8", "9", "7"]
-    lc2 = create_simplicial_complex(labels2, strsimplices, p=2)
-
     coords2 = [[0,100],[150,0],[300,100],[250,200],[150,300],
                [50,200],[100,100],[200,100],[150,200]]
 
+    if !euclidean
+        lc2 = create_simplicial_complex(labels2, strsimplices, p=2)
+    else
+        lc2 = create_simplicial_complex(labels2, strsimplices, coords2, p=2)
+    end
+
     # Return the example data
 
-    return lc1, lc2, mvf, coords1, coords2
+    return lc1, lc2, mvf
 end
 

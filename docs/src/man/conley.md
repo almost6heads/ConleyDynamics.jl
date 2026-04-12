@@ -755,7 +755,7 @@ as follows:
 
 ```@example Cconnmatrix
 using ..ConleyDynamics # hide
-lc, mvf, coords = example_forman2d()
+lc, mvf = example_forman2d()
 cm = connection_matrix(lc, mvf)
 sparse_show(cm.matrix)
 ```
@@ -866,7 +866,7 @@ a Lefschetz complex with 39 cells:
 
 ```julia
 using ConleyDynamics
-lc, mvf, coords = example_forman2d()
+lc, mvf = example_forman2d()
 for alg in ["DLMS", "DHL", "HMS", "pmorse"]
     println(alg, ":  ", @elapsed connection_matrix(lc, mvf, algorithm=alg), " s")
 end
@@ -901,9 +901,9 @@ function planarvf(x::Vector{Float64})
     y2 = x2 * (1.0 - 3.0*x1*x1 - x2*x2)
     return [y1, y2]
 end
-lc, coords = create_simplicial_delaunay(400, 400, 3, 50)
-coordsN = convert_planar_coordinates(coords, [-1.2,-1.2], [1.2,1.2])
-mvf = create_planar_mvf(lc, coordsN, planarvf)
+lc  = create_simplicial_delaunay(400, 400, 3, 50, euclidean=true)
+lc  = rescale_coords(lc, -1.2, 1.2)
+mvf = create_planar_mvf(lc, planarvf)
 println("ncells = ", lc.ncells)
 for alg in ["DLMS", "DHL", "HMS", "pmorse"]
     println(alg, ":  ", @elapsed connection_matrix(lc, mvf, algorithm=alg), " s")
@@ -915,11 +915,12 @@ timings on this example, using four threads for `pmorse`, are as follows:
 
 | Algorithm        | Approx. time |
 |------------------|-------------|
-| `DLMS`           | 61 s        |
-| `DHL`            | 8.5 s       |
-| `HMS`            | 1.8 s       |
-| `pmorse` (1 thread)  | 1.75 s  |
-| `pmorse` (4 threads) | 1.1 s   |
+| `DLMS`           | 49 s        |
+| `DHL`            | 4.8 s       |
+| `HMS`            | 1.6 s       |
+| `pmorse` (1 thread)  | 1.23 s  |
+| `pmorse` (4 threads) | 0.76 s  |
+| `pmorse` (8 threads) | 0.68 s  |
 
 At this scale the picture changes substantially. The Morse-theory-based algorithms
 scale considerably more favorably than the matrix-reduction approaches. Among the
