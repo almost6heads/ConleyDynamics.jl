@@ -1,6 +1,6 @@
 @testset "Connection matrix algorithms agree" begin
     # Use gradient variant 1 of example_three_cm
-    lc, mvf, _ = example_three_cm(1)
+    lc, mvf  = example_three_cm(1)
 
     cm_dlms  = connection_matrix(lc, mvf, algorithm="DLMS")
     cm_dhl   = connection_matrix(lc, mvf, algorithm="DHL")
@@ -20,7 +20,7 @@ end
 
 @testset "Connection matrix correctness" begin
     # example_three_cm(1): gradient variant with known connection matrix
-    lc, mvf, _ = example_three_cm(1)
+    lc, mvf = example_three_cm(1)
     cm = connection_matrix(lc, mvf, algorithm="DHL")
 
     # In gradient variant 1, D-DE and E-CE are regular pairs, so DE is NOT critical;

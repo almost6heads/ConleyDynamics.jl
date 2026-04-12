@@ -4,11 +4,11 @@
     @test mvf_is_acyclic(sc_edge, [["a","ab"]])
 
     # Gradient variant from example_three_cm(1): no periodic orbits → acyclic
-    lc_grad, mvf_grad, _ = example_three_cm(1)
+    lc_grad, mvf_grad = example_three_cm(1)
     @test mvf_is_acyclic(lc_grad, mvf_grad)
 
     # Periodic orbit example from example_three_cm(0) is NOT acyclic
-    lc_three, mvf_periodic, _ = example_three_cm(0)
+    lc_three, mvf_periodic = example_three_cm(0)
     @test !mvf_is_acyclic(lc_three, mvf_periodic)
 end
 
@@ -45,7 +45,7 @@ end
     @test length(ms) == length(cm.morse)
 
     # Periodic orbit example: one Morse set containing the orbit
-    lc_three, mvf_periodic, _ = example_three_cm(0)
+    lc_three, mvf_periodic = example_three_cm(0)
     ms_per = morse_sets(lc_three, mvf_periodic)
     @test length(ms_per) >= 1
 end
