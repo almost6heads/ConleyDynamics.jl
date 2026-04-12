@@ -19,9 +19,8 @@ This version does not include any breaking changes, but it does
 contain major changes to the code base:
 
 - Introduced a new complex type `EuclideanComplex` which has
-  coordinate information incorporated for every cell. This 
-  can be used for plotting and multivector field creation
-  from flows.
+  coordinate information incorporated for every cell. This can
+  be used for plotting and multivector field creation from flows.
 - Both `EuclideanComplex` and `LefschetzComplex` are subtypes
   of the new abstract type `AbstractComplex`.
 - All functions have been modified to accept a complex of
