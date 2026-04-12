@@ -734,7 +734,7 @@ plot_planar_simplicial_morse(lc, coordsN, fname, cm.morse, pv=true)
     package. While this approach is direct and simple, it leads to
     unexpected problems if one wants to work with subcomplexes
     of a Lefschetz complex that are no longer closed. To remedy this,
-    starting with version `v0.8.0` of
+    starting with version `v0.7.5` of
     [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
     an alternative workflow is introduced, based on the new complex
     type [`EuclideanComplex`](@ref). For the time being, both the old
@@ -747,7 +747,7 @@ vector field. This embedding is achieved by not only providing a
 Lefschetz complex `lc`, but also a coordinate vector `coords` for the
 vertex coordinates.
 
-Starting with version `v0.8.0` of 
+Starting with version `v0.7.5` of 
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
 there is another workflow possibility, which will be briefly described
 in the following. The creation of the vector field proceeds as before:

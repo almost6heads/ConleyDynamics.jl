@@ -3,6 +3,7 @@
 ## Multivector Fields
 
 ```@docs
+create_mvf_hull
 mvf_information
 mvf_length
 mvf_critical
@@ -11,10 +12,14 @@ mvf_is_acyclic
 mvf_forward_orbit
 mvf_backward_orbit
 mvf_neighborhood
-create_mvf_hull
+extract_multivectors
+```
+
+## Multivector Fields via Flows
+
+```@docs
 create_planar_mvf
 create_spatial_mvf
-extract_multivectors
 planar_nontransverse_edges
 ```
 

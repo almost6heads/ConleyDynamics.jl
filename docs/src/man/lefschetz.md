@@ -766,7 +766,7 @@ like to use subcomplexes of simplicial or cubical complexes, which are
 no longer closed in the above sense. For such a complex it is generally
 not possible to deduce the location of, for example, an edge, by looking
 at the location of its vertices -- since one or both vertices might be
-missing from the complex. As of version `v0.8.0`, the package
+missing from the complex. As of version `v0.7.5`, the package
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
 provides a second complex datatype to address this issue:
 
