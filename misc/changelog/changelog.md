@@ -13,6 +13,30 @@ description, etc.
 
 Release notes:
 
+## v0.7.5 (April 12, 2026)
+
+This version does not include any breaking changes, but it does
+contain major changes to the code base:
+
+- Introduced a new complex type `EuclideanComplex` which has
+  coordinate information incorporated for every cell. This 
+  can be used for plotting and multivector field creation
+  from flows.
+- Both `EuclideanComplex` and `LefschetzComplex` are subtypes
+  of the new abstract type `AbstractComplex`.
+- All functions have been modified to accept a complex of
+  type `AbstractComplex`.
+- Plotting functions have obtained new signatures to work with
+  the `EuclideanComplex` type. These new functions enable one
+  to plot subcomplexes, even if some lower-dimensional cells
+  have been removed from higher-dimensional cells in the process.
+- The old plotting functions are still present. Therefore, no
+  breaking changes have been introduced. However, the old signatures
+  will be removed in a future release, after a transition period.
+- All other functions the used to require a vertex coordinate
+  argument have gained a new method which draws this information
+  from the coordinate field of a `EuclideanComplex`.
+
 ## v0.7.4 (April 10, 2026)
 
 - Added `mvf_forward_orbit` and `mvf_backward_orbit`
