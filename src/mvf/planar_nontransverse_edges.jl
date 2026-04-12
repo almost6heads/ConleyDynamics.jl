@@ -39,6 +39,44 @@ function planar_nontransverse_edges(lc::AbstractComplex, coords::Vector{<:Vector
     return edges[ntindices]
 end
 
+"""
+    planar_nontransverse_edges(ec::EuclideanComplex, vf; npts::Int=100)
+
+Find all edges of a planar `EuclideanComplex` which are not flow transverse.
+
+The `EuclideanComplex` is given in `ec` and the vector field is specified in
+`vf`. The optional parameter `npts` determines how many points along an edge
+are evaluated for the transversality check. Edge endpoint coordinates are taken
+directly from the embedded `ec.coords` field. The function returns a list of
+nontransverse edges as `Vector{Int}`, which contains the edge indices.
+"""
+function planar_nontransverse_edges(ec::EuclideanComplex, vf; npts::Int=100)
+    #
+    # Find all edges of a planar EuclideanComplex which are not flow transverse
+    #
+
+    # Find a list of all edges
+
+    edges = findall(isequal(1), ec.dimensions)
+    nedges = length(edges)
+
+    # Check transversality for every edge using endpoint coords from ec.coords
+
+    is_transverse = fill(false, nedges)
+    Threads.@threads for k in eachindex(edges)
+        p0 = ec.coords[edges[k]][1]
+        p1 = ec.coords[edges[k]][2]
+        is_transverse[k] = planar_edge_is_transverse(p0, p1, vf, np=npts)
+    end
+
+    # Return the non-transverse edges
+
+    ntindices = findall(isequal(false), is_transverse)
+    return edges[ntindices]
+end
+
+###############################################################################
+
 ############################
 #                          #
 #   Auxilliary functions   #

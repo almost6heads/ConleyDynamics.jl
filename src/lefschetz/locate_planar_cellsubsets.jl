@@ -398,6 +398,384 @@ function cellsubset_planar_area(lc::AbstractComplex,
     return cellarea
 end
 
+###############################################################################
+#                                                                             #
+#   EuclideanComplex methods — coords read from ec.coords[k]                 #
+#                                                                             #
+###############################################################################
+
+"""
+    cellsubset_bounding_box(ec, csubset)
+
+Compute the bounding box for a cell subset of a `EuclideanComplex`.
+
+For the `EuclideanComplex` `ec`, this function computes the smallest enclosing
+box for the closure of the cell subset given in `csubset::Cells`. Vertex
+coordinates are taken directly from the embedded `ec.coords` field. The
+function returns the coordinates `bmin` and `bmax` of the minimal and maximal
+corners of the box, respectively.
+"""
+function cellsubset_bounding_box(ec::EuclideanComplex, csubset::Cells)
+    #
+    # Compute the bounding box for a cell subset of a EuclideanComplex
+    #
+
+    # Convert to index format if csubset is a string vector
+    if typeof(csubset) == Vector{String}
+        csubsetI = convert_cells(ec, csubset)
+    else
+        csubsetI = csubset
+    end
+
+    # Collect all vertex coordinate vectors stored across the cells
+    all_vcoords = vcat([ec.coords[k] for k in csubsetI]...)
+
+    # Find the minimal and maximal coordinates
+    cdim = length(all_vcoords[1])
+    bmin = [minimum(v[j] for v in all_vcoords) for j in 1:cdim]
+    bmax = [maximum(v[j] for v in all_vcoords) for j in 1:cdim]
+
+    return bmin, bmax
+end
+
+"""
+    cellsubset_distance(ec, csubset, dpoint)
+
+Compute the distance of a cell subset from a point for a `EuclideanComplex`.
+
+For the `EuclideanComplex` `ec`, this function computes the smallest distance
+of the vertices in the closure of the cell subset given in `csubset::Cells`
+from the point given in `dpoint::Vector{<:Real}`. Vertex coordinates are taken
+directly from the embedded `ec.coords` field.
+"""
+function cellsubset_distance(ec::EuclideanComplex,
+                             csubset::Cells,
+                             dpoint::Vector{<:Real})
+    #
+    # Compute the distance of a cell subset from a point for a EuclideanComplex
+    #
+
+    # Convert to index format if csubset is a string vector
+    if typeof(csubset) == Vector{String}
+        csubsetI = convert_cells(ec, csubset)
+    else
+        csubsetI = csubset
+    end
+
+    # Collect all vertex coordinate vectors stored across the cells
+    all_vcoords = vcat([ec.coords[k] for k in csubsetI]...)
+    @assert length(all_vcoords) > 0 "This is not a geometric complex!"
+
+    # Compute the minimal vertex distance
+    return minimum(norm(v - dpoint) for v in all_vcoords)
+end
+
+"""
+    cellsubset_planar_area(ec, csubset)
+
+Compute the area of a planar cell subset of a `EuclideanComplex`.
+
+For the `EuclideanComplex` `ec`, this function computes the area of the cell
+subset given in `csubset::Cells`. The function assumes that the complex is
+two-dimensional and that the maximal 2-cells in the cell subset are all
+polygonal with straight boundary edges. Vertex coordinates for every cell are
+taken directly from the embedded `ec.coords` field, so the function works
+correctly even when vertex cells are no longer present in the complex.
+"""
+function cellsubset_planar_area(ec::EuclideanComplex, csubset::Cells)
+    #
+    # Compute the area of a planar cell subset of a EuclideanComplex
+    #
+    @assert ec.dim == 2 "This function expects a planar complex!"
+
+    # Convert to index format if csubset is a string vector
+    if typeof(csubset) == Vector{String}
+        csubsetI = unique(convert_cells(ec, csubset))
+    else
+        csubsetI = unique(csubset)
+    end
+
+    # Extract the 2-cells in the cell subset
+    tindices = [k for k in csubsetI if ec.dimensions[k] == 2]
+
+    # Determine the area
+    cellarea = 0.0
+    for k in tindices
+        vcoords = ec.coords[k]
+        nv = length(vcoords)
+        @assert nv > 2 "This is not a planar closed 2-cell!"
+
+        # Triangle: cross-product formula (order-independent)
+        if nv == 3
+            x1, y1 = vcoords[1]
+            x2, y2 = vcoords[2]
+            x3, y3 = vcoords[3]
+            cellarea = cellarea + 0.5 * abs(x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2))
+
+        # Polygon: traverse edges by matching coordinate endpoints to get
+        # vertices in boundary order (works even without vertex cells present)
+        else
+            eindices = lefschetz_skeleton(ec, [k], 1)
+            @assert length(eindices) == nv "This is not a planar closed 2-cell!"
+
+            remaining = copy(eindices)
+            e = pop!(remaining)
+            vordered = [ec.coords[e][1], ec.coords[e][2]]
+            current = vordered[2]
+            for _ in 1:nv-2
+                found = false
+                for (j, e2) in enumerate(remaining)
+                    if ec.coords[e2][1] ≈ current
+                        push!(vordered, ec.coords[e2][2])
+                        current = vordered[end]
+                        deleteat!(remaining, j)
+                        found = true
+                        break
+                    elseif ec.coords[e2][2] ≈ current
+                        push!(vordered, ec.coords[e2][1])
+                        current = vordered[end]
+                        deleteat!(remaining, j)
+                        found = true
+                        break
+                    end
+                end
+                @assert found "This is not a planar closed 2-cell!"
+            end
+            push!(vordered, vordered[1])   # close the polygon
+            @assert vordered[1] ≈ vordered[nv+1] "This is not a planar closed 2-cell!"
+
+            # Compute the area via the shoelace formula
+            polyarea = 0.0
+            for j in 1:nv
+                x1, y1 = vordered[j]
+                x2, y2 = vordered[j+1]
+                polyarea = polyarea + x1*y2 - x2*y1
+            end
+            cellarea = cellarea + 0.5 * abs(polyarea)
+        end
+    end
+
+    return cellarea
+end
+
+"""
+    cellsubset_location_rectangle(ec, csubset, rmin, rmax)
+
+Determine the location of a cell subset relative to a rectangle for a
+`EuclideanComplex`.
+
+For the `EuclideanComplex` `ec`, this function determines the location of the
+closure of the cellsubset given in `csubset::Cells` relative to the rectangle
+specified by the minimal and maximal corners `rmin::Vector{<:Real}` and
+`rmax::Vector{<:Real}`, respectively. Vertex coordinates are taken directly
+from the embedded `ec.coords` field. The function returns
+* 1 if the set lies in the interior of the rectangle,
+* 2 if the set intersects the rectangle boundary, and
+* 3 if the set lies in the exterior of the rectangle.
+"""
+function cellsubset_location_rectangle(ec::EuclideanComplex,
+                                       csubset::Cells,
+                                       rmin::Vector{<:Real},
+                                       rmax::Vector{<:Real})
+    #
+    # Determine the location of a cell subset relative to a rectangle
+    # for a EuclideanComplex
+    #
+    @assert length(ec.coords[1][1]) == 2 "The complex has to be planar!"
+
+    # Convert to index format if csubset is a string vector
+    if typeof(csubset) == Vector{String}
+        csubsetI = convert_cells(ec, csubset)
+    else
+        csubsetI = csubset
+    end
+
+    # Collect all vertex coordinate vectors stored across the cells
+    all_vcoords = vcat([ec.coords[k] for k in csubsetI]...)
+
+    # Compute the signed distances of the vertices
+    sd = [signed_distance_rectangle(v, rmin, rmax) for v in all_vcoords]
+    sdmin = minimum(sd)
+    sdmax = maximum(sd)
+    if sdmax < 0
+        return 1
+    end
+    if (sdmin <= 0) && (sdmax >= 0)
+        return 2
+    end
+
+    # All points lie outside, but does the bounding box intersect?
+    bmin = [minimum(v[j] for v in all_vcoords) for j in 1:2]
+    bmax = [maximum(v[j] for v in all_vcoords) for j in 1:2]
+    if (bmin[1] > rmax[1]) || (bmax[1] < rmin[1])
+        return 3
+    end
+    if (bmin[2] > rmax[2]) || (bmax[2] < rmin[2])
+        return 3
+    end
+
+    # All points lie outside, the bounding box intersects,
+    # so check the edges individually using stored endpoint coords
+    eindices = lefschetz_skeleton(ec, csubsetI, 1)
+    if length(eindices) == 0
+        return 3
+    end
+
+    for eind in eindices
+        p1 = ec.coords[eind][1]
+        p2 = ec.coords[eind][2]
+        if segment_intersects_rectangle(p1, p2, rmin, rmax)
+            return 2
+        end
+    end
+
+    return 3
+end
+
+"""
+    cellsubset_location_circle(ec, csubset, c, r)
+
+Determine the location of a cell subset relative to a circle for a
+`EuclideanComplex`.
+
+For the `EuclideanComplex` `ec`, this function determines the location of the
+closure of the cellsubset given in `csubset::Cells` relative to the circle
+specified by the center point `c::Vector{<:Real}` and the radius `r::Real`.
+Vertex coordinates are taken directly from the embedded `ec.coords` field.
+The function returns
+* 1 if the set lies in the interior of the circle,
+* 2 if the set intersects the circle, and
+* 3 if the set lies in the exterior of the circle.
+"""
+function cellsubset_location_circle(ec::EuclideanComplex,
+                                    csubset::Cells,
+                                    c::Vector{<:Real},
+                                    r::Real)
+    #
+    # Determine the location of a cell subset relative to a circle
+    # for a EuclideanComplex
+    #
+    @assert length(ec.coords[1][1]) == 2 "The complex has to be planar!"
+
+    # Convert to index format if csubset is a string vector
+    if typeof(csubset) == Vector{String}
+        csubsetI = convert_cells(ec, csubset)
+    else
+        csubsetI = csubset
+    end
+
+    # Collect all vertex coordinate vectors stored across the cells
+    all_vcoords = vcat([ec.coords[k] for k in csubsetI]...)
+
+    # Compute the signed distances of the vertices
+    sd = [signed_distance_circle(v, c, r) for v in all_vcoords]
+    sdmin = minimum(sd)
+    sdmax = maximum(sd)
+    if sdmax < 0
+        return 1
+    end
+    if (sdmin <= 0) && (sdmax >= 0)
+        return 2
+    end
+
+    # All points lie outside, but does the bounding box intersect
+    # the box determined by the circle?
+    bmin = [minimum(v[j] for v in all_vcoords) for j in 1:2]
+    bmax = [maximum(v[j] for v in all_vcoords) for j in 1:2]
+    if (bmin[1] > c[1]+r) || (bmax[1] < c[1]-r)
+        return 3
+    end
+    if (bmin[2] > c[2]+r) || (bmax[2] < c[2]-r)
+        return 3
+    end
+
+    # All points lie outside, the bounding box intersects
+    # the box determined by the circle, so check edges individually
+    eindices = lefschetz_skeleton(ec, csubsetI, 1)
+    if length(eindices) == 0
+        return 3
+    end
+
+    for eind in eindices
+        p1 = ec.coords[eind][1]
+        p2 = ec.coords[eind][2]
+        if segment_intersects_circle(p1, p2, c, r)
+            return 2
+        end
+    end
+
+    return 3
+end
+
+"""
+    locate_planar_cellsubsets(ec, csubsets, rmin, rmax)
+
+Locate cell subsets relative to a planar rectangle for a `EuclideanComplex`.
+
+For the `EuclideanComplex` `ec` and the cell subsets in `csubsets::CellSubsets`
+this function extracts the indices of all cell subset closures which lie in the
+interior, or intersect the boundary of the rectangle specified by the minimal
+and maximal corners `rmin::Vector{<:Real}` and `rmax::Vector{<:Real}`,
+respectively. Vertex coordinates are taken directly from the embedded
+`ec.coords` field. The function returns
+* `indexI::Vector{Int}`: indices of cell subset closures inside the rectangle,
+* `indexB::Vector{Int}`: indices of cell subset closures which intersect the
+  rectangle boundary.
+"""
+function locate_planar_cellsubsets(ec::EuclideanComplex,
+                                   csubsets::CellSubsets,
+                                   rmin::Vector{<:Real},
+                                   rmax::Vector{<:Real})
+    #
+    # Locate cell subsets relative to a planar rectangle for a EuclideanComplex
+    #
+    Nsub = length(csubsets)
+    lindex = fill(0, Nsub)
+
+    Threads.@threads for k in 1:Nsub
+        lindex[k] = cellsubset_location_rectangle(ec, csubsets[k], rmin, rmax)
+    end
+
+    indexI = findall(x -> x==1, lindex)
+    indexB = findall(x -> x==2, lindex)
+    return indexI, indexB
+end
+
+"""
+    locate_planar_cellsubsets(ec, csubsets, c, r)
+
+Locate cell subsets relative to a planar circle for a `EuclideanComplex`.
+
+For the `EuclideanComplex` `ec` and the cell subsets in `csubsets::CellSubsets`
+this function extracts the indices of all cell subset closures which lie in the
+interior, or intersect the boundary of the circle specified by the center point
+`c::Vector{<:Real}` and radius `r::Real`. Vertex coordinates are taken
+directly from the embedded `ec.coords` field. The function returns
+* `indexI::Vector{Int}`: indices of cell subset closures inside the circle,
+* `indexB::Vector{Int}`: indices of cell subset closures which intersect the
+  circle.
+"""
+function locate_planar_cellsubsets(ec::EuclideanComplex,
+                                   csubsets::CellSubsets,
+                                   c::Vector{<:Real},
+                                   r::Real)
+    #
+    # Locate cell subsets relative to a planar circle for a EuclideanComplex
+    #
+    Nsub = length(csubsets)
+    lindex = fill(0, Nsub)
+
+    Threads.@threads for k in 1:Nsub
+        lindex[k] = cellsubset_location_circle(ec, csubsets[k], c, r)
+    end
+
+    indexI = findall(x -> x==1, lindex)
+    indexB = findall(x -> x==2, lindex)
+    return indexI, indexB
+end
+
+###############################################################################
+
 """
     signed_distance_rectangle(p, rmin, rmax)
 

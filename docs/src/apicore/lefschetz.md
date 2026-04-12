@@ -13,12 +13,12 @@ end
 create_lefschetz_gf2
 lefschetz_subcomplex
 lefschetz_closed_subcomplex
+permute_lefschetz_complex
 lefschetz_reduction
 lefschetz_reduction_maps
 lefschetz_newbasis
 lefschetz_newbasis_maps
 compose_reductions
-permute_lefschetz_complex
 ```
 
 ## Lefschetz Complex Queries
