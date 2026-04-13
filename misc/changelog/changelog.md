@@ -13,6 +13,12 @@ description, etc.
 
 Release notes:
 
+## v0.7.6 (??, 2026)
+
+- Added the function `lefschetz_is_simplicial`.
+- Change the sparse matrix sparsity output to include fewer
+  significant digits.
+
 ## v0.7.5 (April 12, 2026)
 
 This version does not include any breaking changes, but it does

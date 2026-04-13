@@ -181,7 +181,7 @@ function Base.show(io::IO, ::MIME"text/plain", sm::SparseMatrix)
 
     pstr = string(sm.nrow) * "x" * string(sm.ncol) * "-dimensional "
     pstr = pstr * string(typeof(sm)) * ", "
-    pstr = pstr * "sparsity=" * string(sparse_sparsity(sm)) * ":"
+    pstr = pstr * "sparsity=" * string(round(sparse_sparsity(sm), sigdigits=3)) * ":"
     println(io, pstr)
 
     # Only basic information if the matrix is too large

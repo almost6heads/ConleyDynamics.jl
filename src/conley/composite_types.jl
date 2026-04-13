@@ -284,7 +284,8 @@ function Base.show(io::IO, ::MIME"text/plain", lc::LefschetzComplex)
     println(io, "  dim:      " * string(lc.dim))
     println(io, "  ncells:   " * string(lc.ncells))
     print(io, "  boundary: field " * lefschetz_field(lc) *
-              ", sparsity " * string(sparse_sparsity(lc.boundary)))
+              ", sparsity " *
+              string(round(sparse_sparsity(lc.boundary), sigdigits=3)))
 end
 
 """
@@ -303,7 +304,8 @@ function Base.show(io::IO, ::MIME"text/plain", ec::EuclideanComplex)
     println(io, "  dim:      " * string(ec.dim))
     println(io, "  ncells:   " * string(ec.ncells))
     print(io, "  boundary: field " * lefschetz_field(ec) *
-              ", sparsity " * string(sparse_sparsity(ec.boundary)))
+              ", sparsity " *
+              string(round(sparse_sparsity(ec.boundary), sigdigits=3)))
 end
 
 """
@@ -324,7 +326,7 @@ function Base.show(io::IO, ::MIME"text/plain", cm::ConleyMorseCM)
     pstr = "  matrix: "
     pstr = pstr * string(cm.matrix.nrow) * "x" * string(cm.matrix.ncol)
     pstr = pstr * "-dimensional matrix with sparsity "
-    pstr = pstr * string(sparse_sparsity(cm.matrix))
+    pstr = pstr * string(round(sparse_sparsity(cm.matrix), sigdigits=3))
     println(io, pstr)
     print(io,"  inspect the connection matrix with sparse_show(cm)")
 end
