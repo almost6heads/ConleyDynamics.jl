@@ -29,6 +29,7 @@ lefschetz_cell_count
 lefschetz_field
 lefschetz_is_closed
 lefschetz_is_locally_closed
+lefschetz_is_simplicial
 validate_lefschetz_complex
 ```
 

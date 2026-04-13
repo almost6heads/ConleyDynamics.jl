@@ -815,6 +815,8 @@ provide *basic information*:
   complex cell subset is closed or not.
 - [`lefschetz_is_locally_closed`](@ref) checks whether a given
   Lefschetz complex cell subset is locally closed or not.
+- [`lefschetz_is_simplicial`](@ref) checks whether a given
+  Lefschetz complex is a simplicial complex or not.
 
 The next set of functions can be used to extract certain *topological
 features* from a Lefschetz complex:
