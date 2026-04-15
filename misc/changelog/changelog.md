@@ -13,10 +13,12 @@ description, etc.
 
 Release notes:
 
-## v0.7.6 (??, 2026)
+## v0.7.6 (April 15, 2026)
 
 - Added the function `lefschetz_is_simplicial`.
-- Change the sparse matrix sparsity output to include fewer
+- Added the functions `lefschetz_is_cubical` and `lefschetz_is_subcubical`,
+  as well as `is_cube_label`.
+- Changed the sparse matrix sparsity output to include fewer
   significant digits.
 - Added new method to `lefschetz_to_euclidean`.
 
