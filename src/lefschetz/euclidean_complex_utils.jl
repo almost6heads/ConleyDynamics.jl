@@ -62,6 +62,71 @@ function lefschetz_to_euclidean(lc::LefschetzComplex,
 end
 
 """
+    lefschetz_to_euclidean(lc::LefschetzComplex,
+                           coords::Vector{<:Vector{<:Vector{<:Real}}})
+                           -> EuclideanComplex
+
+Embed a `LefschetzComplex` into Euclidean space by attaching coordinates
+to every cell.
+
+The vector `coords` contains coordinates for each of the cells in `lc`,
+indexed by the cell index. This function only performs basic check on the
+suitability of this coordinate vector. More precisely, the function raises
+an `ArgumentError` if any vertex has coordinate count other than 1, any 1-cell
+has a coordinate count other than 2, or any 2-cell has a coordinate count
+other than 3 or 4.
+"""
+function lefschetz_to_euclidean(lc::LefschetzComplex,
+                                coords::Vector{<:Vector{<:Vector{<:Real}}})
+    #
+    # Convert a Lefschetz to a Euclidean complex by adding coords
+    #
+
+    @assert length(coords)==lc.ncells "I do need coordinates for every cell!"
+
+    # Convert coordinates to Float64 and perform basic checks
+
+    coordF = Vector{Vector{Vector{Float64}}}(undef, lc.ncells)
+    embdim = length(coords[1][1])  # Dimension of the ambient space
+
+    for k in 1:lc.ncells
+        vertcoords = Vector{Vector{Float64}}()
+        cdim = lc.dimensions[k]    # Dimension of the cell
+        nc = length(coords[k])     # Number of provided coordinates
+
+        # Validate vertex coordinate counts
+        if cdim == 0 && nc != 1
+            throw(ArgumentError(
+                "lefschetz_to_euclidean: wrong number of vertex coordinates — " *
+                "cell \"$(lc.labels[k])\" has $nc vertices (expected 1 for vertices)"))
+        elseif cdim == 1 && nc != 2
+            throw(ArgumentError(
+                "lefschetz_to_euclidean: wrong number of edge coordinates — " *
+                "cell \"$(lc.labels[k])\" has $nc vertices (expected 2 for edges)"))
+        elseif cdim == 2 && nc != 3 && nc != 4
+            throw(ArgumentError(
+                "lefschetz_to_euclidean: wrong number of 2-cell coordinates — " *
+                "cell \"$(lc.labels[k])\" has $nc vertices (expected 3 for triangles, " *
+                "4 for quads)"))
+        end
+
+        # Make sure all povided vertex coordinates have the same length
+
+        for m in 1:length(coords[k])
+            if !(length(coords[k][m])==embdim)
+                throw(ArgumentError(
+                "lefschetz_to_euclidean: all vertices need to have the same number of coordinates"))
+            end
+            push!(vertcoords, Float64.(coords[k][m]))
+        end
+
+        coordF[k] = vertcoords
+    end
+            
+    return EuclideanComplex(lc.labels, lc.dimensions, lc.boundary, coordF; validate=false)
+end
+
+"""
     rescale_coords(ec::EuclideanComplex,
                    a::Vector{<:Real}, b::Vector{<:Real}) -> EuclideanComplex
 

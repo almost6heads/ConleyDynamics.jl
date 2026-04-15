@@ -1007,7 +1007,13 @@ conversion tasks:
   to a [`LefschetzComplex`](@ref) by removing the coordinate field.
 - [`lefschetz_to_euclidean`](@ref) converts a [`LefschetzComplex`](@ref)
   to a [`EuclideanComplex`](@ref) by adding a user-provided coordinate
-  field.
+  field. There are two versions of this command. If the user supplies
+  a `Vector{Vector{Real}}`, then the entries are interpreted as vertex
+  coordinates, and the function fills in the coordinate vectors for
+  higher-dimensional cells based on the 0-skeleton. On the other
+  hand, if the user supplies a `Vector{Vector{Vector{Real}}}`, then
+  this vector is taken as is for the new cell coordinate field. Only
+  basic consistency checks are performed.
 - [`rescale_coords`](@ref) produces a new [`EuclideanComplex`](@ref)
   from an existing one by rescaling the coordinates.
 

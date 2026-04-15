@@ -18,6 +18,7 @@ Release notes:
 - Added the function `lefschetz_is_simplicial`.
 - Change the sparse matrix sparsity output to include fewer
   significant digits.
+- Added new method to `lefschetz_to_euclidean`.
 
 ## v0.7.5 (April 12, 2026)
 
