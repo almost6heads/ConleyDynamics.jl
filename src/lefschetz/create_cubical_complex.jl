@@ -1,4 +1,9 @@
-export create_cubical_complex, cube_field_size, cube_information, cube_label, get_cubical_coords
+export create_cubical_complex
+export cube_field_size
+export cube_information
+export cube_label
+export get_cubical_coords
+export is_cube_label
 
 """
     create_cubical_complex(cubes::Vector{String}; p::Int=2)
@@ -199,7 +204,6 @@ function cube_field_size(cube::String)
     #
     # Determine the field sizes of a given cube label
     #
-
     pointdim = length(cube) - first(findfirst(".",cube))
     pointlen = Int((length(cube) - 1) / pointdim - 1)
 
@@ -342,5 +346,33 @@ function get_cubical_coords(cc::AbstractComplex)
     end
 
     return coords
+end
+
+"""
+    is_cube_label(cube::String)
+
+Tests whether a given string is a cube label.
+"""
+function is_cube_label(cube::String)
+    #
+    # Test whether a given label is a cube label
+    #
+    cv = string.(collect(cube))
+    cl = length(cube)
+
+    # Check separator location and field lengths
+    (!("." in cv)) && return false
+    pl = findfirst(t -> t==".", cv)
+    (pl == 1)  && return false
+    (pl == cl) && return false
+    (!(mod(pl-1, cl-pl)==0)) && return false
+
+    # Check used symbols
+    (length(setdiff(cv[pl+1:end], ["0","1"])) > 0) && return false
+    (length(setdiff(cv, [".","0","1","2","3","4","5","6","7","8","9"])) > 0) && return false
+    (length(setdiff(cv[1:pl-1], ["0","1","2","3","4","5","6","7","8","9"])) > 0) && return false
+    
+    # All is ok if you get here
+    return true
 end
 

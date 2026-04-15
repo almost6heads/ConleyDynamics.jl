@@ -30,6 +30,8 @@ lefschetz_field
 lefschetz_is_closed
 lefschetz_is_locally_closed
 lefschetz_is_simplicial
+lefschetz_is_cubical
+lefschetz_is_subcubical
 validate_lefschetz_complex
 ```
 

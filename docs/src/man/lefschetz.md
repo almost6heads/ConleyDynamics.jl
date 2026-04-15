@@ -817,6 +817,13 @@ provide *basic information*:
   Lefschetz complex cell subset is locally closed or not.
 - [`lefschetz_is_simplicial`](@ref) checks whether a given
   Lefschetz complex is a simplicial complex or not.
+- [`lefschetz_is_cubical`](@ref) checks whether a given
+  Lefschetz complex is a cubical complex or not, in the sense
+  of this manual. In particular, its labels have to have the 
+  correct format.
+- [`lefschetz_is_subcubical`](@ref) checks whether a given
+  Lefschetz complex is a locally closed subset of a cubical
+  complex or not.
 
 The next set of functions can be used to extract certain *topological
 features* from a Lefschetz complex:
