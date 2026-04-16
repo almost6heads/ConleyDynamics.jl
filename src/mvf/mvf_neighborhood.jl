@@ -7,12 +7,13 @@ export mvf_neighborhood
 Determine a multivector neighborhood of a set of cells.
 
 The function returns all multivectors of the multivector field `mvf`
-that can be reached from the cells in `sources` in at most `n` steps
-forward or backward time. In other words, it computes a neighborhood
-of the multivectors containing the cells in `sources` with a 
-thickness of `n` layers of multivectors. Critical cells in this
-neighborhood will be returned as singletons. The return type of the
-multivectors is the same as the type of `mvf`.
+that form a neighborhood of the given cells with a collar width of `n`.
+More precisely, for `n = 0` one obtains the multivectors intersecting
+the cells in `sources`, while for `n >= 1` the function returns all
+multivectors from level `n-1`, together with all multivectors whose
+closure intersects the closure of the level `n-1` neighborhood.
+Critical cells in this neighborhood will be returned as singletons.
+The return type of the multivectors is the same as the type of `mvf`.
 """
 function mvf_neighborhood(lc::AbstractComplex, mvf::CellSubsets,
                           sources::Cells, n::Int)
@@ -56,12 +57,14 @@ function mvf_neighborhood(lc::AbstractComplex, mvf::CellSubsets,
         end
     end
 
-    # Determine the edges in the undirected graph
+    # Determine the edges in the undirected graph:
+    # There is an edge whenever the closures of the
+    # multivectors intersect.
 
     g = Graph(length(mvfI))
     for k = 1:length(mvfI)
         for m = 1:length(mvfI)
-            if (!(k == m)) && length(intersect(mvfIcl[k], mvfI[m]))>0
+            if (!(k == m)) && length(intersect(mvfIcl[k], mvfIcl[m]))>0
                 add_edge!(g, k, m)
             end
         end

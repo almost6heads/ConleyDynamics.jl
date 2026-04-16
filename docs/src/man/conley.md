@@ -136,11 +136,13 @@ fields on Lefschetz complexes:
   has also four signatures, completely analogous to the previous one.
 * The function [`mvf_neighborhood`](@ref) computes a multivector
   neighborhood of a cell or set of cells. It returns all multivectors
-  of the given multivector field that can be reached from the source
-  cells in at most `n` steps forward or backward time. In other words,
-  it computes a neighborhood of the multivectors containing the source
-  cells with a thickness of `n` layers of multivectors. Critical cells
-  in this neighborhood will be returned as singletons.
+  of the given multivector field that form a neighborhood of the given
+  cells with a collar width of `n`. More precisely, for `n = 0` one
+  obtains the multivectors intersecting the cells in `sources`, while
+  for `n >= 1` the function returns all multivectors from level `n-1`,
+  together with all multivectors whose closure intersects the closure
+  of the level `n-1` neighborhood. Critical cells in this neighborhood
+  will be returned as singletons.
 * The function [`mvf_length`](@ref) returns the number of all
   multivectors of a given multivector field. This not only includes
   the multivectors explicitly listed in the argument vector `mvf`,

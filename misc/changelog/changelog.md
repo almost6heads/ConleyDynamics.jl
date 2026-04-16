@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.7.7 (April ??, 2026)
+
+- Changed the functionality of `mvf_neighborhood` slightly.
+
 ## v0.7.6 (April 15, 2026)
 
 - Added the function `lefschetz_is_simplicial`.
