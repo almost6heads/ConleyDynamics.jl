@@ -137,6 +137,7 @@ include("./plots/plot_planar_simplicial.jl")
 include("./plots/plot_planar_simplicial_morse.jl")
 include("./plots/plot_planar_cubical.jl")
 include("./plots/plot_planar_cubical_morse.jl")
+include("./plots/plot_data_types.jl")
 
 end
 
