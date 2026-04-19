@@ -252,12 +252,9 @@ end
     end
 
     # --- Multivector shaded regions ---
-    seed = [colorant"royalblue4", colorant"royalblue3", colorant"steelblue1"]
-    cols = distinguishable_colors(length(mvf_int), seed; dropseed=true)
+    col = parse(Colorant, data.mvfcolor)
 
-    for (m, mv) in enumerate(mvf_int)
-        col = cols[m]
-
+    for mv in mvf_int
         # Inset polygons for each cell in the multivector
         for k in mv
             xs, ys = _inset_polygon(ec, k, insetfac, edgewidth, w_avg)
@@ -293,17 +290,19 @@ end
 function ConleyDynamics.plot_simplicial_mvf(ec::EuclideanComplex,
                                             mvf::CellSubsets;
                                             pdim::Vector{Bool}=[true,true,true],
-                                            insetfac::Real=0.2,
-                                            edgewidth::Real=0.0)
-    data = MVFPlot(ec, mvf, pdim, Float64(insetfac), Float64(edgewidth))
+                                            insetfac::Real=0.35,
+                                            edgewidth::Real=0.0,
+                                            mvfcolor::String="darkorange")
+    data = MVFPlot(ec, mvf, pdim, Float64(insetfac), Float64(edgewidth), mvfcolor)
     return Plots.plot(data)
 end
 
 function ConleyDynamics.plot_cubical_mvf(ec::EuclideanComplex,
                                          mvf::CellSubsets;
                                          pdim::Vector{Bool}=[true,true,true],
-                                         insetfac::Real=0.2,
-                                         edgewidth::Real=0.0)
-    data = MVFPlot(ec, mvf, pdim, Float64(insetfac), Float64(edgewidth))
+                                         insetfac::Real=0.35,
+                                         edgewidth::Real=0.0,
+                                         mvfcolor::String="darkorange")
+    data = MVFPlot(ec, mvf, pdim, Float64(insetfac), Float64(edgewidth), mvfcolor)
     return Plots.plot(data)
 end
