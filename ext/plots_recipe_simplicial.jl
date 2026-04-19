@@ -73,9 +73,11 @@
         bary_y = [sum(p[2] for p in ec.coords[k]) / length(ec.coords[k])
                   for k in 1:ec.ncells]
 
-        pair_list  = Tuple{Int,Int}[]
-        critical   = Int[]
+        pair_list    = Tuple{Int,Int}[]
+        critical     = Int[]
+        mvf_cells    = Set{Int}()
         for mv in mvf_int
+            for k in mv; push!(mvf_cells, k); end
             if length(mv) == 1
                 push!(critical, mv[1])
             elseif length(mv) == 2
@@ -86,6 +88,10 @@
                     push!(pair_list, (k2, k1))
                 end
             end
+        end
+        # Cells absent from the MVF are implicitly critical
+        for k in 1:ec.ncells
+            k ∉ mvf_cells && push!(critical, k)
         end
 
         if !isempty(critical)
