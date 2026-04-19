@@ -54,15 +54,14 @@ end
     MVFPlot
 
 Wrapper type for plotting a multivector field on a planar complex via Plots.jl.
-Each multivector is rendered as a shaded inset region.
+Each multivector is rendered as a stadium (pill) shaped region.
 """
 struct MVFPlot
-    complex   :: EuclideanComplex
-    mvf       :: CellSubsets
-    pdim      :: Vector{Bool}
-    insetfac  :: Float64
-    edgewidth :: Float64
-    mvfcolor  :: String
+    complex  :: EuclideanComplex
+    mvf      :: CellSubsets
+    pdim     :: Vector{Bool}
+    tubefac  :: Float64
+    mvfcolor :: String
 end
 
 # Stub functions activated when Plots.jl is loaded as a weak dependency.
@@ -127,8 +126,7 @@ Requires `using Plots` before `using ConleyDynamics`.
 
 Optional keyword arguments:
 - `pdim::Vector{Bool}=[true,true,true]`: which dimensions to show in background
-- `insetfac::Real=0.35`: inset fraction (larger = more space between multivectors)
-- `edgewidth::Real=0.0`: half-width for edge shading (0 = auto)
+- `tubefac::Real=0.15`: tube half-width as fraction of average edge length
 - `mvfcolor::String="darkorange"`: X11 color name for the multivector regions
 """
 function plot_simplicial_mvf end
@@ -142,8 +140,7 @@ Requires `using Plots` before `using ConleyDynamics`.
 
 Optional keyword arguments:
 - `pdim::Vector{Bool}=[true,true,true]`: which dimensions to show in background
-- `insetfac::Real=0.35`: inset fraction (larger = more space between multivectors)
-- `edgewidth::Real=0.0`: half-width for edge shading (0 = auto)
+- `tubefac::Real=0.15`: tube half-width as fraction of average edge length
 - `mvfcolor::String="darkorange"`: X11 color name for the multivector regions
 """
 function plot_cubical_mvf end
