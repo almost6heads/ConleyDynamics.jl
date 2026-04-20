@@ -129,7 +129,7 @@ Optional keyword arguments:
 - `pdim::Vector{Bool}=[true,true,true]`: which dimensions to show in background
 - `tubefac::Real=0.05`: tube half-width as fraction of average edge length
 - `mvfcolor::String="darkorange"`: X11 color name for the multivector regions
-- `mvfalpha::Real=1.0`: fill opacity (0.0 = transparent, 1.0 = opaque)
+- `mvfalpha::Real=0.2`: fill opacity (0.0 = transparent, 1.0 = opaque)
 """
 function plot_simplicial_mvf end
 
@@ -144,7 +144,7 @@ Optional keyword arguments:
 - `pdim::Vector{Bool}=[true,true,true]`: which dimensions to show in background
 - `tubefac::Real=0.05`: tube half-width as fraction of average edge length
 - `mvfcolor::String="darkorange"`: X11 color name for the multivector regions
-- `mvfalpha::Real=1.0`: fill opacity (0.0 = transparent, 1.0 = opaque)
+- `mvfalpha::Real=0.2`: fill opacity (0.0 = transparent, 1.0 = opaque)
 """
 function plot_cubical_mvf end
 

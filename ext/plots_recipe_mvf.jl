@@ -152,7 +152,15 @@ end
     # --- Multivector regions: barycenter-graph stadiums ---
     col = parse(Colorant, data.mvfcolor)
 
+    # Cells absent from every explicit multivector are implicit singletons.
+    mvf_cells = Set{Int}()
     for mv in mvf_int
+        for k in mv; push!(mvf_cells, k); end
+    end
+    implicit_singletons = [[k] for k in 1:ec.ncells if k ∉ mvf_cells]
+    all_mvf = vcat(mvf_int, implicit_singletons)
+
+    for mv in all_mvf
         M_set = Set(mv)
 
         # Stadium for each incidence pair (k, bk) where both are in the multivector.
@@ -196,7 +204,7 @@ function ConleyDynamics.plot_simplicial_mvf(ec::EuclideanComplex,
                                             pdim::Vector{Bool}=[true,true,true],
                                             tubefac::Real=0.05,
                                             mvfcolor::String="darkorange",
-                                            mvfalpha::Real=1.0)
+                                            mvfalpha::Real=0.2)
     data = MVFPlot(ec, mvf, pdim, Float64(tubefac), mvfcolor, Float64(mvfalpha))
     return Plots.plot(data)
 end
@@ -206,7 +214,7 @@ function ConleyDynamics.plot_cubical_mvf(ec::EuclideanComplex,
                                          pdim::Vector{Bool}=[true,true,true],
                                          tubefac::Real=0.05,
                                          mvfcolor::String="darkorange",
-                                         mvfalpha::Real=1.0)
+                                         mvfalpha::Real=0.2)
     data = MVFPlot(ec, mvf, pdim, Float64(tubefac), mvfcolor, Float64(mvfalpha))
     return Plots.plot(data)
 end
