@@ -24,6 +24,21 @@ function _barycenter(ec::EuclideanComplex, k::Int)
     [sum(p[1] for p in cv) / n, sum(p[2] for p in cv) / n]
 end
 
+# All cells strictly in the closure of k (k itself excluded), via BFS on boundary map.
+function _closure_cells(ec::EuclideanComplex, k::Int)
+    visited = Set{Int}()
+    queue   = sparse_get_nz_column(ec.boundary, k)
+    while !isempty(queue)
+        c = pop!(queue)
+        c in visited && continue
+        push!(visited, c)
+        for bc in sparse_get_nz_column(ec.boundary, c)
+            bc ∉ visited && push!(queue, bc)
+        end
+    end
+    return visited
+end
+
 # Circle of radius r centered at p, approximated as n-gon, NaN-terminated.
 function _circle_polygon(p, r, n=16)
     xs = [p[1] + r * cos(2π * i / n) for i in 0:n]
@@ -163,12 +178,11 @@ end
     for mv in all_mvf
         M_set = Set(mv)
 
-        # Stadium for each incidence pair (k, bk) where both are in the multivector.
+        # Stadium for each pair (k, bk) where bk is in the closure of k and in M_set.
         # Only emit when dim(k) > dim(bk) to avoid drawing each pair twice.
         for k in mv
             ec.dimensions[k] == 0 && continue
-            bk_list = sparse_get_nz_column(ec.boundary, k)
-            for bk in bk_list
+            for bk in _closure_cells(ec, k)
                 bk in M_set || continue
                 xs, ys = _stadium_polygon(_barycenter(ec, k), _barycenter(ec, bk), r)
                 @series begin
