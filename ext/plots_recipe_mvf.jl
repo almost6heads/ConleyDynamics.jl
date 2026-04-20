@@ -166,7 +166,7 @@ end
                 @series begin
                     seriestype := :shape
                     fillcolor  := col
-                    fillalpha  --> 1.0
+                    fillalpha  := data.mvfalpha
                     linewidth  --> 0
                     xs, ys
                 end
@@ -179,7 +179,7 @@ end
             @series begin
                 seriestype := :shape
                 fillcolor  := col
-                fillalpha  --> 1.0
+                fillalpha  := data.mvfalpha
                 linewidth  --> 0
                 xs, ys
             end
@@ -194,17 +194,19 @@ end
 function ConleyDynamics.plot_simplicial_mvf(ec::EuclideanComplex,
                                             mvf::CellSubsets;
                                             pdim::Vector{Bool}=[true,true,true],
-                                            tubefac::Real=0.15,
-                                            mvfcolor::String="darkorange")
-    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), mvfcolor)
+                                            tubefac::Real=0.05,
+                                            mvfcolor::String="darkorange",
+                                            mvfalpha::Real=1.0)
+    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), mvfcolor, Float64(mvfalpha))
     return Plots.plot(data)
 end
 
 function ConleyDynamics.plot_cubical_mvf(ec::EuclideanComplex,
                                          mvf::CellSubsets;
                                          pdim::Vector{Bool}=[true,true,true],
-                                         tubefac::Real=0.15,
-                                         mvfcolor::String="darkorange")
-    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), mvfcolor)
+                                         tubefac::Real=0.05,
+                                         mvfcolor::String="darkorange",
+                                         mvfalpha::Real=1.0)
+    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), mvfcolor, Float64(mvfalpha))
     return Plots.plot(data)
 end

@@ -62,6 +62,7 @@ struct MVFPlot
     pdim     :: Vector{Bool}
     tubefac  :: Float64
     mvfcolor :: String
+    mvfalpha :: Float64
 end
 
 # Stub functions activated when Plots.jl is loaded as a weak dependency.
@@ -126,8 +127,9 @@ Requires `using Plots` before `using ConleyDynamics`.
 
 Optional keyword arguments:
 - `pdim::Vector{Bool}=[true,true,true]`: which dimensions to show in background
-- `tubefac::Real=0.15`: tube half-width as fraction of average edge length
+- `tubefac::Real=0.05`: tube half-width as fraction of average edge length
 - `mvfcolor::String="darkorange"`: X11 color name for the multivector regions
+- `mvfalpha::Real=1.0`: fill opacity (0.0 = transparent, 1.0 = opaque)
 """
 function plot_simplicial_mvf end
 
@@ -140,8 +142,9 @@ Requires `using Plots` before `using ConleyDynamics`.
 
 Optional keyword arguments:
 - `pdim::Vector{Bool}=[true,true,true]`: which dimensions to show in background
-- `tubefac::Real=0.15`: tube half-width as fraction of average edge length
+- `tubefac::Real=0.05`: tube half-width as fraction of average edge length
 - `mvfcolor::String="darkorange"`: X11 color name for the multivector regions
+- `mvfalpha::Real=1.0`: fill opacity (0.0 = transparent, 1.0 = opaque)
 """
 function plot_cubical_mvf end
 
