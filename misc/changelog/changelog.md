@@ -13,8 +13,10 @@ description, etc.
 
 Release notes:
 
-## v0.7.7 (April ??, 2026)
+## v0.7.7 (April 21, 2026)
 
+- Added new plotting capabilities based on `Plots.jl`. These
+  are still in a preliminary state, but fully functional.
 - Changed the functionality of `mvf_neighborhood` slightly.
 
 ## v0.7.6 (April 15, 2026)
