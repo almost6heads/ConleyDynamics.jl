@@ -6,7 +6,7 @@ export get_cubical_coords
 export is_cube_label
 
 """
-    create_cubical_complex(cubes::Vector{String}; p::Int=2)
+    create_cubical_complex(cubes::Vector{String}; p::Int=2, euclidean::Bool=false)
 
 Initialize a Lefschetz complex from a cubical complex. The complex is
 over the rationals if `p=0`, and over `GF(p)` if `p>0`.
@@ -22,13 +22,20 @@ string as follows:
 The first d integers all have to occupy the same number of characters. In addition,
 if the occupied space is L characters for each coordinate, the coordinates only
 can take values from 0 to 10^L - 2. This is due to the fact that the boundary
-operator will add one to certain coordinates, and they still need to be 
+operator will add one to certain coordinates, and they still need to be
 representable withing the same L digits.
 
 For example, the string `030600.101` corresponds to the point `(3,6,0)` in
 three dimensions. The dimensions are 1, 0, and 1, and therefore this string
 corresponds to the cube `[3,4] x [6] x [0,1]`. The same cube could have also
 been represented by `360.101` or by `003006000.101`.
+
+When `euclidean=false` (default), the function returns:
+* A cubical complex `cc::LefschetzComplex`
+* A vector `coords::Vector{Vector{Float64}}` of vertex coordinates
+
+When `euclidean=true`, it returns a `EuclideanComplex` with embedded
+coordinates derived from the cube labels.
 
 !!! warning
     Note that the labels all have to have the same format!
@@ -37,7 +44,7 @@ been represented by `360.101` or by `003006000.101`.
 ```jldoctest
 julia> cubes = ["00.11", "01.01", "02.10", "11.10", "11.01", "22.00"];
 
-julia> lc = create_cubical_complex(cubes);
+julia> lc, coords = create_cubical_complex(cubes);
 
 julia> lc.ncells
 17
@@ -49,7 +56,7 @@ julia> homology(lc)
  0
 ```
 """
-function create_cubical_complex(cubes::Vector{String}; p::Int=2)
+function create_cubical_complex(cubes::Vector{String}; p::Int=2, euclidean::Bool=false)
     #
     # Create a Lefschetz complex struct for a cubical complex.
     #
@@ -180,9 +187,23 @@ function create_cubical_complex(cubes::Vector{String}; p::Int=2)
 
     lc = LefschetzComplex(CClabelvec, CCdimvec, B; validate=false)
 
-    # Return the Lefschetz complex
+    # Create the coordinate vector from vertex labels
 
-    return lc
+    coords = Vector{Vector{Float64}}()
+    for k = 1:lc.ncells
+        if lc.dimensions[k] == 0
+            vertexk = cube_information(lc.labels[k])
+            push!(coords, Float64.(vertexk[1:pointdim]))
+        end
+    end
+
+    # Return the results
+
+    if euclidean
+        return lefschetz_to_euclidean(lc, coords)
+    else
+        return lc, coords
+    end
 end
 
 """

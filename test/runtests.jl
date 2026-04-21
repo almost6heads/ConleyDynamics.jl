@@ -110,7 +110,7 @@ end
     @test homology(sc2) == [1,0,0]
 
     cubes = ["00.11", "01.01", "02.10", "11.10", "11.01", "22.00", "20.11", "31.01"]
-    cc = create_cubical_complex(cubes)
+    cc, coords = create_cubical_complex(cubes)
 
     @test cc.ncells == 27
     @test homology(cc) == [2,1,0]

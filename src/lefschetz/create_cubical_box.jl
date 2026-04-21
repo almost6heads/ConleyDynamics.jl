@@ -53,7 +53,7 @@ function create_cubical_box(nx::Int, ny::Int, nz::Int;
 
     # Create the Lefschetz complex
 
-    lc = create_cubical_complex(cubes, p=p)
+    lc, _ = create_cubical_complex(cubes, p=p)
 
     # Create the coordinate vector
 

@@ -38,7 +38,7 @@ function lefschetz_is_cubical(lc::AbstractComplex)
 
     # Create the cubical complex based on the labels
 
-    ccfull = create_cubical_complex(lc.labels, p=lc.boundary.char)
+    ccfull, _ = create_cubical_complex(lc.labels, p=lc.boundary.char)
 
     # Return the answer
 
@@ -90,7 +90,7 @@ function lefschetz_is_subcubical(lc::AbstractComplex)
 
     # Create the cubical complex based on the labels
 
-    ccfull = create_cubical_complex(lc.labels, p=lc.boundary.char)
+    ccfull, _ = create_cubical_complex(lc.labels, p=lc.boundary.char)
 
     # Return the answer
 
