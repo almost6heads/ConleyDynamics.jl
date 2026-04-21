@@ -260,18 +260,21 @@ end
     end
 
     # --- Multivector regions: inflated convex hull per maximal cell ---
-    col = parse(Colorant, data.mvfcolor)
 
-    # Cells absent from every explicit multivector are implicit singletons.
-    mvf_cells = Set{Int}()
-    for mv in mvf_int
-        for k in mv; push!(mvf_cells, k); end
+    # Optionally append implicit singletons for cells absent from the MVF.
+    all_mvf = if data.addcritical
+        mvf_cells = Set{Int}()
+        for mv in mvf_int; for k in mv; push!(mvf_cells, k); end; end
+        vcat(mvf_int, [[k] for k in 1:ec.ncells if k ∉ mvf_cells])
+    else
+        mvf_int
     end
-    implicit_singletons = [[k] for k in 1:ec.ncells if k ∉ mvf_cells]
 
-    for mv in vcat(mvf_int, implicit_singletons)
+    ncolors = length(data.mvfcolors)
+    for (i, mv) in enumerate(all_mvf)
         xs, ys = _mvf_region_polygons(ec, mv, r)
         isempty(xs) && continue
+        col = parse(Colorant, data.mvfcolors[mod1(i, ncolors)])
         @series begin
             seriestype := :shape
             fillcolor  := col
@@ -290,9 +293,11 @@ function ConleyDynamics.plot_simplicial_mvf(ec::EuclideanComplex,
                                             mvf::CellSubsets;
                                             pdim::Vector{Bool}=[true,true,true],
                                             tubefac::Real=0.05,
-                                            mvfcolor::String="darkorange",
-                                            mvfalpha::Real=0.2)
-    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), mvfcolor, Float64(mvfalpha))
+                                            mvfcolor::Union{String,Vector{String}}="darkorange",
+                                            mvfalpha::Real=0.2,
+                                            addcritical::Bool=true)
+    colors = mvfcolor isa String ? [mvfcolor] : mvfcolor
+    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), colors, Float64(mvfalpha), addcritical)
     return Plots.plot(data)
 end
 
@@ -300,9 +305,11 @@ function ConleyDynamics.plot_cubical_mvf(ec::EuclideanComplex,
                                          mvf::CellSubsets;
                                          pdim::Vector{Bool}=[true,true,true],
                                          tubefac::Real=0.05,
-                                         mvfcolor::String="darkorange",
-                                         mvfalpha::Real=0.2)
-    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), mvfcolor, Float64(mvfalpha))
+                                         mvfcolor::Union{String,Vector{String}}="darkorange",
+                                         mvfalpha::Real=0.2,
+                                         addcritical::Bool=true)
+    colors = mvfcolor isa String ? [mvfcolor] : mvfcolor
+    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), colors, Float64(mvfalpha), addcritical)
     return Plots.plot(data)
 end
 
