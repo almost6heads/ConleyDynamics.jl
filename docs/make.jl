@@ -34,6 +34,7 @@ pageslist = ["Overview" => "index.md",
                  "man/conley.md",
                  "man/flowexamples.md",
                  "man/examples.md",
+                 "man/plotting.md",
                  "man/sparse.md",
                  "man/references.md"
                   ],
