@@ -8,13 +8,15 @@ ecosystem. The two backends are described in separate sections below.
 
 ## Luxor-Based Plotting
 
-The functions [`plot_planar_simplicial`](@ref),
-[`plot_planar_simplicial_morse`](@ref), [`plot_planar_cubical`](@ref),
-and [`plot_planar_cubical_morse`](@ref) produce publication-quality
-plots by writing directly to a PDF or PNG file via the
-[Luxor.jl](https://github.com/JuliaGraphics/Luxor.jl) package.
-They require an explicit output filename and a separate coordinate
-vector for the vertices of the complex.
+The functions
+* [`plot_planar_simplicial`](@ref),
+* [`plot_planar_simplicial_morse`](@ref),
+* [`plot_planar_cubical`](@ref), and
+* [`plot_planar_cubical_morse`](@ref)
+produce publication-quality plots by writing directly to a PDF or PNG
+file via the [Luxor.jl](https://github.com/JuliaGraphics/Luxor.jl)
+package. They require an explicit output filename and a separate
+coordinate vector for the vertices of the complex.
 
 As a simple example, the following commands create a PDF image of a
 small simplicial complex together with its Morse sets:
@@ -46,13 +48,13 @@ Both families of Luxor functions also accept an
 [`EuclideanComplex`](@ref) as their first argument. In that case the
 coordinate vector can be omitted entirely.
 
-## Plots.jl-Based Plotting
+## Plots-Based Plotting
 
 The Plots.jl backend provides eight convenience functions:
 
 | Function | Description |
 |----------|-------------|
-| [`plot_simplicial`](@ref) | Simplicial complex with optional MVF overlay |
+| [`plot_simplicial`](@ref) | Simplicial complex with optional Forman overlay |
 | [`plot_cubical`](@ref) | Cubical complex |
 | [`plot_simplicial_morse`](@ref) | Simplicial complex with colored Morse sets |
 | [`plot_cubical_morse`](@ref) | Cubical complex with colored Morse sets |

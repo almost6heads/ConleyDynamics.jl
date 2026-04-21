@@ -96,6 +96,7 @@ Pages = [
     "man/homology.md",
     "man/conley.md",
     "man/flowexamples.md",
+    "man/plotting.md",
     "man/examples.md",
     "man/sparse.md",
 ]
