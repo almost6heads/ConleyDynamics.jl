@@ -21,6 +21,12 @@ end
     ms_int = data.morsesets isa Vector{Vector{String}} ?
                  convert_cellsubsets(ec, data.morsesets) : data.morsesets
 
+    # Cells absent from every explicit set are implicit singletons.
+    ms_cells = Set{Int}()
+    for ms in ms_int; for k in ms; push!(ms_cells, k); end; end
+    implicit = [[k] for k in 1:ec.ncells if k ∉ ms_cells]
+    ms_int = vcat(ms_int, implicit)
+
     # Determine colors for each Morse set
     if data.ci
         cols = [_ci_color_simplicial(conley_index(ec, ms_int[m]))
