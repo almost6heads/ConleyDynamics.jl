@@ -259,7 +259,7 @@ end
         end
     end
 
-    # --- Multivector regions: barycenter-graph stadiums ---
+    # --- Multivector regions: inflated convex hull per maximal cell ---
     col = parse(Colorant, data.mvfcolor)
 
     # Cells absent from every explicit multivector are implicit singletons.
@@ -268,38 +268,16 @@ end
         for k in mv; push!(mvf_cells, k); end
     end
     implicit_singletons = [[k] for k in 1:ec.ncells if k ∉ mvf_cells]
-    all_mvf = vcat(mvf_int, implicit_singletons)
 
-    for mv in all_mvf
-        M_set = Set(mv)
-
-        # Stadium for each pair (k, bk) where bk is in the closure of k and in M_set.
-        # Only emit when dim(k) > dim(bk) to avoid drawing each pair twice.
-        for k in mv
-            ec.dimensions[k] == 0 && continue
-            for bk in _closure_cells(ec, k)
-                bk in M_set || continue
-                xs, ys = _stadium_polygon(_barycenter(ec, k), _barycenter(ec, bk), r)
-                @series begin
-                    seriestype := :shape
-                    fillcolor  := col
-                    fillalpha  := data.mvfalpha
-                    linewidth  --> 0
-                    xs, ys
-                end
-            end
-        end
-
-        # Circle at every cell's barycenter (covers isolated cells and endpoints).
-        for k in mv
-            xs, ys = _circle_polygon(_barycenter(ec, k), r)
-            @series begin
-                seriestype := :shape
-                fillcolor  := col
-                fillalpha  := data.mvfalpha
-                linewidth  --> 0
-                xs, ys
-            end
+    for mv in vcat(mvf_int, implicit_singletons)
+        xs, ys = _mvf_region_polygons(ec, mv, r)
+        isempty(xs) && continue
+        @series begin
+            seriestype := :shape
+            fillcolor  := col
+            fillalpha  := data.mvfalpha
+            linewidth  --> 0
+            xs, ys
         end
     end
 end
