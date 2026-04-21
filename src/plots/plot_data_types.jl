@@ -146,7 +146,7 @@ Optional keyword arguments:
 - `tubefac::Real=0.05`: tube half-width as fraction of average edge length
 - `mvfcolor::Union{String,Vector{String}}="darkorange"`: color(s) for multivector regions;
   a single string applies to all, a vector cycles through multivectors in order
-- `mvfalpha::Real=0.2`: fill opacity (0.0 = transparent, 1.0 = opaque)
+- `mvfalpha::Real=0.3`: fill opacity (0.0 = transparent, 1.0 = opaque)
 - `addcritical::Bool=true`: when true, cells absent from the MVF are shown as implicit singletons
 """
 function plot_simplicial_mvf end
@@ -162,7 +162,7 @@ Optional keyword arguments:
 - `pdim::Vector{Bool}=[true,true,true]`: which dimensions to show in background
 - `tubefac::Real=0.05`: tube half-width as fraction of average edge length
 - `mvfcolor::Union{String,Vector{String}}="darkorange"`: color(s) for multivector regions
-- `mvfalpha::Real=0.2`: fill opacity (0.0 = transparent, 1.0 = opaque)
+- `mvfalpha::Real=0.3`: fill opacity (0.0 = transparent, 1.0 = opaque)
 - `addcritical::Bool=true`: when true, cells absent from the MVF are shown as implicit singletons
 """
 function plot_cubical_mvf end
@@ -181,7 +181,7 @@ Optional keyword arguments:
 - `pdim::Vector{Bool}=[true,true,true]`: which background dimensions to draw
 - `tubefac::Real=0.05`: inflation radius as fraction of average edge length
 - `mvfcolor::String="darkorange"`: X11 color name for the region
-- `mvfalpha::Real=0.2`: fill opacity (0.0 = transparent, 1.0 = opaque)
+- `mvfalpha::Real=0.3`: fill opacity (0.0 = transparent, 1.0 = opaque)
 """
 function plot_simplicial_mv end
 

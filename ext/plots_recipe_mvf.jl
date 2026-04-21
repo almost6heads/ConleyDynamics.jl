@@ -294,7 +294,7 @@ function ConleyDynamics.plot_simplicial_mvf(ec::EuclideanComplex,
                                             pdim::Vector{Bool}=[true,true,true],
                                             tubefac::Real=0.05,
                                             mvfcolor::Union{String,Vector{String}}="darkorange",
-                                            mvfalpha::Real=0.2,
+                                            mvfalpha::Real=0.3,
                                             addcritical::Bool=true)
     colors = mvfcolor isa String ? [mvfcolor] : mvfcolor
     data = MVFPlot(ec, mvf, pdim, Float64(tubefac), colors, Float64(mvfalpha), addcritical)
@@ -306,7 +306,7 @@ function ConleyDynamics.plot_cubical_mvf(ec::EuclideanComplex,
                                          pdim::Vector{Bool}=[true,true,true],
                                          tubefac::Real=0.05,
                                          mvfcolor::Union{String,Vector{String}}="darkorange",
-                                         mvfalpha::Real=0.2,
+                                         mvfalpha::Real=0.3,
                                          addcritical::Bool=true)
     colors = mvfcolor isa String ? [mvfcolor] : mvfcolor
     data = MVFPlot(ec, mvf, pdim, Float64(tubefac), colors, Float64(mvfalpha), addcritical)
@@ -404,7 +404,7 @@ function ConleyDynamics.plot_simplicial_mv(ec::EuclideanComplex,
                                            pdim::Vector{Bool}=[true,true,true],
                                            tubefac::Real=0.05,
                                            mvfcolor::String="darkorange",
-                                           mvfalpha::Real=0.2)
+                                           mvfalpha::Real=0.3)
     mv_int = mv isa Vector{String} ? convert_cellsubsets(ec, [mv])[1] : mv
     data = MVRegionPlot(ec, mv_int, pdim, Float64(tubefac), mvfcolor, Float64(mvfalpha))
     return Plots.plot(data)
@@ -415,7 +415,7 @@ function ConleyDynamics.plot_cubical_mv(ec::EuclideanComplex,
                                         pdim::Vector{Bool}=[true,true,true],
                                         tubefac::Real=0.05,
                                         mvfcolor::String="darkorange",
-                                        mvfalpha::Real=0.2)
+                                        mvfalpha::Real=0.3)
     mv_int = mv isa Vector{String} ? convert_cellsubsets(ec, [mv])[1] : mv
     data = MVRegionPlot(ec, mv_int, pdim, Float64(tubefac), mvfcolor, Float64(mvfalpha))
     return Plots.plot(data)
