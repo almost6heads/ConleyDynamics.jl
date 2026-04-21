@@ -1,6 +1,6 @@
 export SimplicialComplexPlot, CubicalComplexPlot,
        SimplicialMorsePlot, CubicalMorsePlot,
-       MVFPlot
+       MVFPlot, MVRegionPlot
 
 """
     SimplicialComplexPlot
@@ -59,6 +59,21 @@ Each multivector is rendered as a stadium (pill) shaped region.
 struct MVFPlot
     complex  :: EuclideanComplex
     mvf      :: CellSubsets
+    pdim     :: Vector{Bool}
+    tubefac  :: Float64
+    mvfcolor :: String
+    mvfalpha :: Float64
+end
+
+"""
+    MVRegionPlot
+
+Wrapper type for plotting a single multivector on a planar complex via Plots.jl.
+The multivector is rendered as an inflated convex hull per maximal cell.
+"""
+struct MVRegionPlot
+    complex  :: EuclideanComplex
+    mv       :: Vector{Int}
     pdim     :: Vector{Bool}
     tubefac  :: Float64
     mvfcolor :: String
@@ -148,6 +163,33 @@ Optional keyword arguments:
 """
 function plot_cubical_mvf end
 
+"""
+    plot_simplicial_mv(ec::EuclideanComplex, mv; kwargs...) -> Plots.Plot
+
+Plot a single multivector on a planar simplicial complex background.
+The multivector is rendered as an inflated convex hull of barycenters,
+one hull per maximal cell of the multivector.
+Requires `using Plots` before `using ConleyDynamics`.
+
+`mv` may be a `Vector{Int}` (cell indices) or `Vector{String}` (cell labels).
+
+Optional keyword arguments:
+- `pdim::Vector{Bool}=[true,true,true]`: which background dimensions to draw
+- `tubefac::Real=0.05`: inflation radius as fraction of average edge length
+- `mvfcolor::String="darkorange"`: X11 color name for the region
+- `mvfalpha::Real=0.2`: fill opacity (0.0 = transparent, 1.0 = opaque)
+"""
+function plot_simplicial_mv end
+
+"""
+    plot_cubical_mv(ec::EuclideanComplex, mv; kwargs...) -> Plots.Plot
+
+Plot a single multivector on a planar cubical complex background.
+See `plot_simplicial_mv` for details.
+"""
+function plot_cubical_mv end
+
 export plot_simplicial, plot_cubical,
        plot_simplicial_morse, plot_cubical_morse,
-       plot_simplicial_mvf, plot_cubical_mvf
+       plot_simplicial_mvf, plot_cubical_mvf,
+       plot_simplicial_mv, plot_cubical_mv
