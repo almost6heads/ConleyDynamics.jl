@@ -2,7 +2,7 @@
 
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
 provides two independent visualization backends for planar complexes:
-a *Luxor-based* backend that produces PDF or PNG files directly, and
+a *Luxor.jl-based* backend that produces PDF or PNG files directly, and
 a *Plots.jl-based* backend that integrates with the Julia plotting
 ecosystem. The two backends are described in separate sections below.
 
@@ -26,7 +26,8 @@ using ConleyDynamics
 
 lc, mvf = example_forman2d()
 cm = connection_matrix(lc, mvf)
-coords = [[0,0],[4,0],[8,0],[2,3],[6,3],[4,6],[4,2]]
+coords = [[50,200],[150,200],[250,200],[0,100],[100,100],
+          [200,100],[300,100],[50,0],[150,0],[250,0]]
 fname  = "forman2d_morse.pdf"
 plot_planar_simplicial_morse(lc, coords, fname, cm.morse)
 ```
@@ -46,11 +47,22 @@ plot_planar_cubical(cc, coords, fname)
 
 Both families of Luxor functions also accept an
 [`EuclideanComplex`](@ref) as their first argument. In that case the
-coordinate vector can be omitted entirely.
+coordinate vector can be omitted entirely. For example, the first of
+the above two plots can also be created using the following commands:
+
+```julia
+using ConleyDynamics
+
+ec, mvf = example_forman2d(euclidean=true)
+cm = connection_matrix(ec, mvf)
+fname  = "forman2d_morse.pdf"
+plot_planar_simplicial_morse(ec, fname, cm.morse)
+```
 
 ## Plots-Based Plotting
 
-The Plots.jl backend provides eight convenience functions:
+The [Plots.jl](https://github.com/JuliaPlots/Plots.jl) backend provides
+eight convenience functions:
 
 | Function | Description |
 |----------|-------------|
@@ -66,31 +78,37 @@ The Plots.jl backend provides eight convenience functions:
 ### Weak Dependency
 
 [Plots.jl](https://github.com/JuliaPlots/Plots.jl) is a *weak
-dependency* of ConleyDynamics.jl. This means it is not loaded
-automatically when you do `using ConleyDynamics`, and it does not
-need to be installed unless you want to use the Plots.jl backend.
-The eight functions above are stub definitions that become active
-only after Plots.jl has been loaded. The required loading order is:
+dependency* of
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl).
+This means it is not loaded automatically when you do `using ConleyDynamics`,
+and it does not need to be installed unless you want to use the
+[Plots.jl](https://github.com/JuliaPlots/Plots.jl) backend. The eight
+functions above are stub definitions that become active only after
+[Plots.jl](https://github.com/JuliaPlots/Plots.jl) has been loaded.
+The required loading order is:
 
 ```julia
 using Plots
 using ConleyDynamics
 ```
 
-If ConleyDynamics is loaded *before* Plots.jl, the plotting functions
-will still work because Julia activates package extensions lazily.
-However, loading Plots first is the recommended order.
+If ConleyDynamics is loaded *before*
+[Plots.jl](https://github.com/JuliaPlots/Plots.jl), the plotting
+functions will still work because Julia activates package extensions
+lazily. However, loading Plots first is the recommended order.
 
-All eight functions return a `Plots.Plot` object, so the full Plots.jl
+All eight functions return a `Plots.Plot` object, so the full
+[Plots.jl](https://github.com/JuliaPlots/Plots.jl)
 interface applies: the result can be displayed with `display(p)`,
 saved with `savefig(p, "output.png")`, or composed with other plots.
+Some of this functionality is included in the examples below.
 
-### Input: EuclideanComplex
+### EuclideanComplex as Input Requirement
 
-The Plots.jl backend works exclusively with [`EuclideanComplex`](@ref)
-objects, which carry embedded vertex coordinates. The simplest way to
-obtain such a complex is to pass `euclidean=true` when creating a
-complex:
+The [Plots.jl](https://github.com/JuliaPlots/Plots.jl) backend works
+exclusively with [`EuclideanComplex`](@ref) objects, which carry
+embedded vertex coordinates. The simplest way to obtain such a
+complex is to pass `euclidean=true` when creating a complex:
 
 ```julia
 ec, mvf = example_forman2d(euclidean=true)
@@ -98,9 +116,10 @@ cc = create_cubical_rectangle(4, 3, euclidean=true)
 ```
 
 Alternatively, [`lefschetz_to_euclidean`](@ref) converts any
-`LefschetzComplex` together with a coordinate vector.
+`LefschetzComplex` together with a coordinate vector into a
+`EuclideanComplex`.
 
-### Plotting a Complex
+### Plotting a Complex and Forman Vector Fields
 
 Both [`plot_simplicial`](@ref) and [`plot_cubical`](@ref) accept an
 optional `mvf` keyword argument that overlays a multivector field on
@@ -113,26 +132,43 @@ are rendered as red dots at their barycenters.
 using Plots
 using ConleyDynamics
 
-ec, mvf = example_forman2d(euclidean=true)
-p = plot_simplicial(ec, mvf=mvf)
-display(p)
+sc, smvf = example_forman2d(euclidean=true)
+sp = plot_simplicial(sc, mvf=smvf)
+display(sp)
 ```
 
 ```julia
 using Plots
 using ConleyDynamics
 
-cc, coords = create_cubical_rectangle(4, 3)
-ec = lefschetz_to_euclidean(cc, coords)
-lc, mvf = example_forman2d()        # illustrative; substitute a cubical MVF
-p = plot_cubical(ec, mvf=mvf)
-display(p)
+cubes = ["00.11", "01.01", "02.10", "11.10",
+         "11.01", "22.00", "20.11", "31.01"]
+cc = create_cubical_complex(cubes, euclidean=true)
+cmvf = [["01.00","01.01"], ["02.00","02.10"], ["12.00","11.01"],
+        ["11.00","01.10"], ["00.00","00.01"], ["00.10","00.11"],
+        ["10.00","10.01"], ["20.00","20.01"], ["32.00","31.01"],
+        ["30.00","30.01"], ["31.00","21.10"]]
+cp = plot_cubical(cc, mvf=cmvf)
+display(cp)
 ```
 
+Using the [Plots.jl](https://github.com/JuliaPlots/Plots.jl) framework
+one can combine both plots in a single one, change the resolution to
+`dpi = 300`, and then save the figure using the following commands:
+
+```julia
+pcombined = plot(sp, cp, layout=(1,2))
+plot!(pcombined, dpi=300)
+savefig(pcombined, "plots_forman.png")
+```
+
+![Sample Forman vector field plots using `Plots.jl`](img/plots_forman.png)
+
 The keyword argument `pdim::Vector{Bool}` controls which dimensions
-are drawn. The three entries correspond to vertices (dimension 0),
-edges (dimension 1), and faces (dimension 2), respectively. For
-example, `pdim=[false,true,true]` suppresses vertices:
+of the simplicial or cubical complex are drawn. The three entries
+correspond to vertices (dimension 0), edges (dimension 1), and
+faces (dimension 2), respectively. For example, `pdim = [false,true,true]`
+suppresses vertices:
 
 ```julia
 p = plot_cubical(create_cubical_rectangle(4, 3, euclidean=true),
@@ -140,7 +176,7 @@ p = plot_cubical(create_cubical_rectangle(4, 3, euclidean=true),
 display(p)
 ```
 
-### Plotting Morse Sets
+### Plotting Morse Sets for Planar Dynamics
 
 The Morse plot functions color each Morse set in a distinct,
 automatically chosen color. Cells that do not belong to any
@@ -151,10 +187,30 @@ rendered in additional colors.
 using Plots
 using ConleyDynamics
 
-lc, mvf = example_forman2d(euclidean=true)
-cm = connection_matrix(lc, mvf)
-p  = plot_simplicial_morse(lc, cm.morse)
-display(p)
+function planarvf(x::Vector{Float64})
+    #
+    # Sample planar vector field with nontrivial Morse decomposition
+    #
+    x1, x2 = x
+    y1 = x1 * (1.0 - x1*x1 - 3.0*x2*x2)
+    y2 = x2 * (1.0 - 3.0*x1*x1 - x2*x2)
+    return [y1, y2]
+end
+
+sc  = create_simplicial_delaunay(300, 300, 10, 30, euclidean=true);
+sc  = rescale_coords(sc, -1.5, 1.5);
+svf = create_planar_mvf(sc, planarvf);
+scm = connection_matrix(sc, svf);
+pls = plot_simplicial_morse(sc, scm.morse, ci=true, pdim=[false,false,true]);
+```
+
+
+```julia
+cc  = create_cubical_rectangle(50, 50, randomize=0.2, euclidean=true);
+cc  = rescale_coords(cc, -1.5, 1.5);
+cvf = create_planar_mvf(cc, planarvf);
+ccm = connection_matrix(cc, cvf);
+plc = plot_simplicial_morse(cc, ccm.morse, ci=true, pdim=[false,false,true]);
 ```
 
 When `ci=true` is passed to [`plot_simplicial_morse`](@ref), the
