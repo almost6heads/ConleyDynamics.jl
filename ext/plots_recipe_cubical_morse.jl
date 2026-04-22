@@ -1,5 +1,16 @@
 # Recipe and convenience function for CubicalMorsePlot
 
+function _ci_color_cubical(ci_val)
+    ci_map = Dict(
+        [1,0,0] => colorant"rgb(51,34,136)",
+        [0,1,0] => colorant"rgb(221,204,119)",
+        [0,0,1] => colorant"rgb(17,119,51)",
+        [1,1,0] => colorant"rgb(204,102,119)",
+        [0,1,1] => colorant"rgb(135,34,85)",
+    )
+    return get(ci_map, ci_val, colorant"rgb(153,153,51)")
+end
+
 @recipe function f(data::CubicalMorsePlot)
     ec = data.complex
 
@@ -18,8 +29,13 @@
         ms_int = vcat(ms_int, implicit)
     end
 
-    seed = [colorant"royalblue4", colorant"royalblue3", colorant"steelblue1"]
-    cols = distinguishable_colors(length(ms_int), seed; dropseed=true)
+    if data.ci
+        cols = [_ci_color_cubical(conley_index(ec, ms_int[m]))
+                for m in eachindex(ms_int)]
+    else
+        seed = [colorant"royalblue4", colorant"royalblue3", colorant"steelblue1"]
+        cols = distinguishable_colors(length(ms_int), seed; dropseed=true)
+    end
 
     # --- Background cubical complex (faded) ---
     # ec.coords[k] for dim-2 has 4 entries; polygon traversal [1,3,4,2].
@@ -139,7 +155,8 @@ end
 function ConleyDynamics.plot_cubical_morse(ec::EuclideanComplex,
                                            morsesets::CellSubsets;
                                            pdim::Vector{Bool}=[false,true,true],
+                                           ci::Bool=false,
                                            addcritical::Bool=false)
-    data = CubicalMorsePlot(ec, morsesets, pdim, addcritical)
+    data = CubicalMorsePlot(ec, morsesets, pdim, ci, addcritical)
     return Plots.plot(data)
 end
