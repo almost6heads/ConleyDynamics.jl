@@ -24,6 +24,7 @@ Wrapper type for plotting a planar cubical complex via Plots.jl.
 """
 struct CubicalComplexPlot
     complex :: EuclideanComplex
+    mvf     :: CellSubsets
     pdim    :: Vector{Bool}
 end
 
@@ -103,6 +104,7 @@ function plot_simplicial end
 Plot a planar cubical complex. Requires `using Plots` before `using ConleyDynamics`.
 
 Optional keyword arguments:
+- `mvf::CellSubsets=[]`: multivector field to overlay (arrows + critical-cell dots)
 - `pdim::Vector{Bool}=[true,true,true]`: which dimensions (0,1,2) to draw
 """
 function plot_cubical end

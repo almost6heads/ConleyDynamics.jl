@@ -55,7 +55,7 @@ The Plots.jl backend provides eight convenience functions:
 | Function | Description |
 |----------|-------------|
 | [`plot_simplicial`](@ref) | Simplicial complex with optional Forman overlay |
-| [`plot_cubical`](@ref) | Cubical complex |
+| [`plot_cubical`](@ref) | Cubical complex with optional Forman overlay |
 | [`plot_simplicial_morse`](@ref) | Simplicial complex with colored Morse sets |
 | [`plot_cubical_morse`](@ref) | Cubical complex with colored Morse sets |
 | [`plot_simplicial_mvf`](@ref) | Simplicial complex with multivector field regions |
@@ -102,15 +102,30 @@ Alternatively, [`lefschetz_to_euclidean`](@ref) converts any
 
 ### Plotting a Complex
 
-The two basic functions display only the underlying complex, without
-any dynamics:
+Both [`plot_simplicial`](@ref) and [`plot_cubical`](@ref) accept an
+optional `mvf` keyword argument that overlays a multivector field on
+the complex. Two-element multivectors are drawn as red arrows from the
+lower-dimensional cell's barycenter to the higher-dimensional one.
+Explicitly critical cells (singletons) and cells absent from the MVF
+are rendered as red dots at their barycenters.
 
 ```julia
 using Plots
 using ConleyDynamics
 
-ec = create_simplicial_rectangle(5, 2, euclidean=true)
-p  = plot_simplicial(ec)
+ec, mvf = example_forman2d(euclidean=true)
+p = plot_simplicial(ec, mvf=mvf)
+display(p)
+```
+
+```julia
+using Plots
+using ConleyDynamics
+
+cc, coords = create_cubical_rectangle(4, 3)
+ec = lefschetz_to_euclidean(cc, coords)
+lc, mvf = example_forman2d()        # illustrative; substitute a cubical MVF
+p = plot_cubical(ec, mvf=mvf)
 display(p)
 ```
 
