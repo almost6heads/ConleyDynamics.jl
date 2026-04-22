@@ -13,6 +13,11 @@ description, etc.
 
 Release notes:
 
+## v0.7.8 (April 22, 2026)
+
+- Significant extensions to the visualization part of the manual.
+- Minor tweaks to the `Plots.jl`-based plotting functions.
+
 ## v0.7.7 (April 21, 2026)
 
 - Added new plotting capabilities based on `Plots.jl`. These
