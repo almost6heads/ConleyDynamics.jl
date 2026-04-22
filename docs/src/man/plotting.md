@@ -179,9 +179,10 @@ display(p)
 ### Plotting Morse Sets for Planar Dynamics
 
 The Morse plot functions color each Morse set in a distinct,
-automatically chosen color. Cells that do not belong to any
-explicitly listed Morse set are treated as implicit singletons and
-rendered in additional colors.
+automatically chosen color. By default only the explicitly listed
+Morse sets are rendered. Passing `addcritical=true` additionally
+draws cells absent from any Morse set as implicit singletons in
+separate colors.
 
 ```julia
 using Plots

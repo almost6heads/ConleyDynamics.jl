@@ -10,11 +10,13 @@
     ms_int = data.morsesets isa Vector{Vector{String}} ?
                  convert_cellsubsets(ec, data.morsesets) : data.morsesets
 
-    # Cells absent from every explicit set are implicit singletons.
-    ms_cells = Set{Int}()
-    for ms in ms_int; for k in ms; push!(ms_cells, k); end; end
-    implicit = [[k] for k in 1:ec.ncells if k ∉ ms_cells]
-    ms_int = vcat(ms_int, implicit)
+    # Optionally add cells absent from every explicit set as implicit singletons.
+    if data.addcritical
+        ms_cells = Set{Int}()
+        for ms in ms_int; for k in ms; push!(ms_cells, k); end; end
+        implicit = [[k] for k in 1:ec.ncells if k ∉ ms_cells]
+        ms_int = vcat(ms_int, implicit)
+    end
 
     seed = [colorant"royalblue4", colorant"royalblue3", colorant"steelblue1"]
     cols = distinguishable_colors(length(ms_int), seed; dropseed=true)
@@ -136,7 +138,8 @@ end
 
 function ConleyDynamics.plot_cubical_morse(ec::EuclideanComplex,
                                            morsesets::CellSubsets;
-                                           pdim::Vector{Bool}=[false,true,true])
-    data = CubicalMorsePlot(ec, morsesets, pdim)
+                                           pdim::Vector{Bool}=[false,true,true],
+                                           addcritical::Bool=false)
+    data = CubicalMorsePlot(ec, morsesets, pdim, addcritical)
     return Plots.plot(data)
 end

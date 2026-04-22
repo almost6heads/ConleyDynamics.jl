@@ -21,11 +21,13 @@ end
     ms_int = data.morsesets isa Vector{Vector{String}} ?
                  convert_cellsubsets(ec, data.morsesets) : data.morsesets
 
-    # Cells absent from every explicit set are implicit singletons.
-    ms_cells = Set{Int}()
-    for ms in ms_int; for k in ms; push!(ms_cells, k); end; end
-    implicit = [[k] for k in 1:ec.ncells if k ∉ ms_cells]
-    ms_int = vcat(ms_int, implicit)
+    # Optionally add cells absent from every explicit set as implicit singletons.
+    if data.addcritical
+        ms_cells = Set{Int}()
+        for ms in ms_int; for k in ms; push!(ms_cells, k); end; end
+        implicit = [[k] for k in 1:ec.ncells if k ∉ ms_cells]
+        ms_int = vcat(ms_int, implicit)
+    end
 
     # Determine colors for each Morse set
     if data.ci
@@ -153,7 +155,8 @@ end
 function ConleyDynamics.plot_simplicial_morse(ec::EuclideanComplex,
                                               morsesets::CellSubsets;
                                               pdim::Vector{Bool}=[false,true,true],
-                                              ci::Bool=false)
-    data = SimplicialMorsePlot(ec, morsesets, pdim, ci)
+                                              ci::Bool=false,
+                                              addcritical::Bool=false)
+    data = SimplicialMorsePlot(ec, morsesets, pdim, ci, addcritical)
     return Plots.plot(data)
 end

@@ -34,10 +34,11 @@ end
 Wrapper type for plotting a planar simplicial complex with Morse sets via Plots.jl.
 """
 struct SimplicialMorsePlot
-    complex   :: EuclideanComplex
-    morsesets :: CellSubsets
-    pdim      :: Vector{Bool}
-    ci        :: Bool
+    complex      :: EuclideanComplex
+    morsesets    :: CellSubsets
+    pdim         :: Vector{Bool}
+    ci           :: Bool
+    addcritical  :: Bool
 end
 
 """
@@ -46,9 +47,10 @@ end
 Wrapper type for plotting a planar cubical complex with Morse sets via Plots.jl.
 """
 struct CubicalMorsePlot
-    complex   :: EuclideanComplex
-    morsesets :: CellSubsets
-    pdim      :: Vector{Bool}
+    complex      :: EuclideanComplex
+    morsesets    :: CellSubsets
+    pdim         :: Vector{Bool}
+    addcritical  :: Bool
 end
 
 """
@@ -119,6 +121,7 @@ Requires `using Plots` before `using ConleyDynamics`.
 Optional keyword arguments:
 - `pdim::Vector{Bool}=[false,true,true]`: which dimensions (0,1,2) to draw
 - `ci::Bool=false`: color Morse sets by their Conley index
+- `addcritical::Bool=false`: when true, cells absent from morsesets are shown as implicit singletons
 """
 function plot_simplicial_morse end
 
@@ -131,6 +134,7 @@ Requires `using Plots` before `using ConleyDynamics`.
 
 Optional keyword arguments:
 - `pdim::Vector{Bool}=[false,true,true]`: which dimensions (0,1,2) to draw
+- `addcritical::Bool=false`: when true, cells absent from morsesets are shown as implicit singletons
 """
 function plot_cubical_morse end
 
