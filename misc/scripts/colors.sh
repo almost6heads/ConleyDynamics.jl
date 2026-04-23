@@ -5,6 +5,7 @@ magick -size 30x20 xc:"rgb(17,119,51)" cicolor3.png
 magick -size 30x20 xc:"rgb(204,102,119)" cicolor4.png
 magick -size 30x20 xc:"rgb(135,34,85)" cicolor5.png
 magick -size 30x20 xc:"rgb(153,153,51)" cicolor6.png
+magick -size 30x20 xc:"rgb(68,170,153)" cicolor7.png
 
 
 
@@ -15,4 +16,10 @@ magick -size 30x20 xc:"rgb(153,153,51)" cicolor6.png
 | Forest green | ![](img/cicolor3.png) | Equilibrium with index 2 |
 | Rose, dusty pink | ![](img/cicolor4.png) | Stable periodic orbit |
 | Plum, dark magenta | ![](img/cicolor5.png) | Unstable periodic orbit |
+| Teal, sea green | ![](img/cicolor7.png) | Trivial Conley Index |
 | Olive, dark yellow-green | ![](img/cicolor6.png) | Any other Conley index |
+
+
+![Color palette for Conley indices](img/cicolortable.png)
+
+

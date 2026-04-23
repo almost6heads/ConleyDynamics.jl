@@ -13,6 +13,12 @@ description, etc.
 
 Release notes:
 
+## v0.7.9 (April 23, 2026)
+
+- Added `ci` coloring for trivial Conley index `[0,0,0]`.
+- Added `ci` flag to `plot_simplicial_mvf` and `plot_cubical_mvf`.
+- Minor tweaks to the manual.
+
 ## v0.7.8 (April 22, 2026)
 
 - Significant extensions to the visualization part of the manual.

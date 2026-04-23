@@ -400,13 +400,16 @@ mvf = [["01.00","01.01"], ["02.00","02.10"], ["12.00","11.01"],
        ["11.00","01.10"], ["00.00","00.01"], ["00.10","00.11"],
        ["10.00","10.01"], ["21.00","11.10"], ["32.00","31.01"],
        ["31.00","21.10"], ["20.11","20.01","30.01","20.10"]]
-c1 = plot_cubical_mvf(cc, mvf)
+cm  = connection_matrix(cc, mvf)
+
+c1 = plot_cubical_mvf(cc, mvf, ci=true,
+                      pdim=[false,true,true])
 display(c1)
 
-cm = connection_matrix(cc, mvf)
 c2 = plot_cubical_mvf(cc, cm.morse, addcritical=false,
-     mvfcolor=["orange","green","red","brown","mediumpurple"],
-     mvfalpha=0.7)
+                      ci=true, mvfalpha=0.7,
+                      pdim=[false,true,true])
+display(c2)
 
 pc12 = plot(c1, c2, layout=(1,2))
 plot!(pc12, dpi=300)
