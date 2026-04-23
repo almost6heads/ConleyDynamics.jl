@@ -129,34 +129,38 @@ function plot_planar_simplicial_morse(sc::AbstractComplex,
     
     # Color code Morse sets if 'ci' is flagged
     if ci == true
+        col0 = colorant"rgb(68,170,153)"    #color-blind safe 'teal'
         col1 = colorant"rgb(51,34,136)"     #color-blind safe 'indigo'
-        col2 = colorant"rgb(221,204,119)"   #color-blind safe 'tan' 
+        col2 = colorant"rgb(221,204,119)"   #color-blind safe 'tan'
         col3 = colorant"rgb(17,119,51)"     #color-blind safe 'moss green'
-        col4 = colorant"rgb(204,102,119)"  #color-blind safe 'salmon'
+        col4 = colorant"rgb(204,102,119)"   #color-blind safe 'salmon'
         col5 = colorant"rgb(135,34,85)"     #color-blind safe 'maroon'
         col6 = colorant"rgb(153,153,51)"    #color-blind safe 'asparagus'
+        c0 = [0,0,0]  # trivial / gradient
         c1 = [1,0,0]  #asym stable
         c2 = [0,1,0]  #1d unstable
         c3 = [0,0,1]  ### unstable
         c4 = [1,1,0]  ##  stable periodic
         c5 = [0,1,1]  # unstable periodic
-        
+
         # Pass the single Morse set `msI[m]`
         for m in eachindex(msI)
             current_ci = conley_index(sc, msI[m])
-            
-            if (current_ci == c1)
+
+            if (current_ci == c0)
+                setcolor(col0)
+            elseif (current_ci == c1)
                 setcolor(col1)
-            elseif (current_ci == c2)     
+            elseif (current_ci == c2)
                 setcolor(col2)
-            elseif (current_ci == c3)     
+            elseif (current_ci == c3)
                 setcolor(col3)
-            elseif (current_ci == c4)     
+            elseif (current_ci == c4)
                 setcolor(col4)
-            elseif (current_ci == c5)     
-                setcolor(col5)        
-            else 
-                setcolor(col6)     
+            elseif (current_ci == c5)
+                setcolor(col5)
+            else
+                setcolor(col6)
             end
             
             setopacity(0.6)
@@ -311,12 +315,14 @@ function plot_planar_simplicial_morse(ec::EuclideanComplex,
 
     # Color code Morse sets if 'ci' is flagged
     if ci == true
+        col0 = colorant"rgb(68,170,153)"    #color-blind safe 'teal'
         col1 = colorant"rgb(51,34,136)"     #color-blind safe 'indigo'
         col2 = colorant"rgb(221,204,119)"   #color-blind safe 'tan'
         col3 = colorant"rgb(17,119,51)"     #color-blind safe 'moss green'
-        col4 = colorant"rgb(204,102,119)"  #color-blind safe 'salmon'
+        col4 = colorant"rgb(204,102,119)"   #color-blind safe 'salmon'
         col5 = colorant"rgb(135,34,85)"     #color-blind safe 'maroon'
         col6 = colorant"rgb(153,153,51)"    #color-blind safe 'asparagus'
+        c0 = [0,0,0]  # trivial / gradient
         c1 = [1,0,0]  #asym stable
         c2 = [0,1,0]  #1d unstable
         c3 = [0,0,1]  ### unstable
@@ -327,7 +333,9 @@ function plot_planar_simplicial_morse(ec::EuclideanComplex,
         for m in eachindex(msI)
             current_ci = conley_index(ec, msI[m])
 
-            if (current_ci == c1)
+            if (current_ci == c0)
+                setcolor(col0)
+            elseif (current_ci == c1)
                 setcolor(col1)
             elseif (current_ci == c2)
                 setcolor(col2)
