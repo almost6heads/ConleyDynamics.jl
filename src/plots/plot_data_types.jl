@@ -68,6 +68,7 @@ struct MVFPlot
     mvfcolors    :: Vector{String}
     mvfalpha     :: Float64
     addcritical  :: Bool
+    ci           :: Bool
 end
 
 """
@@ -156,6 +157,7 @@ Optional keyword arguments:
   a single string applies to all, a vector cycles through multivectors in order
 - `mvfalpha::Real=0.3`: fill opacity (0.0 = transparent, 1.0 = opaque)
 - `addcritical::Bool=true`: when true, cells absent from the MVF are shown as implicit singletons
+- `ci::Bool=false`: color each multivector by its Conley index instead of using `mvfcolor`
 """
 function plot_simplicial_mvf end
 
@@ -172,6 +174,7 @@ Optional keyword arguments:
 - `mvfcolor::Union{String,Vector{String}}="darkorange"`: color(s) for multivector regions
 - `mvfalpha::Real=0.3`: fill opacity (0.0 = transparent, 1.0 = opaque)
 - `addcritical::Bool=true`: when true, cells absent from the MVF are shown as implicit singletons
+- `ci::Bool=false`: color each multivector by its Conley index instead of using `mvfcolor`
 """
 function plot_cubical_mvf end
 

@@ -421,6 +421,11 @@ are five Morse sets, three of which are singletons.
 
 ![Cubical multivector field visualizations](img/plots_mvf_cubical.png)
 
+As with the Morse plot functions, passing `ci=true` to
+[`plot_simplicial_mvf`](@ref) or [`plot_cubical_mvf`](@ref) colors
+each multivector (or Morse set) by its Conley index instead of using
+the `mvfcolor` palette.
+
 ### Plotting a Single Multivector
 
 The [`plot_simplicial_mv`](@ref) and [`plot_cubical_mv`](@ref)

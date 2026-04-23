@@ -183,6 +183,17 @@ function _mvf_region_polygons(ec::EuclideanComplex, mv::Vector{Int}, r::Float64)
     return all_xs, all_ys
 end
 
+function _ci_color_mvf(ci_val)
+    ci_map = Dict(
+        [1,0,0] => colorant"rgb(51,34,136)",
+        [0,1,0] => colorant"rgb(221,204,119)",
+        [0,0,1] => colorant"rgb(17,119,51)",
+        [1,1,0] => colorant"rgb(204,102,119)",
+        [0,1,1] => colorant"rgb(135,34,85)",
+    )
+    return get(ci_map, ci_val, colorant"rgb(153,153,51)")
+end
+
 # -----------------------------------------------------------------------
 # Recipe
 # -----------------------------------------------------------------------
@@ -274,7 +285,8 @@ end
     for (i, mv) in enumerate(all_mvf)
         xs, ys = _mvf_region_polygons(ec, mv, r)
         isempty(xs) && continue
-        col = parse(Colorant, data.mvfcolors[mod1(i, ncolors)])
+        col = data.ci ? _ci_color_mvf(conley_index(ec, mv)) :
+                        parse(Colorant, data.mvfcolors[mod1(i, ncolors)])
         @series begin
             seriestype := :shape
             fillcolor  := col
@@ -295,9 +307,10 @@ function ConleyDynamics.plot_simplicial_mvf(ec::EuclideanComplex,
                                             tubefac::Real=0.05,
                                             mvfcolor::Union{String,Vector{String}}="darkorange",
                                             mvfalpha::Real=0.3,
-                                            addcritical::Bool=true)
+                                            addcritical::Bool=true,
+                                            ci::Bool=false)
     colors = mvfcolor isa String ? [mvfcolor] : mvfcolor
-    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), colors, Float64(mvfalpha), addcritical)
+    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), colors, Float64(mvfalpha), addcritical, ci)
     return Plots.plot(data)
 end
 
@@ -307,9 +320,10 @@ function ConleyDynamics.plot_cubical_mvf(ec::EuclideanComplex,
                                          tubefac::Real=0.05,
                                          mvfcolor::Union{String,Vector{String}}="darkorange",
                                          mvfalpha::Real=0.3,
-                                         addcritical::Bool=true)
+                                         addcritical::Bool=true,
+                                         ci::Bool=false)
     colors = mvfcolor isa String ? [mvfcolor] : mvfcolor
-    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), colors, Float64(mvfalpha), addcritical)
+    data = MVFPlot(ec, mvf, pdim, Float64(tubefac), colors, Float64(mvfalpha), addcritical, ci)
     return Plots.plot(data)
 end
 
