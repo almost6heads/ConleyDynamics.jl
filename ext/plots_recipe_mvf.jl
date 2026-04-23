@@ -185,6 +185,7 @@ end
 
 function _ci_color_mvf(ci_val)
     ci_map = Dict(
+        [0,0,0] => colorant"rgb(68,170,153)",
         [1,0,0] => colorant"rgb(51,34,136)",
         [0,1,0] => colorant"rgb(221,204,119)",
         [0,0,1] => colorant"rgb(17,119,51)",
