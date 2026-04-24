@@ -443,6 +443,7 @@ cm = connection_matrix(lc, mvf)
 msmax = argmax(length.(cm.morse))
 mv = cm.morse[msmax]      # largest Morse set
 p1 = plot_simplicial_mv(lc, mv, mvfalpha=0.5)
+title!(p1, "periodic orbit")
 display(p1)
 ```
 
@@ -451,9 +452,11 @@ display(p1)
 Cell labels (strings) are also accepted in place of integer indices:
 
 ```julia
-lcset = ["ADE", "AD", "A", "D", "E", "EF", "FJ", "F"]
+lcset = ["ADE", "AE", "DE", "E", "EF", "FJ", "F"]
 p2 = plot_simplicial_mv(lc, lcset,
-                        mvfcolor="pink", mvfalpha=0.7)
+                        mvfcolor="pink", mvfalpha=0.7,
+                        pdim=[false,true,true])
+title!(p2, "locally closed set")
 display(p2)
 pcombined12 = plot(p1, p2, layout=(1,2))
 plot!(pcombined12, dpi=300)
