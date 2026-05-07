@@ -80,10 +80,9 @@ using ConleyDynamics
 points, bndcurve = delaunay_points_bnd_rectangle([-5, -5], [5, 5])
 
 n = 12
-theta = range(0, 2π, length = n + 1)
-circle = [[2.0 * cos(t), 2.0 * sin(t)] for t in theta]  # closed curve
-
-cut = [[-4.0, 0.0], [0.0, 3.0], [4.0, 0.0]]              # open curve
+theta  = range(0, 2*pi, length = n+1)
+circle = [[4.0*cos(t), 4.0*sin(t)] for t in theta]  # closed curve
+cut    = [[-2.0, -2.0], [0.0, 1.0], [2.0, -1.0]]    # open curve
 
 points, segments = delaunay_points_add_segment(points, circle)
 points, segments = delaunay_points_add_segment(points, segments, cut)

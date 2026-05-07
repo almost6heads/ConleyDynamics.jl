@@ -96,8 +96,9 @@ Pages = [
     "man/homology.md",
     "man/conley.md",
     "man/flowexamples.md",
-    "man/plotting.md",
     "man/examples.md",
+    "man/extensions.md",
+    "man/plotting.md",
     "man/sparse.md",
 ]
 Depth = 2

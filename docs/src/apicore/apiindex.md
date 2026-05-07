@@ -36,6 +36,12 @@ Pages = ["conley.md"]
 Pages = ["examples.md"]
 ```
 
+## [Extension Functions](@id indexextensions)
+
+```@index
+Pages = ["extensions.md"]
+```
+
 ## [Plotting Functions](@id indexplot)
 
 ```@index
