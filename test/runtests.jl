@@ -1,6 +1,11 @@
 using ConleyDynamics
 using Test
 
+if !isnothing(Base.find_package("DelaunayTriangulation"))
+    using DelaunayTriangulation
+    include("test_delaunay.jl")
+end
+
 include("test_sparse.jl")
 include("test_lefschetz.jl")
 include("test_homology.jl")

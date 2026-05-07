@@ -14,9 +14,11 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [weakdeps]
+DelaunayTriangulation = "927a84f5-c5f4-47a5-9785-b46e178433df"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [extensions]
+ConleyDynamicsDelaunayExt = "DelaunayTriangulation"
 ConleyDynamicsPlotsExt = "Plots"
 
 [compat]
@@ -27,12 +29,14 @@ Printf = "1"
 Random = "1"
 Test = "1"
 Colors = "0.13"
+DelaunayTriangulation = "1"
 Graphs = "1"
 Luxor = "4"
 Plots = "1"
 
 [extras]
+DelaunayTriangulation = "927a84f5-c5f4-47a5-9785-b46e178433df"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["DelaunayTriangulation", "Test"]
