@@ -13,6 +13,15 @@ description, etc.
 
 Release notes:
 
+## v0.7.10 (May 7, 2026)
+
+- Add `DelaunayTriangulation.jl` as a weak dependency.
+- Added `delaunay_to_simplicial` to convert a Delaunay mesh
+  to the simplicial complex format `EuclideanComplex`.
+- Added `delaunay_points_bnd_rectangle` and `delaunay_points_add_segment`
+  to aid with the boundary and constraint edges specifications in
+  `DelaunayTriangulation.jl`.
+
 ## v0.7.9 (April 23, 2026)
 
 - Added `ci` coloring for trivial Conley index `[0,0,0]`.
