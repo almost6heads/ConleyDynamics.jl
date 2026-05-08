@@ -3,8 +3,17 @@
 using ConleyDynamics
 
 points, bndcurve = delaunay_points_bnd_rectangle([-5, -5], [5, 5])
-tri = triangulate(points; boundary_nodes = bndcurve)
-sc  = delaunay_to_simplicial(tri)</code></pre><p>This already produces a valid <code>EuclideanComplex</code> — a triangulated filled rectangle without any internal constraints. It is shown in the left panel of the associated figure.</p><p><img src="../img/delaunayext1.png" alt="Two sample Delaunay triangulations of a square"/></p><h3 id="Adding-Constraint-Curves"><a class="docs-heading-anchor" href="#Adding-Constraint-Curves">Adding Constraint Curves</a><a id="Adding-Constraint-Curves-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-Constraint-Curves" title="Permalink"></a></h3><p>In many applications it is desirable to include certain polygonal curves inside the domain as <em>constraint curves</em>, i.e., their edges have to be part of the created Delaunay triangulation and any of its refinements. Such constraint curves can be added to the initial mesh generation by adding the vertices of the polygons to the point list, and specifying the constraint edges in an argument <code>segments</code>, which has to be of type <code>Set{Tuple{Int,Int}}</code>.</p><p>Such constraint curves can be generated as follows. <a href="../../apicore/extensions/#ConleyDynamics.delaunay_points_add_segment"><code>delaunay_points_add_segment</code></a> appends a polygonal curve to the point list and records successive point pairs as constrained edges. A curve is passed as a <code>Vector{Vector{&lt;:Real}}</code> of <code>[x, y]</code> coordinates. If the first and last entries coincide (within a tolerance of <code>1e-9</code>), the curve is treated as <em>closed</em> and no duplicate endpoint is stored; otherwise it is treated as <em>open</em>.</p><p>The function has two calling forms. The two-argument form initialises a fresh segment set and is convenient for the first constraint curve; the three-argument form extends an existing <code>segments::Set{Tuple{Int,Int}}</code>:</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+tri1 = triangulate(points; boundary_nodes = bndcurve)
+sc1  = delaunay_to_simplicial(tri1)</code></pre><p>This already produces a valid <code>EuclideanComplex</code> — a triangulated filled rectangle without any internal constraints. It is shown in the left panel of the associated figure.</p><p><img src="../img/delaunayext1.png" alt="Two sample Delaunay triangulations of a square"/></p><h3 id="Adding-Interior-Nodes"><a class="docs-heading-anchor" href="#Adding-Interior-Nodes">Adding Interior Nodes</a><a id="Adding-Interior-Nodes-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-Interior-Nodes" title="Permalink"></a></h3><p>A finer triangulation of the underlying rectangle can be achieved by adding interior nodes to the list of points describing the boundary. This can be achieved with the function <code>delaunay_points_add_nodes</code>. For example, we can add twelve interior nodes to the above square using the following commands:</p><pre><code class="language-julia hljs">newpoints = [-4 .+ 8 .* rand(2) for k in 1:12]   # 12 random points
+points    = delaunay_points_add_nodes(points, newpoints)
+
+tri2 = triangulate(points; boundary_nodes = bndcurve)
+sc2  = delaunay_to_simplicial(tri2)</code></pre><p>This leads to the triangulation shown in the right panel of the above figure. Note that the new triangulation makes use of all new interior nodes, as well as the corners of the squares. The figure was created using the commands</p><pre><code class="language-julia hljs">using Plots
+p1 = plot_simplicial(sc1)
+p2 = plot_simplicial(sc2)
+pcombined = plot(p1, p2, layout=(1,2))
+plot!(pcombined, dpi=300)
+savefig(pcombined, &quot;delaunayext1.png&quot;)</code></pre><h3 id="Adding-Constraint-Curves"><a class="docs-heading-anchor" href="#Adding-Constraint-Curves">Adding Constraint Curves</a><a id="Adding-Constraint-Curves-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-Constraint-Curves" title="Permalink"></a></h3><p>In many applications it is desirable to include certain polygonal curves inside the domain as <em>constraint curves</em>, i.e., their edges have to be part of the created Delaunay triangulation and any of its refinements. Such constraint curves can be added to the initial mesh generation by adding the vertices of the polygons to the point list, and specifying the constraint edges in an argument <code>segments</code>, which has to be of type <code>Set{Tuple{Int,Int}}</code>.</p><p>Such constraint curves can be generated as follows. <a href="../../apicore/extensions/#ConleyDynamics.delaunay_points_add_segment"><code>delaunay_points_add_segment</code></a> appends a polygonal curve to the point list and records successive point pairs as constrained edges. A curve is passed as a <code>Vector{Vector{&lt;:Real}}</code> of <code>[x, y]</code> coordinates. If the first and last entries coincide (within a tolerance of <code>1e-9</code>), the curve is treated as <em>closed</em> and no duplicate endpoint is stored; otherwise it is treated as <em>open</em>.</p><p>The function has two calling forms. The two-argument form initialises a fresh segment set and is convenient for the first constraint curve; the three-argument form extends an existing <code>segments::Set{Tuple{Int,Int}}</code>:</p><pre><code class="language-julia hljs">using DelaunayTriangulation
 using ConleyDynamics
 
 points, bndcurve = delaunay_points_bnd_rectangle([-5, -5], [5, 5])
@@ -20,29 +29,88 @@ cut = [[-2.0, -2.0], [0.0, 0.0], [2.0, -1.0]]
 points, segments = delaunay_points_add_segment(points, circle)          # 2-arg form
 points, segments = delaunay_points_add_segment(points, segments, cut)   # 3-arg form
 
-tri = triangulate(points; boundary_nodes = bndcurve, segments = segments)
-sc  = delaunay_to_simplicial(tri)</code></pre><p>The resulting triangulation is shown in the right panel of the above figure.</p><h3 id="Mesh-Refinement"><a class="docs-heading-anchor" href="#Mesh-Refinement">Mesh Refinement</a><a id="Mesh-Refinement-1"></a><a class="docs-heading-anchor-permalink" href="#Mesh-Refinement" title="Permalink"></a></h3><p>After <code>triangulate</code>, <code>DelaunayTriangulation.jl</code> provides <code>refine!</code> to improve triangle quality. Passing <code>max_area</code> as a fraction of the total domain area and <code>min_angle</code> in degrees is a practical starting point:</p><pre><code class="language-julia hljs">triarea = get_area(tri)
-refine!(tri; max_area = 0.01 * triarea, min_angle = 25.0)
-sc = delaunay_to_simplicial(tri)</code></pre><p>The refined triangulation is then converted to a <code>EuclideanComplex</code> in the same way as before. The optional argument <code>min_angle</code> has to be chosen with care. If one chooses an angle larger than <code>30</code> then it is no longer certain that an appropriate triangulation can be generated. The resulting triangulation is shown in the left panel of the next figure.</p><p><img src="../img/delaunayext2.png" alt="Two refined Delaunay triangulations of a square"/></p><h3 id="Complete-Example"><a class="docs-heading-anchor" href="#Complete-Example">Complete Example</a><a id="Complete-Example-1"></a><a class="docs-heading-anchor-permalink" href="#Complete-Example" title="Permalink"></a></h3><p>The following self-contained snippet combines all three steps — bounding rectangle, two circular constraints, mesh refinement, and conversion:</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+tri1 = triangulate(points; boundary_nodes = bndcurve, segments = segments)
+sc1  = delaunay_to_simplicial(tri1)</code></pre><p><img src="../img/delaunayext2.png" alt="Delaunay triangulations with constraint curves"/></p><p>The resulting Delaunay triangulation is shown in the left panel of the figure. In addition to the generated mesh, it also shows the two contraint  curves in red and green. This plot was generated using the following commands:</p><pre><code class="language-julia hljs">using Plots
+
+cirx = [pt[1] for pt in circle]
+ciry = [pt[2] for pt in circle]
+cutx = [pt[1] for pt in cut]
+cuty = [pt[2] for pt in cut]
+
+p1 = plot_simplicial(sc1)
+plot!(p1, cirx, ciry, linewidth=3, color=:red)
+plot!(p1, cutx, cuty, linewidth=3, color=:green)</code></pre><p>We would like to point out that adding constraint curves to a triangulation has to be done with care. More precisely, it is up to the user to ensure that the <strong>curves do not intersect each other</strong> and that each curve is <strong>without interior self-intersections</strong>. If these assumptions are not satisfied, then <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl">DelaunayTriangulation.jl</a> will automatically remove some of the constraints. Consider for the example the following additional commands:</p><pre><code class="language-julia hljs"># Open polygonal cut inside the domain
+badcut = [[1.0, 1.0], [4.0, 4.0]]
+points, segments = delaunay_points_add_segment(points, segments, badcut)
+
+tri2 = triangulate(points; boundary_nodes = bndcurve, segments = segments)
+sc2  = delaunay_to_simplicial(tri2)
+
+badx = [pt[1] for pt in badcut]
+bady = [pt[2] for pt in badcut]
+
+p2 = plot_simplicial(sc2)
+plot!(p2, cirx, ciry, linewidth=3, color=:red)
+plot!(p2, cutx, cuty, linewidth=3, color=:green)
+plot!(p2, badx, bady, linewidth=2, color=:yellow, linestyle=:dash)
+
+pcombined12 = plot(p1, p2, layout=(1,2))
+plot!(pcombined12, dpi=300)
+savefig(pcombined12, &quot;delaunayext2.png&quot;)</code></pre><p>Clearly the added cut <code>badcut</code> intersects the circular constraint <code>circle</code> from before. The mesh generated by <code>DelaunayTriangulation.jl</code> is shown in the right panel of the above figure. Notice that the third constraint is not respected by the triangulation, even though the two vertices from the constraint have been added to the interior nodes.</p><h3 id="Mesh-Refinement"><a class="docs-heading-anchor" href="#Mesh-Refinement">Mesh Refinement</a><a id="Mesh-Refinement-1"></a><a class="docs-heading-anchor-permalink" href="#Mesh-Refinement" title="Permalink"></a></h3><p>After <code>triangulate</code>, <code>DelaunayTriangulation.jl</code> provides the function <code>refine!</code> to improve the quality of the triangulation. Passing <code>max_area</code> as a fraction of the total domain area and <code>min_angle</code> in degrees is a practical starting point:</p><pre><code class="language-julia hljs">triarea1 = get_area(tri1)
+refine!(tri1; max_area = 0.03 * triarea1, min_angle = 30.0)
+sc3 = delaunay_to_simplicial(tri1)</code></pre><p>The refined triangulation is then converted to a <code>EuclideanComplex</code> in the same way as before. The optional argument <code>min_angle</code> has to be chosen with care. If one chooses an angle larger than <code>30</code> then it is no longer certain that an appropriate triangulation can be generated. The resulting triangulation is shown in the left panel of the next figure.</p><p><img src="../img/delaunayext3.png" alt="Two refined Delaunay triangulations of a square"/></p><p>We can also refine the second mesh from above, the one with the  bad constraint curve <code>badcut</code>:</p><pre><code class="language-julia hljs">triarea2 = get_area(tri2)
+refine!(tri2; max_area = 0.007 * triarea2, min_angle = 25.0)
+sc4 = delaunay_to_simplicial(tri2)</code></pre><p>The resulting triangulation is shown in the right panel of the above figure. Notice that while the nodes determining <code>badcut</code> are still part of the triangulation, the edge is not – just as before. The above figure was created using the following commands:</p><pre><code class="language-julia hljs">p3 = plot_simplicial(sc3)
+plot!(p3, cirx, ciry, linewidth=3, color=:red)
+plot!(p3, cutx, cuty, linewidth=3, color=:green)
+
+p4 = plot_simplicial(sc4)
+plot!(p4, cirx, ciry, linewidth=3, color=:red)
+plot!(p4, cutx, cuty, linewidth=3, color=:green)
+plot!(p4, badx, bady, linewidth=2, color=:yellow, linestyle=:dash)
+
+pcombined34 = plot(p3, p4, layout=(1,2))
+plot!(pcombined34, dpi=300)
+savefig(pcombined34, &quot;delaunayext3.png&quot;)</code></pre><h3 id="Complete-Example"><a class="docs-heading-anchor" href="#Complete-Example">Complete Example</a><a id="Complete-Example-1"></a><a class="docs-heading-anchor-permalink" href="#Complete-Example" title="Permalink"></a></h3><p>The following self-contained snippet combines all three steps — bounding rectangle, two circular constraints, mesh refinement, and conversion:</p><pre><code class="language-julia hljs">using Plots
+using DelaunayTriangulation
 using ConleyDynamics
 
 # Bounding box
 points, bndcurve = delaunay_points_bnd_rectangle([-5, -5], [5, 5])
 
-# Outer ring (closed, 50 segments)
-n1    = 50
+# Outer ring (closed, 30 segments)
+n1    = 30
 th1   = range(0, 2*pi, length = n1+1)
 ring  = [[4.0 * cos(t), 4.0 * sin(t)] for t in th1]
+ringx = [pt[1] for pt in ring]
+ringy = [pt[2] for pt in ring]
 points, segments = delaunay_points_add_segment(points, ring)
 
-# Inner elliptical disc (closed, 35 segments)
-n2    = 35
+# Inner elliptical disc (closed, 15 segments)
+n2    = 15
 th2   = range(0, 2*pi, length = n2+1)
 disc  = [[0.5 + 3.0 * cos(t), 2.0 * sin(t)] for t in th2]
+discx = [pt[1] for pt in disc]
+discy = [pt[2] for pt in disc]
 points, segments = delaunay_points_add_segment(points, segments, disc)
 
 # Triangulate, refine, and convert
 tri = triangulate(points; boundary_nodes = bndcurve, segments = segments)
+sc1 = delaunay_to_simplicial(tri)
+
 triarea = get_area(tri)
-refine!(tri; max_area = 0.05 * triarea, min_angle = 20.0)
-sc = delaunay_to_simplicial(tri)</code></pre><p>The resulting Delaunay triangulation is shown in the right panel of the above figure. Note that the constrained edges in this refinement are still clearly visible.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../examples/">« Further Examples</a><a class="docs-footer-nextpage" href="../plotting/">Visualization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 7 May 2026 19:44">Thursday 7 May 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+refine!(tri; max_area = 0.005 * triarea, min_angle = 27.0)
+sc2 = delaunay_to_simplicial(tri)
+
+# Plot the triangulations
+p1 = plot_simplicial(sc1)
+plot!(p1, ringx, ringy, color=:red)
+plot!(p1, discx, discy, color=:green)
+
+p2 = plot_simplicial(sc2)
+plot!(p2, ringx, ringy, color=:red)
+plot!(p2, discx, discy, color=:green)
+
+pcombined = plot(p1, p2, layout=(1,2))
+plot!(pcombined, dpi=300)
+savefig(pcombined, &quot;delaunayext4.png&quot;)</code></pre><p>The resulting Delaunay triangulations are shown in the next figure.</p><p><img src="../img/delaunayext4.png" alt="A complete Delaunay triangulation example"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../examples/">« Further Examples</a><a class="docs-footer-nextpage" href="../plotting/">Visualization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 8 May 2026 17:05">Friday 8 May 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
