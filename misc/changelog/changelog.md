@@ -13,6 +13,13 @@ description, etc.
 
 Release notes:
 
+## v0.7.11 (May 8, 2026)
+
+- Added `delaunay_points_add_nodes`.
+- More detailed explanations of the `DelaunayTriangulation.jl` extensions usage,
+  particularly regarding constrained interior curves.
+- Small bug fixes.
+
 ## v0.7.10 (May 7, 2026)
 
 - Add `DelaunayTriangulation.jl` as a weak dependency.
