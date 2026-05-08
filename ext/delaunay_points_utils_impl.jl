@@ -13,11 +13,13 @@ function ConleyDynamics.delaunay_points_bnd_rectangle(bmin, bmax)
 end
 
 function ConleyDynamics.delaunay_points_add_segment(
-        points::Vector{<:Tuple{<:Real,<:Real}},
-        segments::Set{Tuple{Int,Int}},
+        pointsIn::Vector{<:Tuple{<:Real,<:Real}},
+        segmentsIn::Set{Tuple{Int,Int}},
         newseg::Vector{<:Vector{<:Real}})
 
-    lns = length(newseg)
+    points   = deepcopy(pointsIn)
+    segments = deepcopy(segmentsIn)
+    lns      = length(newseg)
     @assert lns >= 2 "We need at least two points in the segment!"
 
     # Floating-point tolerance for coincident-endpoint detection.  We use a
@@ -65,3 +67,16 @@ function ConleyDynamics.delaunay_points_add_segment(
     seg0 = Set{Tuple{Int,Int}}()
     return ConleyDynamics.delaunay_points_add_segment(points, seg0, newseg)
 end
+
+function ConleyDynamics.delaunay_points_add_nodes(
+        pointsIn::Vector{<:Tuple{<:Real,<:Real}},
+        newpoints::Vector{<:Vector{<:Real}})
+    # Add new interior nodes
+    points = deepcopy(pointsIn)
+    for newpt in newpoints
+        x, y = float.(newpt)
+        push!(points, (x,y))
+    end
+    return points
+end
+

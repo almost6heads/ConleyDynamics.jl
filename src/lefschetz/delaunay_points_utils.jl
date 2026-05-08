@@ -1,5 +1,6 @@
 export delaunay_points_bnd_rectangle
 export delaunay_points_add_segment
+export delaunay_points_add_nodes
 
 """
     delaunay_points_bnd_rectangle(bmin, bmax)
@@ -92,3 +93,34 @@ sc  = delaunay_to_simplicial(tri)
 ```
 """
 function delaunay_points_add_segment end
+
+"""
+    delaunay_points_add_nodes(points, newpoints)
+        -> Vector{Tuple{Float64,Float64}}
+
+Append a list of interior nodes to the given points for a Delaunay triangulation.
+
+`newpoints` is a `Vector{Vector{<:Real}}` where each element `[x, y]` is a
+2D point which describes an interior node. All points in `newpoints` are appended
+to `points` (converted to `Float64`), and the function returns the updated `points`.
+
+This function is only available when `DelaunayTriangulation.jl` is loaded.
+
+# Example
+
+```julia
+using DelaunayTriangulation
+using ConleyDynamics
+
+# Rectangular domain with a circular hole and an open cut
+points, bndcurve = delaunay_points_bnd_rectangle([-5, -5], [5, 5])
+
+newpoints = [-4 .+ 8 .* rand(2) for k in 1:12]   # 12 random points
+points    = delaunay_points_add_nodes(points, newpoints)
+
+tri = triangulate(points; boundary_nodes = bndcurve)
+sc  = delaunay_to_simplicial(tri)
+```
+"""
+function delaunay_points_add_nodes end
+
