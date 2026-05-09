@@ -290,23 +290,23 @@ The resulting Delaunay triangulations are shown in the next figure.
 
 As noted above, `delaunay_points_add_segment` requires the caller to ensure
 that constraint curves do not intersect each other. When this condition
-cannot be guaranteed — for example when the curves are computed
-programmatically and may share crossings or collinear overlaps —
+cannot be guaranteed -- for example when the curves are computed
+programmatically and may share crossings or collinear overlaps --
 `delaunay_points_add_split_segs` provides a safe alternative.
 
 Internally it calls [`split_segments`](@ref), which computes the planar
-straight-line arrangement of the given segments: all crossings and collinear
+straight-line arrangement of the given segments: All crossings and collinear
 overlaps are resolved and the input segments are split at every intersection
 point, yielding a non-crossing set of sub-segments. These vertices and
 sub-segments are then appended to the existing point list and constraint-edge
 set exactly as `delaunay_points_add_segment` would.
 
-The function signature mirrors that of `delaunay_points_add_segment`: the
+The function signature mirrors that of `delaunay_points_add_segment`: The
 two-argument form initialises a fresh segment set, and the three-argument
 form extends an existing one. An optional keyword argument `verbose=true`
 prints a brief summary of the splitting process.
 
-!!! warning "Three-argument form: overlaps with existing segments are not checked"
+!!! warning "Three-argument form: Overlaps with existing segments are not checked"
     When calling the three-argument form,
     [`split_segments`](@ref) resolves crossings and overlaps **within
     `newsegments` only**. No check is performed for intersections or overlaps
@@ -317,60 +317,88 @@ prints a brief summary of the splitting process.
     Only use the three-argument form if you know that the new segments do not
     intersect the existing ones.
 
+The basic usage of [`delaunay_points_add_segment`](@ref) is illustrated in the
+following code segment:
+
 ```julia
 using DelaunayTriangulation
 using ConleyDynamics
 
-points, bndcurve = delaunay_points_bnd_rectangle([-2, -2], [2, 2])
+points1, bndcurve1 = delaunay_points_bnd_rectangle([-2, -2], [2, 2])
 
-# Two crossing diagonals — they would violate the no-intersection requirement
+# Two crossing diagonals - they would violate the no-intersection requirement
 # of delaunay_points_add_segment, but split_segments resolves the crossing.
-segs = [[[-1.0, -1.0], [1.0,  1.0]],
-        [[-1.0,  1.0], [1.0, -1.0]]]
+segs1 = [[[-1.0, -1.0], [1.0,  1.0]],
+         [[-1.0,  1.0], [1.0, -1.0]]]
 
-points, segments = delaunay_points_add_split_segs(points, segs; verbose=true)
+points1, segments1 = delaunay_points_add_split_segs(points1, segs1; verbose=true)
 # Output:
 #   split_segments: 2 input segment(s)
 #     intersection points created : 1
 #     output vertices             : 5
 #     output edges                : 4
 
-tri = triangulate(points; boundary_nodes = bndcurve, segments = segments)
-sc  = delaunay_to_simplicial(tri)
+tri1 = triangulate(points1; boundary_nodes = bndcurve1, segments = segments1)
+sc1  = delaunay_to_simplicial(tri1)
 ```
 
+![Delaunay triangulations with split constraint curves](img/delaunayext5.png)
+
+The resulting triangulation is shown in the left panel of the figure.
 The five vertices (four original endpoints plus the crossing at the origin)
 and the four sub-segments are all included as constraints in the triangulation.
 The result is a valid `EuclideanComplex` whose constraint edges are respected
 by the mesh.
 
-A more complex example with three mutually intersecting segments demonstrates
-that `delaunay_points_add_split_segs` handles multiple simultaneous
-crossings correctly:
+The following more complex example with three mutually intersecting segments
+demonstrates that the function [`delaunay_points_add_split_segs`](@ref) also
+handles multiple simultaneous crossings correctly:
 
 ```julia
 using DelaunayTriangulation
 using ConleyDynamics
 
-points, bndcurve = delaunay_points_bnd_rectangle([-4, -4], [4, 4])
+points2, bndcurve2 = delaunay_points_bnd_rectangle([-4, -4], [4, 4])
 
 # Three segments that all cross each other
-segs = [[[-3.0,  0.0], [3.0,  0.0]],   # horizontal
-        [[ 0.0, -3.0], [0.0,  3.0]],   # vertical
-        [[-3.0, -3.0], [3.0,  3.0]]]   # diagonal
+segs2 = [[[-3.0,  0.0], [3.0,  0.0]],   # horizontal
+         [[ 0.0, -3.0], [0.0,  3.0]],   # vertical
+         [[-3.0, -3.0], [3.0,  3.0]]]   # diagonal
 
-points, segments = delaunay_points_add_split_segs(points, segs; verbose=true)
+points2, segments2 = delaunay_points_add_split_segs(points2, segs2; verbose=true)
 # Output:
 #   split_segments: 3 input segment(s)
 #     intersection points created : 3
 #     output vertices             : 9
 #     output edges                : 6
 
-tri = triangulate(points; boundary_nodes = bndcurve, segments = segments)
-sc  = delaunay_to_simplicial(tri)
+tri2 = triangulate(points2; boundary_nodes = bndcurve2, segments = segments2)
+sc2  = delaunay_to_simplicial(tri2)
 ```
 
+For the produced triangulation, see the right panel of the above figure.
 The three intersection points (origin, and the two axis crossings with the
 diagonal) are automatically detected, and each input segment is split into
-two sub-segments at its crossings.
+two sub-segments at its crossings. The figure was created using the following
+commands:
+
+```julia
+using Plots
+
+p1 = plot_simplicial(sc1)
+for p1seg in segs1
+    pt1, pt2 = p1seg
+    plot!(p1, [pt1[1],pt2[1]], [pt1[2],pt2[2]], linewidth=3, linestyle=:dash)
+end
+
+p2 = plot_simplicial(sc2)
+for p2seg in segs2
+    pt1, pt2 = p2seg
+    plot!(p2, [pt1[1],pt2[1]], [pt1[2],pt2[2]], linewidth=3, linestyle=:dash)
+end
+
+pcombined = plot(p1, p2, layout=(1,2))
+plot!(pcombined, dpi=300)
+savefig(pcombined, "delaunayext5.png")
+```
 
