@@ -9,6 +9,6 @@ loaded alongside `ConleyDynamics.jl`.
 delaunay_points_bnd_rectangle
 delaunay_points_add_nodes
 delaunay_points_add_segment
-delaunay_points_add_split_segments
+delaunay_points_add_split_segs
 delaunay_to_simplicial
 ```

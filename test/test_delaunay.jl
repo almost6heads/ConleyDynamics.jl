@@ -174,14 +174,14 @@ end
 end
 
 # =============================================================================
-# Tests for delaunay_points_add_split_segments
+# Tests for delaunay_points_add_split_segs
 # =============================================================================
 
-@testset "delaunay_points_add_split_segments — crossing diagonals" begin
+@testset "delaunay_points_add_split_segs — crossing diagonals" begin
     points, bndcurve = delaunay_points_bnd_rectangle([-2, -2], [2, 2])
     segs = [[[-1.0, -1.0], [1.0,  1.0]],
             [[-1.0,  1.0], [1.0, -1.0]]]
-    points2, segments2 = delaunay_points_add_split_segments(points, segs)
+    points2, segments2 = delaunay_points_add_split_segs(points, segs)
 
     # 4 boundary corners + 5 split-segment vertices (4 tips + origin)
     @test length(points2) == 9
@@ -189,25 +189,25 @@ end
     @test length(segments2) == 4
 end
 
-@testset "delaunay_points_add_split_segments — three-argument form" begin
+@testset "delaunay_points_add_split_segs — three-argument form" begin
     points, bndcurve = delaunay_points_bnd_rectangle([-2, -2], [2, 2])
     segs1 = [[[-1.0, -1.0], [1.0,  1.0]],
              [[-1.0,  1.0], [1.0, -1.0]]]
     segs2 = [[[0.0, -1.5], [0.0, 1.5]]]   # vertical segment, no new crossings
 
-    points, segs_set = delaunay_points_add_split_segments(points, segs1)
-    points, segs_set = delaunay_points_add_split_segments(points, segs_set, segs2)
+    points, segs_set = delaunay_points_add_split_segs(points, segs1)
+    points, segs_set = delaunay_points_add_split_segs(points, segs_set, segs2)
 
     # segs2 is a single segment split by nothing → 2 vertices, 1 edge added
     @test length(points) == 11   # 4 + 5 + 2
     @test length(segs_set) == 5  # 4 + 1
 end
 
-@testset "delaunay_points_add_split_segments — triangulation round-trip" begin
+@testset "delaunay_points_add_split_segs — triangulation round-trip" begin
     points, bndcurve = delaunay_points_bnd_rectangle([-2, -2], [2, 2])
     segs = [[[-1.0, 0.0], [1.0, 0.0]],
             [[ 0.0,-1.0], [0.0, 1.0]]]
-    points, segments = delaunay_points_add_split_segments(points, segs)
+    points, segments = delaunay_points_add_split_segs(points, segs)
 
     tri = triangulate(points; boundary_nodes = bndcurve, segments = segments)
     sc  = delaunay_to_simplicial(tri)

@@ -292,7 +292,7 @@ As noted above, `delaunay_points_add_segment` requires the caller to ensure
 that constraint curves do not intersect each other. When this condition
 cannot be guaranteed — for example when the curves are computed
 programmatically and may share crossings or collinear overlaps —
-`delaunay_points_add_split_segments` provides a safe alternative.
+`delaunay_points_add_split_segs` provides a safe alternative.
 
 Internally it calls [`split_segments`](@ref), which computes the planar
 straight-line arrangement of the given segments: all crossings and collinear
@@ -306,6 +306,17 @@ two-argument form initialises a fresh segment set, and the three-argument
 form extends an existing one. An optional keyword argument `verbose=true`
 prints a brief summary of the splitting process.
 
+!!! warning "Three-argument form: overlaps with existing segments are not checked"
+    When calling the three-argument form,
+    [`split_segments`](@ref) resolves crossings and overlaps **within
+    `newsegments` only**. No check is performed for intersections or overlaps
+    between the newly added sub-segments and the segments already present in
+    `segments`. It is the caller's responsibility to ensure that the two sets
+    are compatible. Incorrect use can produce an invalid constraint-edge set
+    that silently causes `DelaunayTriangulation.jl` to drop constraints.
+    Only use the three-argument form if you know that the new segments do not
+    intersect the existing ones.
+
 ```julia
 using DelaunayTriangulation
 using ConleyDynamics
@@ -317,7 +328,7 @@ points, bndcurve = delaunay_points_bnd_rectangle([-2, -2], [2, 2])
 segs = [[[-1.0, -1.0], [1.0,  1.0]],
         [[-1.0,  1.0], [1.0, -1.0]]]
 
-points, segments = delaunay_points_add_split_segments(points, segs; verbose=true)
+points, segments = delaunay_points_add_split_segs(points, segs; verbose=true)
 # Output:
 #   split_segments: 2 input segment(s)
 #     intersection points created : 1
@@ -334,7 +345,7 @@ The result is a valid `EuclideanComplex` whose constraint edges are respected
 by the mesh.
 
 A more complex example with three mutually intersecting segments demonstrates
-that `delaunay_points_add_split_segments` handles multiple simultaneous
+that `delaunay_points_add_split_segs` handles multiple simultaneous
 crossings correctly:
 
 ```julia
@@ -348,7 +359,7 @@ segs = [[[-3.0,  0.0], [3.0,  0.0]],   # horizontal
         [[ 0.0, -3.0], [0.0,  3.0]],   # vertical
         [[-3.0, -3.0], [3.0,  3.0]]]   # diagonal
 
-points, segments = delaunay_points_add_split_segments(points, segs; verbose=true)
+points, segments = delaunay_points_add_split_segs(points, segs; verbose=true)
 # Output:
 #   split_segments: 3 input segment(s)
 #     intersection points created : 3

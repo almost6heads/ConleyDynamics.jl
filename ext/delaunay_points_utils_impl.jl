@@ -80,7 +80,7 @@ function ConleyDynamics.delaunay_points_add_nodes(
     return points
 end
 
-function ConleyDynamics.delaunay_points_add_split_segments(
+function ConleyDynamics.delaunay_points_add_split_segs(
         pointsIn::Vector{<:Tuple{<:Real,<:Real}},
         segmentsIn::Set{Tuple{Int,Int}},
         newsegments::Vector{<:Vector{<:Vector{<:Real}}};
@@ -123,12 +123,12 @@ function ConleyDynamics.delaunay_points_add_split_segments(
     return points, segments
 end
 
-function ConleyDynamics.delaunay_points_add_split_segments(
+function ConleyDynamics.delaunay_points_add_split_segs(
         points::Vector{<:Tuple{<:Real,<:Real}},
         newsegments::Vector{<:Vector{<:Vector{<:Real}}};
         verbose::Bool = false)
     seg0 = Set{Tuple{Int,Int}}()
-    return ConleyDynamics.delaunay_points_add_split_segments(
+    return ConleyDynamics.delaunay_points_add_split_segs(
         points, seg0, newsegments; verbose=verbose)
 end
 

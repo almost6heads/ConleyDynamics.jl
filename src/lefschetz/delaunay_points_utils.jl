@@ -1,7 +1,7 @@
 export delaunay_points_bnd_rectangle
 export delaunay_points_add_segment
 export delaunay_points_add_nodes
-export delaunay_points_add_split_segments
+export delaunay_points_add_split_segs
 
 """
     delaunay_points_bnd_rectangle(bmin, bmax)
@@ -126,9 +126,9 @@ sc  = delaunay_to_simplicial(tri)
 function delaunay_points_add_nodes end
 
 """
-    delaunay_points_add_split_segments(points, segments, newsegments; verbose=false)
+    delaunay_points_add_split_segs(points, newsegments; verbose=false)
         -> (Vector{Tuple{Float64,Float64}}, Set{Tuple{Int,Int}})
-    delaunay_points_add_split_segments(points, newsegments; verbose=false)
+    delaunay_points_add_split_segs(points, segments, newsegments; verbose=false)
         -> (Vector{Tuple{Float64,Float64}}, Set{Tuple{Int,Int}})
 
 Compute a planar straight-line arrangement from `newsegments`, add all
@@ -143,15 +143,24 @@ each other or have collinear overlaps.
 into a non-crossing arrangement, then appends the resulting vertices and
 edges to the existing `points` and `segments`.
 
-The three-argument form takes an existing `segments::Set{Tuple{Int,Int}}`
-and extends it. The two-argument form is a convenience wrapper that
-initialises `segments` as an empty set.
+The two-argument form is a convenience wrapper that initialises `segments`
+as an empty set. The three-argument form takes an existing
+`segments::Set{Tuple{Int,Int}}` and extends it.
 
 If the keyword argument `verbose` is `true`, the function prints a brief
 summary: number of input segments, number of intersection points created,
 and number of output vertices and edges added to `points`.
 
 Returns the updated `(points, segments)`.
+
+!!! warning "Three-argument form: overlaps with existing segments are not checked"
+    When calling the three-argument form, the new segments in `newsegments`
+    are split among themselves by [`split_segments`](@ref), but **no check is
+    performed for intersections or overlaps with the segments already present
+    in `segments`**. It is the caller's responsibility to ensure that the
+    newly added sub-segments are compatible with the existing constraint-edge
+    set. Incorrect use can produce an invalid segment set that silently causes
+    `DelaunayTriangulation.jl` to drop constraints.
 
 This function is only available when `DelaunayTriangulation.jl` is loaded.
 
@@ -164,14 +173,14 @@ using ConleyDynamics
 points, bndcurve = delaunay_points_bnd_rectangle([-2, -2], [2, 2])
 
 # Two crossing diagonals — split_segments resolves the crossing automatically
-segs = [[[−1.0, −1.0], [1.0, 1.0]],
-        [[−1.0,  1.0], [1.0, −1.0]]]
+segs = [[[-1.0, -1.0], [1.0, 1.0]],
+        [[-1.0,  1.0], [1.0, -1.0]]]
 
-points, segments = delaunay_points_add_split_segments(points, segs; verbose=true)
+points, segments = delaunay_points_add_split_segs(points, segs; verbose=true)
 
 tri = triangulate(points; boundary_nodes = bndcurve, segments = segments)
 sc  = delaunay_to_simplicial(tri)
 ```
 """
-function delaunay_points_add_split_segments end
+function delaunay_points_add_split_segs end
 
