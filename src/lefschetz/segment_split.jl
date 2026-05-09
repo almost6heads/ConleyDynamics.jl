@@ -191,8 +191,6 @@ function split_segments(
     n       = length(segments)
     eps_abs = max(eps_abs, eps_snap * 1e-4)
 
-    nt = nthreads()
-
     # Phase 1: collect all candidate points (parallel)
     #
     # Endpoints: 2n points, one pair per segment.
@@ -203,10 +201,11 @@ function split_segments(
     end
 
     # Intersection points: distribute the upper-triangle pair loop across threads.
-    inter_bufs = [Vector{Vector{Float64}}() for _ in 1:nt]
+    # Each iteration i owns inter_bufs[i] exclusively — no threadid() needed.
+    inter_bufs = [Vector{Vector{Float64}}() for _ in 1:n]
 
     @threads for i in 1:n
-        tid  = threadid()
+        buf  = inter_bufs[i]
         p1   = segments[i][1]
         p2   = segments[i][2]
         d1   = p2 .- p1
@@ -225,13 +224,13 @@ function split_segments(
                 abs(_cross2(w, d1)) > eps_abs * (len1 + eps_abs) && continue
                 # Collinear: record all four endpoints so overlapping intervals
                 # are split correctly.
-                push!(inter_bufs[tid], copy(q1))
-                push!(inter_bufs[tid], copy(q2))
-                push!(inter_bufs[tid], copy(p1))
-                push!(inter_bufs[tid], copy(p2))
+                push!(buf, copy(q1))
+                push!(buf, copy(q2))
+                push!(buf, copy(p1))
+                push!(buf, copy(p2))
             else
                 pt = _intersect_point(p1, p2, q1, q2, eps_abs)
-                pt !== nothing && push!(inter_bufs[tid], pt)
+                pt !== nothing && push!(buf, pt)
             end
         end
     end
