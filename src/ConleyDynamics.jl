@@ -85,6 +85,7 @@ include("./lefschetz/filters.jl")
 include("./lefschetz/manifold_boundary.jl")
 include("./lefschetz/surfaces.jl")
 include("./lefschetz/locate_planar_cellsubsets.jl")
+include("./lefschetz/segment_arrangement.jl")
 
 include("./mvf/create_mvf_hull.jl")
 include("./mvf/create_planar_mvf.jl")

@@ -1,6 +1,7 @@
 export delaunay_points_bnd_rectangle
 export delaunay_points_add_segment
 export delaunay_points_add_nodes
+export delaunay_points_add_split_segments
 
 """
     delaunay_points_bnd_rectangle(bmin, bmax)
@@ -123,4 +124,54 @@ sc  = delaunay_to_simplicial(tri)
 ```
 """
 function delaunay_points_add_nodes end
+
+"""
+    delaunay_points_add_split_segments(points, segments, newsegments; verbose=false)
+        -> (Vector{Tuple{Float64,Float64}}, Set{Tuple{Int,Int}})
+    delaunay_points_add_split_segments(points, newsegments; verbose=false)
+        -> (Vector{Tuple{Float64,Float64}}, Set{Tuple{Int,Int}})
+
+Compute a planar straight-line arrangement from `newsegments`, add all
+resulting vertices and sub-segments to `points` and `segments`, and return
+the updated pair. This is the safe alternative to
+[`delaunay_points_add_segment`](@ref) when the input curves may intersect
+each other or have collinear overlaps.
+
+`newsegments` is a `Vector` of segments, each given as a length-2 vector of
+`[x, y]` endpoints, e.g. `[[x1, y1], [x2, y2]]`. The function calls
+[`split_segments`](@ref) internally to resolve all crossings and overlaps
+into a non-crossing arrangement, then appends the resulting vertices and
+edges to the existing `points` and `segments`.
+
+The three-argument form takes an existing `segments::Set{Tuple{Int,Int}}`
+and extends it. The two-argument form is a convenience wrapper that
+initialises `segments` as an empty set.
+
+If the keyword argument `verbose` is `true`, the function prints a brief
+summary: number of input segments, number of intersection points created,
+and number of output vertices and edges added to `points`.
+
+Returns the updated `(points, segments)`.
+
+This function is only available when `DelaunayTriangulation.jl` is loaded.
+
+# Example
+
+```julia
+using DelaunayTriangulation
+using ConleyDynamics
+
+points, bndcurve = delaunay_points_bnd_rectangle([-2, -2], [2, 2])
+
+# Two crossing diagonals — split_segments resolves the crossing automatically
+segs = [[[−1.0, −1.0], [1.0, 1.0]],
+        [[−1.0,  1.0], [1.0, −1.0]]]
+
+points, segments = delaunay_points_add_split_segments(points, segs; verbose=true)
+
+tri = triangulate(points; boundary_nodes = bndcurve, segments = segments)
+sc  = delaunay_to_simplicial(tri)
+```
+"""
+function delaunay_points_add_split_segments end
 

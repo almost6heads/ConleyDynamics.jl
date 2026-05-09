@@ -80,3 +80,55 @@ function ConleyDynamics.delaunay_points_add_nodes(
     return points
 end
 
+function ConleyDynamics.delaunay_points_add_split_segments(
+        pointsIn::Vector{<:Tuple{<:Real,<:Real}},
+        segmentsIn::Set{Tuple{Int,Int}},
+        newsegments::Vector{<:Vector{<:Vector{<:Real}}};
+        verbose::Bool = false)
+
+    # Run the arrangement algorithm on the new segments.
+    new_pts, new_edges = ConleyDynamics.split_segments(newsegments)
+
+    n_input    = length(newsegments)
+    n_isect    = length(new_pts) - 2 * n_input   # rough count; may be negative
+    n_out_pts  = length(new_pts)
+    n_out_segs = length(new_edges)
+
+    # Count true intersection points: vertices that are not among the 2*n_input
+    # original endpoints (after snap-rounding their duplicates were merged).
+    # We use n_out_pts to count cluster centroids.
+    n_isect_pts = max(0, n_out_pts - 2 * n_input)
+
+    if verbose
+        @printf("split_segments: %d input segment(s)\n", n_input)
+        @printf("  intersection points created : %d\n", n_isect_pts)
+        @printf("  output vertices             : %d\n", n_out_pts)
+        @printf("  output edges                : %d\n", n_out_segs)
+    end
+
+    points   = deepcopy(pointsIn)
+    segments = deepcopy(segmentsIn)
+    offset   = length(points)
+
+    # Append the split-segment vertices (as Float64 tuples).
+    for p in new_pts
+        push!(points, (Float64(p[1]), Float64(p[2])))
+    end
+
+    # Append the split-segment edges, shifted by offset.
+    for (i, j) in new_edges
+        push!(segments, (offset + i, offset + j))
+    end
+
+    return points, segments
+end
+
+function ConleyDynamics.delaunay_points_add_split_segments(
+        points::Vector{<:Tuple{<:Real,<:Real}},
+        newsegments::Vector{<:Vector{<:Vector{<:Real}}};
+        verbose::Bool = false)
+    seg0 = Set{Tuple{Int,Int}}()
+    return ConleyDynamics.delaunay_points_add_split_segments(
+        points, seg0, newsegments; verbose=verbose)
+end
+

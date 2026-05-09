@@ -55,5 +55,6 @@ signed_distance_rectangle
 signed_distance_circle
 segment_intersects_rectangle
 segment_intersects_circle
+split_segments
 ```
 
