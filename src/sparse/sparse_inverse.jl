@@ -35,11 +35,11 @@ function sparse_inverse(matrix::SparseMatrix)
         # Make sure there is a nonzero entry at (m,m)
 
         if mwork[m,m] == tzero
-            ki = searchsortedfirst(matrix.rows[m], m+1)
-            if ki > length(matrix.rows[m])
+            ki = searchsortedfirst(mwork.rows[m], m+1)
+            if ki > length(mwork.rows[m])
                 error("The matrix is not invertible!")
             end
-            k = matrix.rows[m][ki]
+            k = mwork.rows[m][ki]
             permr = Vector{Int}(1:n)
             permc = Vector{Int}(1:n)
             permc[k] = m
