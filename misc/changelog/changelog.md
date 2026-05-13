@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.7.13 (May 13, 2026)
+
+Bug fix release
+
 ## v0.7.12 (May 9, 2026)
 
 - Added `DelaunayTriangulation.jl` helper function `delaunay_points_add_split_segs`.
