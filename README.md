@@ -2,6 +2,9 @@
 
 *Conley index and multivector fields for Julia.*
 
+[![Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://almost6heads.github.io/ConleyDynamics.jl)
+[![CI](https://github.com/almost6heads/ConleyDynamics.jl/workflows/CI/badge.svg)](https://github.com/almost6heads/ConleyDynamics.jl/actions)
+
 ConleyDynamics.jl is a Julia package for studying combinatorial multivector
 fields using Conley theory. The multivector fields can be studied on arbitrary
 Lefschetz complexes, which include both simplicial and cubical complexes
