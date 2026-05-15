@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Extensions · ConleyDynamics.jl</title><meta name="title" content="Extensions · ConleyDynamics.jl"/><meta property="og:title" content="Extensions · ConleyDynamics.jl"/><meta property="twitter:title" content="Extensions · ConleyDynamics.jl"/><meta name="description" content="Documentation for ConleyDynamics.jl."/><meta property="og:description" content="Documentation for ConleyDynamics.jl."/><meta property="twitter:description" content="Documentation for ConleyDynamics.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/citations.css" rel="stylesheet" type="text/css"/><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="ConleyDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">ConleyDynamics.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Overview</a></li><li><span class="tocitem">Manual</span><ul><li><a class="tocitem" href="../tutorial/">Tutorial</a></li><li><a class="tocitem" href="../lefschetz/">Lefschetz Complexes</a></li><li><a class="tocitem" href="../homology/">Homology</a></li><li><a class="tocitem" href="../conley/">Conley Theory</a></li><li><a class="tocitem" href="../flowexamples/">Flow Examples</a></li><li><a class="tocitem" href="../examples/">Further Examples</a></li><li class="is-active"><a class="tocitem" href>Extensions</a><ul class="internal"><li><a class="tocitem" href="#DelaunayTriangulation.jl"><span>DelaunayTriangulation.jl</span></a></li></ul></li><li><a class="tocitem" href="../plotting/">Visualization</a></li><li><a class="tocitem" href="../sparse/">Sparse Matrices</a></li><li><a class="tocitem" href="../references/">References</a></li></ul></li><li><span class="tocitem">Core API</span><ul><li><a class="tocitem" href="../../apicore/datastruct/">Composite Data Structures</a></li><li><a class="tocitem" href="../../apicore/lefschetz/">Lefschetz Complex Functions</a></li><li><a class="tocitem" href="../../apicore/specialcomp/">Special Complex Functions</a></li><li><a class="tocitem" href="../../apicore/homology/">Homology Functions</a></li><li><a class="tocitem" href="../../apicore/conley/">Conley Theory Functions</a></li><li><a class="tocitem" href="../../apicore/examples/">Example Functions</a></li><li><a class="tocitem" href="../../apicore/extensions/">Extension Functions</a></li><li><a class="tocitem" href="../../apicore/plots/">Plotting Functions</a></li><li><a class="tocitem" href="../../apicore/sparse/">Sparse Matrix Functions</a></li><li><a class="tocitem" href="../../apicore/apiindex/">Complete API Index</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Manual</a></li><li class="is-active"><a href>Extensions</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Extensions</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/almost6heads/ConleyDynamics.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/almost6heads/ConleyDynamics.jl/blob/main/docs/src/man/extensions.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Extensions"><a class="docs-heading-anchor" href="#Extensions">Extensions</a><a id="Extensions-1"></a><a class="docs-heading-anchor-permalink" href="#Extensions" title="Permalink"></a></h1><p><a href="https://almost6heads.github.io/ConleyDynamics.jl">ConleyDynamics.jl</a> exposes optional functionality through <em>weak dependencies</em> — packages that are loaded on demand and extend the library&#39;s capabilities without becoming hard dependencies. This chapter documents the functions that become available through these extensions. At present, two backends are provided: <code>DelaunayTriangulation.jl</code> for constructing constrained planar triangulations and converting them to simplicial complexes (described in the section below), and <code>Plots.jl</code> for interactive visualization of Lefschetz complexes and their dynamics (described in the <a href="../plotting/#Visualization">Visualization</a> chapter).</p><h2 id="DelaunayTriangulation.jl"><a class="docs-heading-anchor" href="#DelaunayTriangulation.jl">DelaunayTriangulation.jl</a><a id="DelaunayTriangulation.jl-1"></a><a class="docs-heading-anchor-permalink" href="#DelaunayTriangulation.jl" title="Permalink"></a></h2><p>The <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl">DelaunayTriangulation.jl</a> package computes Delaunay triangulations of planar point sets, optionally with constrained edges and boundary curves. Loading it alongside <code>ConleyDynamics.jl</code> activates three functions:</p><ul><li><a href="../../apicore/extensions/#ConleyDynamics.delaunay_points_bnd_rectangle"><code>delaunay_points_bnd_rectangle</code></a> — initialise a point list and outer boundary for a rectangular domain,</li><li><a href="../../apicore/extensions/#ConleyDynamics.delaunay_points_add_segment"><code>delaunay_points_add_segment</code></a> — append constraint curves (closed or open) to that point list, and</li><li><a href="../../apicore/extensions/#ConleyDynamics.delaunay_to_simplicial"><code>delaunay_to_simplicial</code></a> — convert the finished triangulation into a <a href="../../apicore/datastruct/#ConleyDynamics.EuclideanComplex"><code>EuclideanComplex</code></a>.</li></ul><p>The typical workflow is to assemble the geometry with the first two functions, call <code>triangulate</code> (and optionally <code>refine!</code>) from <code>DelaunayTriangulation.jl</code>, and then convert the result with <code>delaunay_to_simplicial</code>.</p><h3 id="Defining-the-Bounding-Domain"><a class="docs-heading-anchor" href="#Defining-the-Bounding-Domain">Defining the Bounding Domain</a><a id="Defining-the-Bounding-Domain-1"></a><a class="docs-heading-anchor-permalink" href="#Defining-the-Bounding-Domain" title="Permalink"></a></h3><p><a href="../../apicore/extensions/#ConleyDynamics.delaunay_points_bnd_rectangle"><code>delaunay_points_bnd_rectangle</code></a> creates a four-vertex rectangular outer boundary. Its two arguments are vectors <code>bmin = [xmin, ymin]</code> and <code>bmax = [xmax, ymax]</code> giving the lower-left and upper-right corners. It returns a point list and a <code>bndcurve</code> in the format expected by the <code>boundary_nodes</code> keyword of <code>triangulate</code>:</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using ConleyDynamics
+
+points, bndcurve = delaunay_points_bnd_rectangle([-5, -5], [5, 5])
+tri1 = triangulate(points; boundary_nodes = bndcurve)
+sc1  = delaunay_to_simplicial(tri1)</code></pre><p>This already produces a valid <code>EuclideanComplex</code> — a triangulated filled rectangle without any internal constraints. It is shown in the left panel of the associated figure.</p><p><img src="../img/delaunayext1.png" alt="Two sample Delaunay triangulations of a square"/></p><h3 id="Adding-Interior-Nodes"><a class="docs-heading-anchor" href="#Adding-Interior-Nodes">Adding Interior Nodes</a><a id="Adding-Interior-Nodes-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-Interior-Nodes" title="Permalink"></a></h3><p>A finer triangulation of the underlying rectangle can be achieved by adding interior nodes to the list of points describing the boundary. This can be achieved with the function <code>delaunay_points_add_nodes</code>. For example, we can add twelve interior nodes to the above square using the following commands:</p><pre><code class="language-julia hljs">newpoints = [-4 .+ 8 .* rand(2) for k in 1:12]   # 12 random points
+points    = delaunay_points_add_nodes(points, newpoints)
+
+tri2 = triangulate(points; boundary_nodes = bndcurve)
+sc2  = delaunay_to_simplicial(tri2)</code></pre><p>This leads to the triangulation shown in the right panel of the above figure. Note that the new triangulation makes use of all new interior nodes, as well as the corners of the squares. The figure was created using the commands</p><pre><code class="language-julia hljs">using Plots
+p1 = plot_simplicial(sc1)
+p2 = plot_simplicial(sc2)
+pcombined = plot(p1, p2, layout=(1,2))
+plot!(pcombined, dpi=300)
+savefig(pcombined, &quot;delaunayext1.png&quot;)</code></pre><h3 id="Adding-Constraint-Curves"><a class="docs-heading-anchor" href="#Adding-Constraint-Curves">Adding Constraint Curves</a><a id="Adding-Constraint-Curves-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-Constraint-Curves" title="Permalink"></a></h3><p>In many applications it is desirable to include certain polygonal curves inside the domain as <em>constraint curves</em>, i.e., their edges have to be part of the created Delaunay triangulation and any of its refinements. Such constraint curves can be added to the initial mesh generation by adding the vertices of the polygons to the point list, and specifying the constraint edges in an argument <code>segments</code>, which has to be of type <code>Set{Tuple{Int,Int}}</code>.</p><p>Such constraint curves can be generated as follows. <a href="../../apicore/extensions/#ConleyDynamics.delaunay_points_add_segment"><code>delaunay_points_add_segment</code></a> appends a polygonal curve to the point list and records successive point pairs as constrained edges. A curve is passed as a <code>Vector{Vector{&lt;:Real}}</code> of <code>[x, y]</code> coordinates. If the first and last entries coincide (within a tolerance of <code>1e-9</code>), the curve is treated as <em>closed</em> and no duplicate endpoint is stored; otherwise it is treated as <em>open</em>.</p><p>The function has two calling forms. The two-argument form initialises a fresh segment set and is convenient for the first constraint curve; the three-argument form extends an existing <code>segments::Set{Tuple{Int,Int}}</code>:</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using ConleyDynamics
+
+points, bndcurve = delaunay_points_bnd_rectangle([-5, -5], [5, 5])
+
+# Closed circular constraint (n+1 points with repeated first/last)
+n      = 10
+theta  = range(0, 2*pi, length = n+1)
+circle = [[4.0 * cos(t), 4.0 * sin(t)] for t in theta]
+
+# Open polygonal cut inside the domain
+cut = [[-2.0, -2.0], [0.0, 0.0], [2.0, -1.0]]
+
+points, segments = delaunay_points_add_segment(points, circle)          # 2-arg form
+points, segments = delaunay_points_add_segment(points, segments, cut)   # 3-arg form
+
+tri1 = triangulate(points; boundary_nodes = bndcurve, segments = segments)
+sc1  = delaunay_to_simplicial(tri1)</code></pre><p><img src="../img/delaunayext2.png" alt="Delaunay triangulations with constraint curves"/></p><p>The resulting Delaunay triangulation is shown in the left panel of the figure. In addition to the generated mesh, it also shows the two contraint  curves in red and green. This plot was generated using the following commands:</p><pre><code class="language-julia hljs">using Plots
+
+cirx = [pt[1] for pt in circle]
+ciry = [pt[2] for pt in circle]
+cutx = [pt[1] for pt in cut]
+cuty = [pt[2] for pt in cut]
+
+p1 = plot_simplicial(sc1)
+plot!(p1, cirx, ciry, linewidth=3, color=:red)
+plot!(p1, cutx, cuty, linewidth=3, color=:green)</code></pre><p>We would like to point out that adding constraint curves to a triangulation has to be done with care. More precisely, it is up to the user to ensure that the <strong>curves do not intersect each other</strong> and that each curve is <strong>without interior self-intersections</strong>. If these assumptions are not satisfied, then <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl">DelaunayTriangulation.jl</a> will automatically remove some of the constraints. Consider for the example the following additional commands:</p><pre><code class="language-julia hljs"># Open polygonal cut inside the domain
+badcut = [[1.0, 1.0], [4.0, 4.0]]
+points, segments = delaunay_points_add_segment(points, segments, badcut)
+
+tri2 = triangulate(points; boundary_nodes = bndcurve, segments = segments)
+sc2  = delaunay_to_simplicial(tri2)
+
+badx = [pt[1] for pt in badcut]
+bady = [pt[2] for pt in badcut]
+
+p2 = plot_simplicial(sc2)
+plot!(p2, cirx, ciry, linewidth=3, color=:red)
+plot!(p2, cutx, cuty, linewidth=3, color=:green)
+plot!(p2, badx, bady, linewidth=2, color=:yellow, linestyle=:dash)
+
+pcombined12 = plot(p1, p2, layout=(1,2))
+plot!(pcombined12, dpi=300)
+savefig(pcombined12, &quot;delaunayext2.png&quot;)</code></pre><p>Clearly the added cut <code>badcut</code> intersects the circular constraint <code>circle</code> from before. The mesh generated by <code>DelaunayTriangulation.jl</code> is shown in the right panel of the above figure. Notice that the third constraint is not respected by the triangulation, even though the two vertices from the constraint have been added to the interior nodes.</p><h3 id="Mesh-Refinement"><a class="docs-heading-anchor" href="#Mesh-Refinement">Mesh Refinement</a><a id="Mesh-Refinement-1"></a><a class="docs-heading-anchor-permalink" href="#Mesh-Refinement" title="Permalink"></a></h3><p>After <code>triangulate</code>, <code>DelaunayTriangulation.jl</code> provides the function <code>refine!</code> to improve the quality of the triangulation. Passing <code>max_area</code> as a fraction of the total domain area and <code>min_angle</code> in degrees is a practical starting point:</p><pre><code class="language-julia hljs">triarea1 = get_area(tri1)
+refine!(tri1; max_area = 0.03 * triarea1, min_angle = 30.0)
+sc3 = delaunay_to_simplicial(tri1)</code></pre><p>The refined triangulation is then converted to a <code>EuclideanComplex</code> in the same way as before. The optional argument <code>min_angle</code> has to be chosen with care. If one chooses an angle larger than <code>30</code> then it is no longer certain that an appropriate triangulation can be generated. The resulting triangulation is shown in the left panel of the next figure.</p><p><img src="../img/delaunayext3.png" alt="Two refined Delaunay triangulations of a square"/></p><p>We can also refine the second mesh from above, the one with the  bad constraint curve <code>badcut</code>:</p><pre><code class="language-julia hljs">triarea2 = get_area(tri2)
+refine!(tri2; max_area = 0.007 * triarea2, min_angle = 25.0)
+sc4 = delaunay_to_simplicial(tri2)</code></pre><p>The resulting triangulation is shown in the right panel of the above figure. Notice that while the nodes determining <code>badcut</code> are still part of the triangulation, the edge is not – just as before. The above figure was created using the following commands:</p><pre><code class="language-julia hljs">p3 = plot_simplicial(sc3)
+plot!(p3, cirx, ciry, linewidth=3, color=:red)
+plot!(p3, cutx, cuty, linewidth=3, color=:green)
+
+p4 = plot_simplicial(sc4)
+plot!(p4, cirx, ciry, linewidth=3, color=:red)
+plot!(p4, cutx, cuty, linewidth=3, color=:green)
+plot!(p4, badx, bady, linewidth=2, color=:yellow, linestyle=:dash)
+
+pcombined34 = plot(p3, p4, layout=(1,2))
+plot!(pcombined34, dpi=300)
+savefig(pcombined34, &quot;delaunayext3.png&quot;)</code></pre><h3 id="Complete-Example"><a class="docs-heading-anchor" href="#Complete-Example">Complete Example</a><a id="Complete-Example-1"></a><a class="docs-heading-anchor-permalink" href="#Complete-Example" title="Permalink"></a></h3><p>The following self-contained snippet combines all three steps — bounding rectangle, two circular constraints, mesh refinement, and conversion:</p><pre><code class="language-julia hljs">using Plots
+using DelaunayTriangulation
+using ConleyDynamics
+
+# Bounding box
+points, bndcurve = delaunay_points_bnd_rectangle([-5, -5], [5, 5])
+
+# Outer ring (closed, 30 segments)
+n1    = 30
+th1   = range(0, 2*pi, length = n1+1)
+ring  = [[4.0 * cos(t), 4.0 * sin(t)] for t in th1]
+ringx = [pt[1] for pt in ring]
+ringy = [pt[2] for pt in ring]
+points, segments = delaunay_points_add_segment(points, ring)
+
+# Inner elliptical disc (closed, 15 segments)
+n2    = 15
+th2   = range(0, 2*pi, length = n2+1)
+disc  = [[0.5 + 3.0 * cos(t), 2.0 * sin(t)] for t in th2]
+discx = [pt[1] for pt in disc]
+discy = [pt[2] for pt in disc]
+points, segments = delaunay_points_add_segment(points, segments, disc)
+
+# Triangulate, refine, and convert
+tri = triangulate(points; boundary_nodes = bndcurve, segments = segments)
+sc1 = delaunay_to_simplicial(tri)
+
+triarea = get_area(tri)
+refine!(tri; max_area = 0.005 * triarea, min_angle = 27.0)
+sc2 = delaunay_to_simplicial(tri)
+
+# Plot the triangulations
+p1 = plot_simplicial(sc1)
+plot!(p1, ringx, ringy, color=:red)
+plot!(p1, discx, discy, color=:green)
+
+p2 = plot_simplicial(sc2)
+plot!(p2, ringx, ringy, color=:red)
+plot!(p2, discx, discy, color=:green)
+
+pcombined = plot(p1, p2, layout=(1,2))
+plot!(pcombined, dpi=300)
+savefig(pcombined, &quot;delaunayext4.png&quot;)</code></pre><p>The resulting Delaunay triangulations are shown in the next figure.</p><p><img src="../img/delaunayext4.png" alt="A complete Delaunay triangulation example"/></p><h3 id="Adding-Intersecting-Constraint-Segments"><a class="docs-heading-anchor" href="#Adding-Intersecting-Constraint-Segments">Adding Intersecting Constraint Segments</a><a id="Adding-Intersecting-Constraint-Segments-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-Intersecting-Constraint-Segments" title="Permalink"></a></h3><p>As noted above, <code>delaunay_points_add_segment</code> requires the caller to ensure that constraint curves do not intersect each other. When this condition cannot be guaranteed – for example when the curves are computed programmatically and may share crossings or collinear overlaps – <code>delaunay_points_add_split_segs</code> provides a safe alternative.</p><p>Internally it calls <a href="../../apicore/specialcomp/#ConleyDynamics.split_segments"><code>split_segments</code></a>, which computes the planar straight-line arrangement of the given segments: All crossings and collinear overlaps are resolved and the input segments are split at every intersection point, yielding a non-crossing set of sub-segments. These vertices and sub-segments are then appended to the existing point list and constraint-edge set exactly as <code>delaunay_points_add_segment</code> would.</p><p>The function signature mirrors that of <code>delaunay_points_add_segment</code>: The two-argument form initialises a fresh segment set, and the three-argument form extends an existing one. An optional keyword argument <code>verbose=true</code> prints a brief summary of the splitting process.</p><div class="admonition is-warning" id="Three-argument-form:-Overlaps-with-existing-segments-are-not-checked-2e0a18e31afeeecb"><header class="admonition-header">Three-argument form: Overlaps with existing segments are not checked<a class="admonition-anchor" href="#Three-argument-form:-Overlaps-with-existing-segments-are-not-checked-2e0a18e31afeeecb" title="Permalink"></a></header><div class="admonition-body"><p>When calling the three-argument form, <a href="../../apicore/specialcomp/#ConleyDynamics.split_segments"><code>split_segments</code></a> resolves crossings and overlaps <strong>within <code>newsegments</code> only</strong>. No check is performed for intersections or overlaps between the newly added sub-segments and the segments already present in <code>segments</code>. It is the caller&#39;s responsibility to ensure that the two sets are compatible. Incorrect use can produce an invalid constraint-edge set that silently causes <code>DelaunayTriangulation.jl</code> to drop constraints. Only use the three-argument form if you know that the new segments do not intersect the existing ones.</p></div></div><p>The basic usage of <a href="../../apicore/extensions/#ConleyDynamics.delaunay_points_add_segment"><code>delaunay_points_add_segment</code></a> is illustrated in the following code segment:</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using ConleyDynamics
+
+points1, bndcurve1 = delaunay_points_bnd_rectangle([-2, -2], [2, 2])
+
+# Two crossing diagonals - they would violate the no-intersection requirement
+# of delaunay_points_add_segment, but split_segments resolves the crossing.
+segs1 = [[[-1.0, -1.0], [1.0,  1.0]],
+         [[-1.0,  1.0], [1.0, -1.0]]]
+
+points1, segments1 = delaunay_points_add_split_segs(points1, segs1; verbose=true)
+# Output:
+#   split_segments: 2 input segment(s)
+#     intersection points created : 1
+#     output vertices             : 5
+#     output edges                : 4
+
+tri1 = triangulate(points1; boundary_nodes = bndcurve1, segments = segments1)
+sc1  = delaunay_to_simplicial(tri1)</code></pre><p><img src="../img/delaunayext5.png" alt="Delaunay triangulations with split constraint curves"/></p><p>The resulting triangulation is shown in the left panel of the figure. The five vertices (four original endpoints plus the crossing at the origin) and the four sub-segments are all included as constraints in the triangulation. The result is a valid <code>EuclideanComplex</code> whose constraint edges are respected by the mesh.</p><p>The following more complex example with three mutually intersecting segments demonstrates that the function <a href="../../apicore/extensions/#ConleyDynamics.delaunay_points_add_split_segs"><code>delaunay_points_add_split_segs</code></a> also handles multiple simultaneous crossings correctly:</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using ConleyDynamics
+
+points2, bndcurve2 = delaunay_points_bnd_rectangle([-4, -4], [4, 4])
+
+# Three segments that all cross each other
+segs2 = [[[-3.0,  0.0], [3.0,  0.0]],   # horizontal
+         [[ 0.0, -3.0], [0.0,  3.0]],   # vertical
+         [[-3.0, -3.0], [3.0,  3.0]]]   # diagonal
+
+points2, segments2 = delaunay_points_add_split_segs(points2, segs2; verbose=true)
+# Output:
+#   split_segments: 3 input segment(s)
+#     intersection points created : 3
+#     output vertices             : 9
+#     output edges                : 6
+
+tri2 = triangulate(points2; boundary_nodes = bndcurve2, segments = segments2)
+sc2  = delaunay_to_simplicial(tri2)</code></pre><p>For the produced triangulation, see the right panel of the above figure. The three intersection points (origin, and the two axis crossings with the diagonal) are automatically detected, and each input segment is split into two sub-segments at its crossings. The figure was created using the following commands:</p><pre><code class="language-julia hljs">using Plots
+
+p1 = plot_simplicial(sc1)
+for p1seg in segs1
+    pt1, pt2 = p1seg
+    plot!(p1, [pt1[1],pt2[1]], [pt1[2],pt2[2]], linewidth=3, linestyle=:dash)
+end
+
+p2 = plot_simplicial(sc2)
+for p2seg in segs2
+    pt1, pt2 = p2seg
+    plot!(p2, [pt1[1],pt2[1]], [pt1[2],pt2[2]], linewidth=3, linestyle=:dash)
+end
+
+pcombined = plot(p1, p2, layout=(1,2))
+plot!(pcombined, dpi=300)
+savefig(pcombined, &quot;delaunayext5.png&quot;)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../examples/">« Further Examples</a><a class="docs-footer-nextpage" href="../plotting/">Visualization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 15 May 2026 20:33">Friday 15 May 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
