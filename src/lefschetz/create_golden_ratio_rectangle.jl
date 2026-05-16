@@ -20,15 +20,8 @@ function _subdivide_gr!(
         return
     end
 
-    # Decide whether to split
-    should_split = (depth <= sdmin)
-    if !should_split
-        if sdfunction === nothing
-            should_split = true
-        else
-            should_split = sdfunction([xmin, ymin], [xmax, ymax])
-        end
-    end
+    # Decide whether to split: forced below sdmin, delegated to sdfunction above.
+    should_split = (depth < sdmin) || sdfunction([xmin, ymin], [xmax, ymax])
 
     if !should_split
         push!(leaves, (xmin, xmax, ymin, ymax))
@@ -58,11 +51,11 @@ end
 
 """
     create_golden_ratio_rectangle(bmin, bmax;
-                                  sigma    = (sqrt(5)-1)/2,
-                                  sdfunction = nothing,
-                                  sdmin    = 0,
-                                  sdmax    = 7,
-                                  p        = 2)
+                                  sigma      = (sqrt(5)-1)/2,
+                                  sdfunction = (_,_) -> false,
+                                  sdmin      = 0,
+                                  sdmax      = 7,
+                                  p          = 2)
 
 Create a planar `EuclideanComplex` over a field of characteristic `p` by
 recursively subdividing the rectangle `[bmin[1],bmax[1]] × [bmin[2],bmax[2]]`
@@ -70,12 +63,15 @@ using the golden-ratio subdivision rule.
 
 # Subdivision rule
 
-At each step the current box is examined:
+At each recursive step the current box is examined:
 
-* If its recursion depth is ≤ `sdmin`, it is always split.
-* If its depth is > `sdmax`, it is never split (becomes a leaf).
-* In between, it is split if `sdfunction` is `nothing`, or if
-  `sdfunction([xmin,ymin],[xmax,ymax])` returns `true`.
+* If its recursion depth is > `sdmax`, it becomes a leaf (hard cap).
+* If its depth is < `sdmin`, it is always split (guaranteed minimum).
+* Otherwise `sdfunction([xmin,ymin],[xmax,ymax])` decides: `true` splits,
+  `false` makes it a leaf.
+
+The default `sdfunction` always returns `false`, so with default arguments
+exactly `sdmin` levels of uniform subdivision are performed.
 
 When a box is split, the longer edge is divided into two segments of lengths
 `σ·a` and `(1-σ)·a`; which piece goes to which sub-box is chosen uniformly
@@ -96,12 +92,20 @@ enclosing rectangle.
 function create_golden_ratio_rectangle(
         bmin :: Vector{<:Real},
         bmax :: Vector{<:Real};
-        sigma      :: Real    = (sqrt(5.0) - 1.0) / 2.0,
-        sdfunction           = nothing,
-        sdmin      :: Int     = 0,
-        sdmax      :: Int     = 7,
-        p          :: Int     = 2
+        sigma      :: Real = (sqrt(5.0) - 1.0) / 2.0,
+        sdfunction        = (_, _) -> false,
+        sdmin      :: Int  = 0,
+        sdmax      :: Int  = 7,
+        p          :: Int  = 2
     )
+
+    # Validate that sdfunction accepts two Vector{Float64} arguments
+    if !applicable(sdfunction, Float64[0.0, 0.0], Float64[1.0, 1.0])
+        throw(ArgumentError(
+            "create_golden_ratio_rectangle: sdfunction must be callable as " *
+            "sdfunction(bmin::Vector{Float64}, bmax::Vector{Float64}); " *
+            "got $(typeof(sdfunction))"))
+    end
 
     # -------------------------------------------------------------------------
     # Phase 1: build leaf boxes via recursive subdivision
@@ -228,10 +232,10 @@ function create_golden_ratio_rectangle(
 
     labels = Vector{String}(undef, ntotal)
     for i in 1:nv
-        labels[i]         = "v" * lpad(string(i), label_width, '0')
+        labels[i]           = "v" * lpad(string(i), label_width, '0')
     end
     for i in 1:ne
-        labels[nv + i]    = "e" * lpad(string(i), label_width, '0')
+        labels[nv + i]      = "e" * lpad(string(i), label_width, '0')
     end
     for i in 1:nr
         labels[nv + ne + i] = "r" * lpad(string(i), label_width, '0')
