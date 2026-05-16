@@ -761,8 +761,9 @@ at random at each step.
 The default subdivision parameter is ``\sigma = (\sqrt{5}-1)/2 \approx 0.618``,
 which is the golden ratio minus one.  Starting from a square, this choice
 produces subrectangles with aspect ratios ``\varphi = (\sqrt{5}+1)/2``
-and ``\varphi^2``. Crucially, further subdivisions of these rectangles stay
-within the same set of shapes: only three rectangle types with aspect ratios
+and ``\varphi^2``, where ``\varphi`` denotes the golden ratio.
+Crucially, further subdivisions of these rectangles stay
+within the same set of shapes: Only three rectangle types with aspect ratios
 ``1``, ``\varphi``, and ``\varphi^2`` ever appear during the process.
 
 The depth of the recursive subdivision is governed by three keyword arguments:
@@ -781,12 +782,12 @@ The depth of the recursive subdivision is governed by three keyword arguments:
   levels are performed.  Providing a non-trivial `sdfunction` enables
   adaptive refinement beyond the forced `sdmin` levels.
 
-The result is an [`EuclideanComplex`](@ref) whose two-dimensional cells are
+The result is a [`EuclideanComplex`](@ref) whose two-dimensional cells are
 the leaf rectangles produced by the subdivision.  Wherever a longer edge is
 shared between two differently-refined adjacent rectangles, it is
 automatically represented as a sequence of shorter segments whose endpoints
 agree with the corners of the finer neighbor.  The boundary coefficients
-follow the same sign convention as in a cubical complex: bottom and right
+follow the same sign convention as in a cubical complex: Bottom and right
 segments carry coefficient ``+1``, top and left segments carry coefficient
 ``-1``.
 
@@ -795,29 +796,76 @@ subdivision of the unit square at uniform depth 3:
 
 ```julia
 import Random; Random.seed!(42)
-ec = create_golden_ratio_rectangle([0.0,0.0],[1.0,1.0]; sdmin=3)
-lefschetz_information(ec)
+ec1 = create_golden_ratio_rectangle([0.0,0.0],[1.0,1.0]; sdmin=3)
+lefschetz_information(ec1)
 ```
 
 With this seed the result is a complex with ``8`` rectangles, ``25`` edges,
 and ``18`` vertices (``51`` cells in total).  The Euler characteristic is
 ``1`` and the homology is ``(1, 0, 0)``, confirming that the complex is
-contractible, as expected.
+contractible, as expected. The Lefschetz complex is shown in the left panel
+of the figure.
 
-Adaptive subdivision can be achieved by supplying an `sdfunction`.  The
-following example keeps refining until all rectangles have an ``x``-extent
-of at most ``0.15``:
+![Lefschetz complexes via the golden ratio function](img/goldenratio1.png)
+
+By default, the algorithm uses the golden ratio for the subdivisions, 
+based on their implications for the rectangle aspect ratios discussed
+above. The value ``\sigma`` can, however, be changed via the keyword
+argument `sigma`, as the following example shows:
 
 ```julia
-import Random; Random.seed!(7)
-sdf(bmin, bmax) = bmax[1] - bmin[1] > 0.15
-ec2 = create_golden_ratio_rectangle([0.0,0.0],[1.0,1.0]; sdfunction=sdf, sdmax=6)
+ec2 = create_golden_ratio_rectangle([0.0,0.0],[1.0,1.0]; sdmin=4, sigma=0.8)
 lefschetz_information(ec2)
 ```
 
-This produces a complex with ``41`` rectangles, ``116`` edges, and
-``76`` vertices (``233`` cells in total), again with Euler characteristic
-``1`` and trivial higher homology.
+The resulting Lefschetz complex is shown in the right panel of the above
+figure. Note that this time the aspect ratios of the generated rectangles
+can become very extreme. Thus, changing the subdivision value `sigma` should
+only be done in exceptional circumstances.
+
+Adaptive subdivision can be achieved by supplying an `sdfunction`.  The
+following example keeps refining until all rectangles have an ``x``-extent
+of at most ``0.1``:
+
+```julia
+import Random; Random.seed!(7)
+sdf(bmin, bmax) = bmax[1] - bmin[1] > 0.1
+ec3 = create_golden_ratio_rectangle([0.0,0.0],[1.0,1.0]; sdfunction=sdf, sdmax=6)
+lefschetz_information(ec3)
+```
+
+This produces a complex with ``85`` rectangles, ``230`` edges, and
+``146`` vertices (``461`` cells in total), again with Euler characteristic
+``1`` and trivial higher homology. The resulting complex is shown in the
+left panel of the next figure.
+
+![Mesh refinement via the golden ratio](img/goldenratio2.png)
+
+Finally, it is also possible to create more complicated refinement 
+functions. For example, the following function `sdfpt` makes sure that
+rectangles with center within a circle of radius ``0.3`` and center
+``(0.7, 0.3)`` have maximum edge length at most ``0.07``, and rectangles
+whose ``x``-coordinate are at most ``0.2`` have maximum edge length at
+most ``0.05``. The resulting Lefschetz complex is shown in the right
+panel of the figure.
+
+```julia
+function sdfpt(bmin, bmax)
+    bcenter = 0.5 .* (bmin .+ bmax)
+    bsize   = maximum(bmax .- bmin)
+    bdist   = sqrt((bcenter[1]-0.7)^2 + (bcenter[2]-0.3)^2)
+    if (bdist <= 0.3) && (bsize > 0.07)
+        return true
+    elseif (bcenter[1] <= 0.2) && (bsize > 0.05)
+        return true
+    else
+        return false
+    end
+end
+
+ec4 = create_golden_ratio_rectangle([0.0,0.0],[1.0,1.0]; sdfunction=sdfpt, sdmin=3)
+lefschetz_information(ec4)
+```
 
 ## Euclidean Complexes
 
