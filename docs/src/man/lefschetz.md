@@ -752,7 +752,8 @@ of this section.
 The function [`create_golden_ratio_rectangle`](@ref) creates a planar
 [`EuclideanComplex`](@ref) (described in the following section) by
 recursively subdividing a given rectangle using a *golden ratio subdivision
-rule*. The subdivision works as follows. Given a rectangle with side lengths
+rule*, similar to the results of [cochran:etal:13a](@cite).
+The subdivision works as follows. Given a rectangle with side lengths
 ``a \ge b``, the longer edge is split into two segments of lengths
 ``\sigma a`` and ``(1-\sigma)a``, yielding two smaller rectangles of the
 same height ``b``. Which piece is placed on which side is chosen uniformly
