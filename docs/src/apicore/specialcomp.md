@@ -32,6 +32,12 @@ is_cube_label
 get_cubical_coords
 ```
 
+## Golden Ratio Rectangles
+
+```@docs
+create_golden_ratio_rectangle
+```
+
 ## Cell Subset Helper Functions
 
 ```@docs

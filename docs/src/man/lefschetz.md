@@ -747,6 +747,78 @@ of this section.
 
 ![A randomly perturbed cubical complex](img/lefschetzex6.png)
 
+## Golden Ratio Rectangles
+
+The function [`create_golden_ratio_rectangle`](@ref) creates a planar
+[`EuclideanComplex`](@ref) (described in the following section) by
+recursively subdividing a given rectangle using a *golden ratio subdivision
+rule*. The subdivision works as follows. Given a rectangle with side lengths
+``a \ge b``, the longer edge is split into two segments of lengths
+``\sigma a`` and ``(1-\sigma)a``, yielding two smaller rectangles of the
+same height ``b``. Which piece is placed on which side is chosen uniformly
+at random at each step.
+
+The default subdivision parameter is ``\sigma = (\sqrt{5}-1)/2 \approx 0.618``,
+which is the golden ratio minus one.  Starting from a square, this choice
+produces subrectangles with aspect ratios ``\varphi = (\sqrt{5}+1)/2``
+and ``\varphi^2``. Crucially, further subdivisions of these rectangles stay
+within the same set of shapes: only three rectangle types with aspect ratios
+``1``, ``\varphi``, and ``\varphi^2`` ever appear during the process.
+
+The depth of the recursive subdivision is governed by three keyword arguments:
+
+- `sdmin` (default `0`): The minimum number of subdivision levels applied
+  unconditionally to every rectangle. With the default value of zero, no
+  splits are forced.
+- `sdmax` (default `7`): A hard upper bound on the number of subdivision
+  levels; no rectangle will be split more than `sdmax` times.
+- `sdfunction` (default `(_, _) -> false`): A function
+  `sdfunction(bmin, bmax)` that accepts the lower-left and upper-right
+  corners of a rectangle as `Vector{Float64}` arguments and returns a `Bool`.
+  For depths between `sdmin` and `sdmax` the function decides whether a
+  given rectangle should be subdivided further.  The default always returns
+  `false`, so with default arguments exactly `sdmin` uniform subdivision
+  levels are performed.  Providing a non-trivial `sdfunction` enables
+  adaptive refinement beyond the forced `sdmin` levels.
+
+The result is an [`EuclideanComplex`](@ref) whose two-dimensional cells are
+the leaf rectangles produced by the subdivision.  Wherever a longer edge is
+shared between two differently-refined adjacent rectangles, it is
+automatically represented as a sequence of shorter segments whose endpoints
+agree with the corners of the finer neighbor.  The boundary coefficients
+follow the same sign convention as in a cubical complex: bottom and right
+segments carry coefficient ``+1``, top and left segments carry coefficient
+``-1``.
+
+To illustrate the basic usage, the following commands create a golden ratio
+subdivision of the unit square at uniform depth 3:
+
+```julia
+import Random; Random.seed!(42)
+ec = create_golden_ratio_rectangle([0.0,0.0],[1.0,1.0]; sdmin=3)
+lefschetz_information(ec)
+```
+
+With this seed the result is a complex with ``8`` rectangles, ``25`` edges,
+and ``18`` vertices (``51`` cells in total).  The Euler characteristic is
+``1`` and the homology is ``(1, 0, 0)``, confirming that the complex is
+contractible, as expected.
+
+Adaptive subdivision can be achieved by supplying an `sdfunction`.  The
+following example keeps refining until all rectangles have an ``x``-extent
+of at most ``0.15``:
+
+```julia
+import Random; Random.seed!(7)
+sdf(bmin, bmax) = bmax[1] - bmin[1] > 0.15
+ec2 = create_golden_ratio_rectangle([0.0,0.0],[1.0,1.0]; sdfunction=sdf, sdmax=6)
+lefschetz_information(ec2)
+```
+
+This produces a complex with ``41`` rectangles, ``116`` edges, and
+``76`` vertices (``233`` cells in total), again with Euler characteristic
+``1`` and trivial higher homology.
+
 ## Euclidean Complexes
 
 All of the above-described Lefschetz complex types were abstract in the
