@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.7.16 (May 17, 2026)
+
+Small documentation tweaks.
+
 ## v0.7.15 (May 16, 2026)
 
 Added `create_golden_ratio_rectangle` function for adaptive mesh generation
