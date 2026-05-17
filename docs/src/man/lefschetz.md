@@ -868,6 +868,32 @@ ec4 = create_golden_ratio_rectangle([0.0,0.0],[1.0,1.0]; sdfunction=sdfpt, sdmin
 lefschetz_information(ec4)
 ```
 
+The figure in the right panel shows the line ``x = 0.2`` in green, and the
+circle of radius ``0.3`` and center ``(0.7, 0.3)`` in red. Moreover, we 
+visualized only the edges and rectangles of this Lefschetz complex. The
+above figure was created using the following commands:
+
+```julia
+using Plots
+
+theta    = LinRange(0, 2*pi, 500);
+circle_x = 0.7 .+ 0.3 .* cos.(theta);
+circle_y = 0.3 .+ 0.3 .* sin.(theta);
+line_x   = [0.2, 0.2];
+line_y   = [0.0, 1.0];
+
+p3 = plot_simplicial(ec3, pdim=[false,true,true])
+p4 = plot_simplicial(ec4, pdim=[false,true,true])
+plot!(p4, circle_x, circle_y, color=:red,   linewidth=2)
+plot!(p4, line_x,   line_y,   color=:green, linewidth=2)
+pcombined = plot(p3, p4, layout=(1,2))
+plot!(pcombined, dpi=300)
+savefig(pcombined, "goldenratio2.png")
+```
+
+We would like to point out that the function `plot_simplicial` still displays
+the golden ratio complex correctly, despite the fact that it is not simplicial.
+
 ## Euclidean Complexes
 
 All of the above-described Lefschetz complex types were abstract in the
