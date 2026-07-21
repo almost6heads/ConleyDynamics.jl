@@ -23,8 +23,8 @@ function ConleyDynamics.delaunay_to_simplicial(tt; p::Int=2)
     for k = 1:length(ttvertices)
         clabel = Printf.format(Printf.Format(labformat), k)
         push!(labels, clabel)
-        ptcoord = ttpoints[ttvertices[k]]
-        push!(coords, [ptcoord[1], ptcoord[2]])
+        px, py = getxy(get_point(ttpoints, ttvertices[k]))
+        push!(coords, [Float64(px), Float64(py)])
         ttv2index[ttvertices[k]] = k
     end
 
