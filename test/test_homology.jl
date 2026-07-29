@@ -63,3 +63,26 @@ end
     lc_2pt = create_simplicial_complex(["u","v"], Vector{Vector{String}}())
     @test homology(lc_2pt) == [2]
 end
+
+@testset "Homology of subcomplex" begin
+    # A dimension-1 path complex: subsets that don't reach the ambient
+    # top dimension used to throw a BoundsError
+    labels = ["a","b","c"]
+    simplices = [["a","b"],["b","c"]]
+    lc = create_simplicial_complex(labels, simplices)
+
+    @test homology(lc, ["a"])          == [1, 0]
+    @test homology(lc, ["a","b"])      == [2, 0]
+    @test homology(lc, ["a","b","c"])  == [3, 0]
+    @test homology(lc, ["a","b","ab"]) == [1, 0]
+
+    # A dimension-2 complex, with a subcomplex whose dimension lands
+    # strictly between 0 and lc.dim, to exercise the zero-padding
+    # in the middle of the Betti vector
+    labels2 = ["A","B","C","D","E","F"]
+    simplices2 = [["A","B"],["A","C"],["B","C"],["B","D"],["D","E","F"]]
+    lc2 = create_simplicial_complex(labels2, simplices2)
+
+    @test lc2.dim == 2
+    @test homology(lc2, ["B","D","BD"]) == [1, 0, 0]
+end

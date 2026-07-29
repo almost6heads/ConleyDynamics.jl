@@ -77,7 +77,9 @@ function homology(lc::AbstractComplex, subc::Cells;
 
     # Return the results
 
-    betti = [length(phs[k]) for k=1:lc.dim+1]
+    bettisub = [length(phs[k]) for k=1:lcsub.dim+1]
+    betti = fill(Int(0), lc.dim+1)
+    betti[1:length(bettisub)] .= bettisub
     return betti
 end
 
