@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.7.18 (July 29, 2026)
+
+Bug fix release
+
 ## v0.7.17 (July 21, 2026)
 
 Bug fix release
