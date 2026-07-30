@@ -6,8 +6,8 @@ export is_atomic_refinement
 Determine whether `mvf1` is an atomic refinement of `mvf2`, i.e. whether
 `mvf1` and `mvf2` are elements of `AP(X)` with `mvf1` obtained from `mvf2`
 by splitting exactly one block of `mvf2` into two. Equivalently, `mvf1` and
-`mvf2` cover each other in the atomic-refinement order used throughout
-`construct_ap_space`/`atomic_distances`/`stratum_adjacency`.
+`mvf2` cover each other in the atomic-refinement order used throughout the
+`construct_ap_space`, `atomic_distances`, and `stratum_adjacency` functions.
 """
 function is_atomic_refinement(lc::AbstractComplex,
                               mvf1::CellSubsets,
