@@ -30,6 +30,12 @@ Pages = ["homology.md"]
 Pages = ["conley.md"]
 ```
 
+## [Acyclic Partition Functions](@id indexap)
+
+```@index
+Pages = ["ap.md"]
+```
+
 ## [Example Functions](@id indexexample)
 
 ```@index
