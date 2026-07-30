@@ -101,6 +101,17 @@ include("./mvf/mvf_regular.jl")
 include("./mvf/mvf_forward_orbit.jl")
 include("./mvf/mvf_neighborhood.jl")
 
+include("./ap/construct_ap_space.jl")
+include("./ap/construct_ap_stratum.jl")
+include("./ap/convert_ap.jl")
+include("./ap/is_atomic_refinement.jl")
+include("./ap/atomic_distances.jl")
+include("./ap/is_connected_block.jl")
+include("./ap/morse_vector.jl")
+include("./ap/block_split_deltas.jl")
+include("./ap/stratum_partition.jl")
+include("./ap/stratum_adjacency.jl")
+
 include("./sparse/sparse_basic_functions.jl")
 include("./sparse/sparse_from_lists.jl")
 include("./sparse/sparse_from_full.jl")
@@ -142,6 +153,7 @@ include("./plots/plot_planar_simplicial_morse.jl")
 include("./plots/plot_planar_cubical.jl")
 include("./plots/plot_planar_cubical_morse.jl")
 include("./plots/plot_data_types.jl")
+include("./plots/plot_morse_strata.jl")
 
 end
 
