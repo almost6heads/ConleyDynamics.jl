@@ -24,13 +24,13 @@ legend):
 An edge that skips an intermediate level is bent aside so it doesn't
 draw on top of the shorter edges passing through that level.
 
-`figw`/`figh` default to `nothing`, which auto-sizes the canvas: the
+`figw` and `figh` default to `nothing`, which auto-sizes the canvas: the
 full layout (nodes and every bend point) is computed first, then the
 canvas is sized and the whole picture shifted to fit it exactly (with
 a floor wide enough for the legend text even when there's very little
 else to draw), so nothing is ever cut off regardless of how far a bend
-ends up needing to reach. Pass explicit values to override -- an
-explicit `figw`/`figh` is used as-is, not auto-corrected. `title`, if
+ends up needing to reach. Pass explicit values to override -- explicit
+`figw` and `figh` are used as-is, not auto-corrected. `title`, if
 given, is drawn at the top of the figure.
 """
 function plot_morse_strata(lc::AbstractComplex,

@@ -10,7 +10,7 @@ the finest possible acyclic partition), repeatedly merges pairs of blocks
 of an already-found acyclic partition into a single block, keeping only
 merges that preserve acyclicity (`mvf_is_acyclic`), until every pair of
 blocks at every level has been tried. This reaches every element of the
-poset `AP(X)` (see `stratum_partition`/`stratum_adjacency` for its
+poset `AP(X)` (see `stratum_partition` and `stratum_adjacency` for its
 Morse-vector stratification), ordered by atomic refinement
 (`is_atomic_refinement`).
 

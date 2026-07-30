@@ -5,7 +5,7 @@ export is_connected_block, is_connected_partition
 
 Whether `block` is connected as a subspace of `lc` -- the "c" in `AP^c(X)`.
 
-This is a genuinely different question from `block_rho`'s `rho_0`/`beta_0`:
+This is a genuinely different question from `block_rho`'s `rho_0` and `beta_0`:
 those come from the *restricted boundary operator* on the block (Fact 1.1)
 and measure homological cancellation, which is 0 for any regular
 (non-critical) multivector regardless of whether it is topologically
