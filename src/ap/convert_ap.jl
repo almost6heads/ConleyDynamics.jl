@@ -34,7 +34,7 @@ Convert a multivector field into a set partition.
 The inverse of `convert_partition_mvf`: adds the implicit singleton blocks
 (every cell of `lc` not already covered by `mvf`) and returns the result as
 a `Set{Set{Int}}`, the full-partition representation used internally by
-`construct_ap_space`/`construct_ap_stratum`.
+`construct_ap_space` and `construct_ap_stratum`.
 """
 function convert_mvf_partition(lc::AbstractComplex,
                                mvf::CellSubsets)
