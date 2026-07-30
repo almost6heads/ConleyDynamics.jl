@@ -13,6 +13,15 @@ description, etc.
 
 Release notes:
 
+## v0.7.19 (July 30, 2026)
+
+Added `AP(X)`/`AP^c(X)` acyclic partition construction (`construct_ap_space`),
+single-stratum targeting (`construct_ap_stratum`), Morse-vector
+stratification and atomic-refinement coverage analysis
+(`stratum_partition`, `stratum_adjacency`, `morse_vector`, `block_rho`,
+`block_split_deltas` and friends), and a Hasse-diagram visualization
+(`plot_morse_strata`).
+
 ## v0.7.18 (July 29, 2026)
 
 Bug fix release

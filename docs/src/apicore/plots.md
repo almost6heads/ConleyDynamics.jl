@@ -14,6 +14,12 @@ plot_planar_cubical
 plot_planar_cubical_morse
 ```
 
+## Visualizing Acyclic Partition Strata (Luxor)
+
+```@docs
+plot_morse_strata
+```
+
 ## Plot Data Types (Plots.jl)
 
 ```@docs

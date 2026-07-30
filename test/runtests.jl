@@ -10,6 +10,7 @@ include("test_sparse.jl")
 include("test_lefschetz.jl")
 include("test_homology.jl")
 include("test_mvf.jl")
+include("test_ap.jl")
 include("test_conley.jl")
 
 @testset "Tutorial" begin
