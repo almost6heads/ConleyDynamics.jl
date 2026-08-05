@@ -50,6 +50,7 @@ connected_split_deltas
 stratum_partition
 stratum_jump_weight
 stratum_adjacency
+stratum_reachability
 ```
 
 ## Internal Helpers

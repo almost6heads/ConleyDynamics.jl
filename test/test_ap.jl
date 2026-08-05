@@ -139,3 +139,50 @@ end
         end
     end
 end
+
+@testset "Eventual reachability (stratum_reachability)" begin
+    #
+    # Same 5-cell path as above; the unrestricted AP(X) (45 elements) has
+    # more room for multi-step chains than the connected AP^c(X) (16).
+    #
+    labels    = ["v1", "v2", "v3"]
+    simplices = [[1, 2], [2, 3]]
+    lc = create_simplicial_complex(labels, simplices)
+
+    ap = construct_ap_space(lc; connected=false)
+    A  = atomic_distances(lc, ap)
+    Ms = map(t -> morse_vector(lc, t), ap)
+
+    reach, edges = stratum_reachability(lc, ap; A=A)
+
+    @test length(reach) == length(ap)
+    @test all(i -> Ms[i] in reach[i], eachindex(ap))   # reflexive
+
+    # Every direct one-step successor's Morse vector must be included
+    @test all(i -> all(w -> Ms[w] in reach[i], sparse_get_nz_row(A, i)), eachindex(ap))
+
+    # Independent brute-force fixed-point closure, cross-checked against
+    # the DP-based implementation
+    brute = [Set([Ms[i]]) for i in eachindex(ap)]
+    changed = true
+    while changed
+        changed = false
+        for i in eachindex(ap), w in sparse_get_nz_row(A, i)
+            for M in brute[w]
+                if !(M in brute[i])
+                    push!(brute[i], M)
+                    changed = true
+                end
+            end
+        end
+    end
+    @test reach == brute
+
+    # Every stratum_adjacency (one-step) edge must also show up as
+    # eventually-covered, with ncovered no smaller
+    adj = stratum_adjacency(lc, ap; A=A)
+    for e in adj
+        er = only(filter(x -> x.M1 == e.M1 && x.M2 == e.M2, edges))
+        @test er.ncovered >= e.ncovered
+    end
+end
