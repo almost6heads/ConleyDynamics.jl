@@ -3,8 +3,8 @@ export is_closed_in_block, block_split_deltas, split_spectrum, connected_split_d
 """
     is_closed_in_block(lc::AbstractComplex, A::Vector{Int}, blockset::Set{Int})
 
-Whether `A` is closed in the block `blockset` (Theorem 2.1: `A` is closed
-in block `C` iff `cl(A) cap C = A`).
+Whether `A` is closed in the block `blockset`, i.e., whether
+`cl(A) cap blockset = A`.
 """
 function is_closed_in_block(lc::AbstractComplex, A::Vector{Int}, blockset::Set{Int})
     clA = Set(lefschetz_closure(lc, A))
@@ -14,10 +14,9 @@ end
 """
     block_split_deltas(lc::AbstractComplex, block::Cells)
 
-Enumerate every atomic split `C = A ⊔ B` of `block` with `A` closed in `C`
-(Theorem 2.1, Proposition 2.2), and return the achieved
-`delta = beta(A) + beta(B) - beta(C)` together with `A` and `B` for each
-(the split spectrum `D({C})` of Corollary 2.3). Brute force over all
+Enumerate every atomic split `C = A ⊔ B` of `block` with `A` closed in `C`,
+and return the achieved `delta = beta(A) + beta(B) - beta(C)` together with
+`A` and `B` for each (the split spectrum `D({C})`). Brute force over all
 subsets, so only intended for small blocks (`length(block) <= 20`).
 """
 function block_split_deltas(lc::AbstractComplex, block::Cells)
@@ -59,8 +58,7 @@ end
 Like `block_split_deltas`, but restricted to splits `C = A ⊔ B` with both
 `A` and `B` topologically connected (`is_connected_block`) -- the deltas
 actually reachable by a single atomic refinement step while staying inside
-`AP^c(X)`, as opposed to the unrestricted `AP(X)` of Theorem 5.1's
-existence statement.
+`AP(X)`, as opposed to the unrestricted `AP^d(X)`.
 """
 function connected_split_deltas(lc::AbstractComplex, block::Cells)
     return filter(r -> is_connected_block(lc, r.A) && is_connected_block(lc, r.B),

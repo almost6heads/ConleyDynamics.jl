@@ -6,8 +6,9 @@ export SimplicialComplexPlot, CubicalComplexPlot,
     SimplicialComplexPlot
 
 Wrapper type for plotting a planar simplicial complex via Plots.jl.
-Constructed automatically by `plot_simplicial`; can also be passed
-directly to `plot(::SimplicialComplexPlot)`.
+
+Constructed automatically by `plot_simplicial`, but instances can
+also be passed directly to `Plots.plot`.
 """
 struct SimplicialComplexPlot
     complex  :: EuclideanComplex
@@ -118,6 +119,7 @@ function plot_cubical end
                           kwargs...) -> Plots.Plot
 
 Plot a planar simplicial complex with Morse sets highlighted.
+
 Requires `using Plots` before `using ConleyDynamics`.
 
 Optional keyword arguments:
@@ -132,6 +134,7 @@ function plot_simplicial_morse end
                        kwargs...) -> Plots.Plot
 
 Plot a planar cubical complex with Morse sets highlighted.
+
 Requires `using Plots` before `using ConleyDynamics`.
 
 Optional keyword arguments:

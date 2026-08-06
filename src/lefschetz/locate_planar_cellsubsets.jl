@@ -14,13 +14,12 @@ export segment_intersects_circle
 
 Locate cell subsets relative to a planar rectangle.
 
-For the Lefschetz complex `lc::AbstractComplex`, whose vertices
-have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
-and the cell subsets in `csubsets::CellSubsets` this function
+For the Lefschetz complex `lc`, with vertex coordinates `coords`,
+and the cell subsets in `csubsets` this function
 extracts the indices of all cell subset closures which lie in the
 interior, or intersect the boundary of the rectangle specified
-by the minimal and maximal corners `rmin::Vector{<:Real}`
-and `rmax::Vector{<:Real}`, respectively. The function returns
+by the minimal and maximal corners `rmin`
+and `rmax`, respectively. The function returns
 * `indexI::Vector{Int}`: indices of cell subset closures inside
   the rectangle,
 * `indexB::Vector{Int}`: indices of cell subset closures which
@@ -52,12 +51,11 @@ end
 
 Locate cell subsets relative to a planar circle.
 
-For the Lefschetz complex `lc::AbstractComplex`, whose vertices
-have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
-and the cell subsets in `csubsets::CellSubsets` this function
+For the Lefschetz complex `lc`, with vertex coordinates `coords`,
+and the cell subsets in `csubsets` this function
 extracts the indices of all cell subset closures which lie in the
 interior, or intersect the boundary of the circle specified by the
-center point `c::Vector{<:Real}` and radius `r::Real`. The function
+center point `c` and radius `r`. The function
 returns
 * `indexI::Vector{Int}`: indices of cell subset closures inside
   the circle,
@@ -90,12 +88,11 @@ end
 
 Determine the location of a cell subset relative to a rectangle.
 
-For the Lefschetz complex `lc::AbstractComplex`, whose vertices
-have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
+For the Lefschetz complex `lc`, with vertex coordinates `coords`,
 this function determines the location of the closure of the
-cellsubset given in `csubset::Cells` relative to the rectangle
-specified by the minimal and maximal corners `rmin::Vector{<:Real}`
-and `rmax::Vector{<:Real}`, respectively. The function returns
+cellsubset given in `csubset` relative to the rectangle
+specified by the minimal and maximal corners `rmin`
+and `rmax`, respectively. The function returns
 * 1 if the set lies in the interior of the rectangle,
 * 2 of the set intersects the rectangle boundary, and
 * 3 if the set lies in the exterior of the rectangle.
@@ -164,11 +161,10 @@ end
 
 Determine the location of a cell subset relative to a circle.
 
-For the Lefschetz complex `lc::AbstractComplex`, whose vertices
-have the coordinates given in `coords::Vector{<:Vector{<:Real}}`, this
+For the Lefschetz complex `lc`, with vertex coordinates `coords`, this
 function determines the location of the closure of the cellsubset
-given in `csubset::Cells` relative to the circle specified by the
-center point `c::Vector{<:Real}` and the radius `r::Real`.
+given in `csubset` relative to the circle specified by the
+center point `c` and the radius `r`.
 The function returns
 * 1 if the set lies in the interior of the circle,
 * 2 of the set intersects the circle, and
@@ -239,10 +235,9 @@ end
 
 Compute the bounding box for a cell subset.
 
-For the Lefschetz complex `lc::AbstractComplex`, whose vertices
-have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
+For the Lefschetz complex `lc`, with vertex coordinates `coords`,
 this function computes the smallest enclosing box for the
-closure of the cell subset given in `csubset::Cells`. The function
+closure of the cell subset given in `csubset`. The function
 returns the coordinates `bmin` and `bmax` of the minimal
 and maximal corners of the box, respectively.
 """
@@ -281,11 +276,10 @@ end
 
 Compute the distance of a cell subset from a point.
 
-For the Lefschetz complex `lc::AbstractComplex`, whose vertices
-have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
+For the Lefschetz complex `lc`, with vertex coordinates `coords`,
 this function computes the smallest distance of the vertices in
-the closure of the cell subset given in `csubset::Cells` from the 
-point given in `dpoint::Vector{<:Real}`.
+the closure of the cell subset given in `csubset` from the 
+point given in `dpoint`.
 """
 function cellsubset_distance(lc::AbstractComplex,
                              coords::Vector{<:Vector{<:Real}},
@@ -318,10 +312,9 @@ end
 
 Compute the area of a planar cell subset.
 
-For the Lefschetz complex `lc::AbstractComplex`, whose vertices
-have the coordinates given in `coords::Vector{<:Vector{<:Real}}`,
+For the Lefschetz complex `lc`, with vertex coordinates `coords`,
 this function computes the area of the cell subset given in
-`csubset::Cells`. The function assumes that the complex is
+`csubset`. The function assumes that the complex is
 two-dimensional and that the maximal 2-cells in the cell subset
 are all polygonal with straight boundary edges. If these conditions
 are not met an error is raised.
@@ -410,7 +403,7 @@ end
 Compute the bounding box for a cell subset of a `EuclideanComplex`.
 
 For the `EuclideanComplex` `ec`, this function computes the smallest enclosing
-box for the closure of the cell subset given in `csubset::Cells`. Vertex
+box for the closure of the cell subset given in `csubset`. Vertex
 coordinates are taken directly from the embedded `ec.coords` field. The
 function returns the coordinates `bmin` and `bmax` of the minimal and maximal
 corners of the box, respectively.
@@ -444,8 +437,8 @@ end
 Compute the distance of a cell subset from a point for a `EuclideanComplex`.
 
 For the `EuclideanComplex` `ec`, this function computes the smallest distance
-of the vertices in the closure of the cell subset given in `csubset::Cells`
-from the point given in `dpoint::Vector{<:Real}`. Vertex coordinates are taken
+of the vertices in the closure of the cell subset given in `csubset`
+from the point given in `dpoint`. Vertex coordinates are taken
 directly from the embedded `ec.coords` field.
 """
 function cellsubset_distance(ec::EuclideanComplex,
@@ -476,7 +469,7 @@ end
 Compute the area of a planar cell subset of a `EuclideanComplex`.
 
 For the `EuclideanComplex` `ec`, this function computes the area of the cell
-subset given in `csubset::Cells`. The function assumes that the complex is
+subset given in `csubset`. The function assumes that the complex is
 two-dimensional and that the maximal 2-cells in the cell subset are all
 polygonal with straight boundary edges. Vertex coordinates for every cell are
 taken directly from the embedded `ec.coords` field, so the function works
@@ -565,9 +558,9 @@ Determine the location of a cell subset relative to a rectangle for a
 `EuclideanComplex`.
 
 For the `EuclideanComplex` `ec`, this function determines the location of the
-closure of the cellsubset given in `csubset::Cells` relative to the rectangle
-specified by the minimal and maximal corners `rmin::Vector{<:Real}` and
-`rmax::Vector{<:Real}`, respectively. Vertex coordinates are taken directly
+closure of the cellsubset given in `csubset` relative to the rectangle
+specified by the minimal and maximal corners `rmin` and
+`rmax`, respectively. Vertex coordinates are taken directly
 from the embedded `ec.coords` field. The function returns
 * 1 if the set lies in the interior of the rectangle,
 * 2 if the set intersects the rectangle boundary, and
@@ -639,8 +632,8 @@ Determine the location of a cell subset relative to a circle for a
 `EuclideanComplex`.
 
 For the `EuclideanComplex` `ec`, this function determines the location of the
-closure of the cellsubset given in `csubset::Cells` relative to the circle
-specified by the center point `c::Vector{<:Real}` and the radius `r::Real`.
+closure of the cellsubset given in `csubset` relative to the circle
+specified by the center point `c` and the radius `r`.
 Vertex coordinates are taken directly from the embedded `ec.coords` field.
 The function returns
 * 1 if the set lies in the interior of the circle,
@@ -712,10 +705,10 @@ end
 
 Locate cell subsets relative to a planar rectangle for a `EuclideanComplex`.
 
-For the `EuclideanComplex` `ec` and the cell subsets in `csubsets::CellSubsets`
+For the `EuclideanComplex` `ec` and the cell subsets in `csubsets`
 this function extracts the indices of all cell subset closures which lie in the
 interior, or intersect the boundary of the rectangle specified by the minimal
-and maximal corners `rmin::Vector{<:Real}` and `rmax::Vector{<:Real}`,
+and maximal corners `rmin` and `rmax`,
 respectively. Vertex coordinates are taken directly from the embedded
 `ec.coords` field. The function returns
 * `indexI::Vector{Int}`: indices of cell subset closures inside the rectangle,
@@ -746,10 +739,10 @@ end
 
 Locate cell subsets relative to a planar circle for a `EuclideanComplex`.
 
-For the `EuclideanComplex` `ec` and the cell subsets in `csubsets::CellSubsets`
+For the `EuclideanComplex` `ec` and the cell subsets in `csubsets`
 this function extracts the indices of all cell subset closures which lie in the
 interior, or intersect the boundary of the circle specified by the center point
-`c::Vector{<:Real}` and radius `r::Real`. Vertex coordinates are taken
+`c` and radius `r`. Vertex coordinates are taken
 directly from the embedded `ec.coords` field. The function returns
 * `indexI::Vector{Int}`: indices of cell subset closures inside the circle,
 * `indexB::Vector{Int}`: indices of cell subset closures which intersect the
@@ -781,10 +774,10 @@ end
 
 Compute the signed distance from a point to a rectangle.
 
-The point in question is given as `p::Vector{<:Real}`.
+The point in question is given as `p`.
 The rectangle has to be parallel to the coordinate axes and is
-given via its lower left corner `rmin::Vector{<:Real}` and its
-upper right corner `rmax::Vector{<:Real}`. The function returns
+given via its lower left corner `rmin` and its
+upper right corner `rmax`. The function returns
 the signed distance, which is negative inside the rectangle,
 and positive outside.
 """
@@ -823,9 +816,9 @@ end
 
 Compute the signed distance from a point to a circle.
 
-The point is specified as `p::Vector{<:Real}`, while the
-circle is given by its center point `c::Vector{<:Real}`
-and radius `r::Real`. The function returns the signed 
+The point is specified as `p`, while the
+circle is given by its center point `c`
+and radius `r`. The function returns the signed 
 distance, which is negative inside the circle, and
 positive outside.
 """
@@ -847,9 +840,9 @@ end
 Determine whether a line segment intersects a rectangle boundary.
 
 The endpoints of the line segment are specified in the form
-`p1,p2::Vector{<:Real}`. The rectangle is parallel to the coordinate
-axes and is given via its lower left corner `rmin::Vector{<:Real}`
-and its upper right corner `rmax::Vector{<:Real}`. The function
+`p1`, `p2`. The rectangle is parallel to the coordinate
+axes and is given via its lower left corner `rmin`
+and its upper right corner `rmax`. The function
 returns `true` if the line segment intersects the rectangle
 boundary, otherwise `false`.
 """
@@ -920,8 +913,8 @@ end
 Determine whether a line segment intersects a circle.
 
 The endpoints of the line segment are specified in the
-form `p1,p2::Vector{<:Real}`, while the circle is given by
-its center point `c::Vector{<:Real}` and radius `r::Real`. 
+form `p1`, `p2`, while the circle is given by
+its center point `c` and radius `r`. 
 The function returns `true` if the line segment intersects
 the circle, otherwise it returns `false`.
 """

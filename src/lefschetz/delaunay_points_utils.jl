@@ -23,10 +23,11 @@ Returns a tuple `(points, bndcurve)` where:
 - `bndcurve` is a `Vector{Vector{Int}}` that closes the rectangular
   boundary.
 
-After this call, constraint edges and interior points can be appended with
-[`delaunay_points_add_segment`](@ref), and the result is then passed to
-`triangulate` from `DelaunayTriangulation.jl` followed by
-[`delaunay_to_simplicial`](@ref) to obtain a `EuclideanComplex`.
+After this call, constraint edges and interior points can be appended
+with [`delaunay_points_add_segment`](@ref). The result is then passed
+to `triangulate` from `DelaunayTriangulation.jl`, and the triangulation
+converted with [`delaunay_to_simplicial`](@ref) to obtain a
+`EuclideanComplex`.
 
 This function is only available when `DelaunayTriangulation.jl` is loaded.
 
@@ -132,10 +133,11 @@ function delaunay_points_add_nodes end
         -> (Vector{Tuple{Float64,Float64}}, Set{Tuple{Int,Int}})
 
 Compute a planar straight-line arrangement from `newsegments`, add all
-resulting vertices and sub-segments to `points` and `segments`, and return
-the updated pair. This is the safe alternative to
-[`delaunay_points_add_segment`](@ref) when the input curves may intersect
-each other or have collinear overlaps.
+resulting vertices and sub-segments to `points` and `segments`, and
+return the updated pair.
+
+Use this instead of [`delaunay_points_add_segment`](@ref) when the
+input curves may intersect each other or have collinear overlaps.
 
 `newsegments` is a `Vector` of segments, each given as a length-2 vector of
 `[x, y]` endpoints, e.g. `[[x1, y1], [x2, y2]]`. The function calls

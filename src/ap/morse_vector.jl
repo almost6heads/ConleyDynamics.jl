@@ -4,8 +4,8 @@ export morse_vector, block_rho
     _rank_decomposition(d::Vector{Int})
 
 Solve `d_k = rho_k + rho_{k+1}` for `rho`, given `rho_0 = 0` and `d`
-indexed `1:n+1` for dimensions `0:n` (Lemma 3.1's inversion). The same
-recursion also extracts the `c_k` in the canonical decomposition of a
+indexed `1:n+1` for dimensions `0:n`. The same recursion also extracts
+the `c_k` in the canonical decomposition of a
 Morse-vector jump `delta = sum c_k(e_k+e_{k-1})`.
 
 Internal helper, not exported.
@@ -39,11 +39,11 @@ end
     block_rho(lc::AbstractComplex, block::Cells)
 
 The rank vector `(rho_0(V),...,rho_n(V))` of a single locally closed
-multivector `block`, recovered from `beta(V)` and `f(V)` via Lemma 3.1:
+multivector `block`, recovered from `beta(V)` and `f(V)`:
 `f(V) - beta(V) = sum_k rho_k(V) (e_k + e_{k-1})`.
 
-Uses `beta(V) = conley_index(lc, block)`, which by Fact 1.1 coincides with
-the absolute homology of the restricted boundary operator for any locally
+Uses `beta(V) = conley_index(lc, block)`, which coincides with the
+absolute homology of the restricted boundary operator for any locally
 closed `V`.
 """
 function block_rho(lc::AbstractComplex, block::Cells)

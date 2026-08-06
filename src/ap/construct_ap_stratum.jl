@@ -3,7 +3,7 @@ export construct_ap_stratum
 """
     construct_ap_stratum(lc::AbstractComplex, target::Vector{Int}; connected::Bool=true)
 
-Construct only the elements of `AP(X)` (or `AP^c(X)` if `connected=true`,
+Construct only the elements of `AP^d(X)` (or `AP(X)` if `connected=true`,
 the default) whose Morse vector equals `target`, without enumerating the
 rest of the poset.
 
@@ -11,11 +11,11 @@ Uses the same merge-based search as `construct_ap_space`, but prunes a
 branch the moment its current Morse vector fails to dominate `target` in
 every coordinate: refinement never decreases the Morse vector (`delta =
 beta(A)+beta(B)-beta(C) >= 0` for any merge of two blocks `A`, `B` into
-`C`, by Lemma 3.3 of doc/morse-vector-strata.md -- "Monotonicity... holds
-for all refinements, not only atomic ones"), so once some coordinate has
-dropped below `target[k]`, no further merge can ever bring it back and the
-branch can safely be dropped. Nodes whose Morse vector matches `target`
-exactly are still expanded further, since additional Morse-vector-
+`C`; this monotonicity holds for all refinements, not only atomic ones),
+so once some coordinate has dropped below `target[k]`, no further merge
+can ever bring it back and the branch can safely be dropped. Nodes whose
+Morse vector matches `target` exactly are still expanded further, since
+additional Morse-vector-
 preserving (`delta=0`) merges can still produce further distinct
 partitions belonging to the same stratum.
 
@@ -32,15 +32,15 @@ runs first.
 Whether this is actually faster than calling `construct_ap_space` and
 filtering by Morse vector afterward is target-dependent, not automatic:
 `target = beta(X)` is a *global* lower bound on the Morse vector of every
-element of `AP(X)` (the "Extremes" property, Section 3.3), so pruning
+element of `AP^d(X)` (the "Extremes" property), so pruning
 against it never triggers and this degenerates to the full enumeration
 with extra per-node overhead. For a genuinely intermediate target,
 however, most branches do get cut, and the saving can be large -- e.g. for
-a 13-cell example where the connected `AP^c(X)` has 40232 elements, fixing
+a 13-cell example where the connected `AP(X)` has 40232 elements, fixing
 an intermediate stratum of 537 elements takes on the order of a tenth of a
 second here versus several seconds for full enumeration plus filtering.
 The main intended use is targeting a single stratum of the *unrestricted*
-`AP(X)` on complexes where full unrestricted enumeration
+`AP^d(X)` on complexes where full unrestricted enumeration
 (`construct_ap_space(lc; connected=false)`) is no longer tractable at all.
 
 Returns a `Vector{Vector{Vector{Int}}}`, in the same format as
@@ -48,7 +48,7 @@ Returns a `Vector{Vector{Vector{Int}}}`, in the same format as
 """
 function construct_ap_stratum(lc::AbstractComplex, target::Vector{Int}; connected::Bool=true)
     #
-    # Construct only the AP(X)/AP^c(X) elements with Morse vector == target
+    # Construct only the AP^d(X)/AP(X) elements with Morse vector == target
     #
 
     @assert lc.ncells>2 "You are just testing edge cases, I refuse to play.."

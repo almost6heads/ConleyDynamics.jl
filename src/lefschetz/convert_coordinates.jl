@@ -64,10 +64,9 @@ function shifts and scales the coordinates in such a way that every
 side of the box contains at least one point. Upon completion, it
 returns a new coordinate vector `coordsNew`.
 
-More precisely, if the x-coordinates are spanning the interval
-`[xmin,xmax]`, the y-coordinates span `[ymin,ymax]`, and the
-z-coordinates span `[zmin,zmax]`, then the point `(x,y,z)` is
-transformed to `(xn,yn,zn)` with:
+More precisely, if the coordinates span the box `[xmin,xmax] x
+[ymin,ymax] x [zmin,zmax]`, then the point `(x,y,z)` is transformed
+to `(xn,yn,zn)` with:
 
 * `xn = p0x + (p1x-p0x) * (x-cxmin) / (cxmax-cxmin)`
 * `yn = p0y + (p1y-p0y) * (y-cymin) / (cymax-cymin)`

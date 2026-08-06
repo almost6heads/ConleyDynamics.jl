@@ -5,15 +5,14 @@
 # depending on morse_vector_strata.jl's paper-specific example_* helpers,
 # so this file can be copied as-is into ConleyDynamics's own test suite.
 # Everything here runs in well under a second; the slow, large sweeps
-# (disk13's 40232-element AP^c(X), any full unrestricted sweep on it)
+# (disk13's 40232-element AP(X), any full unrestricted sweep on it)
 # stay in construct_apx's driver/verify_examples, never here.
 #
 
 @testset "Acyclic partition construction" begin
     #
-    # The five-cell path v1-e1-v2-e2-v3 (doc/morse-vector-strata.md
-    # Section 6.2): f(X) = (3,2), beta(X) = (1,0). |AP^c(X)| = 16,
-    # |AP(X)| = 45 (16 of which are connected).
+    # The five-cell path v1-e1-v2-e2-v3: f(X) = (3,2), beta(X) = (1,0).
+    # |AP(X)| = 16, |AP^d(X)| = 45 (16 of which are connected).
     #
     labels    = ["v1", "v2", "v3"]
     simplices = [[1, 2], [2, 3]]
@@ -40,7 +39,7 @@
     M1 = [3, 2]   # f(X): the finest stratum, every cell its own block
     e  = only(filter(x -> x.M1 == M1 && x.M2 == M2, adjf))
     @test e.weight == 2
-    @test e.ntotal - e.ncovered == 5   # 5 of 9 uncovered (Section 6.2)
+    @test e.ntotal - e.ncovered == 5   # 5 of 9 uncovered
 end
 
 @testset "is_atomic_refinement and atomic_distances" begin
@@ -65,7 +64,7 @@ end
 
 @testset "Morse vector and rank bookkeeping" begin
     #
-    # The 3-ball example (Section 6.5): f(X) = (2,3,3,1),
+    # The 3-ball example: f(X) = (2,3,3,1),
     # rho(X) = (1,2,1), beta(X) = (1,0,0,0).
     #
     defcellbnd = [
@@ -105,7 +104,7 @@ end
     X  = collect(1:lc.ncells)
 
     deltas = split_spectrum(lc, X)
-    @test [2, 2] in deltas   # the {P,Q} split of Section 6.2 realizes 2(e0+e1)
+    @test [2, 2] in deltas   # the {P,Q} split realizes 2(e0+e1)
 
     cdeltas = connected_split_deltas(lc, X)
     @test all(r -> is_connected_block(lc, r.A) && is_connected_block(lc, r.B), cdeltas)
@@ -114,9 +113,9 @@ end
 
 @testset "construct_ap_stratum matches construct_ap_space" begin
     #
-    # Mixed-degree six-cell complex (Section 6.3): X = Y ⊔ Z, an edge
-    # union a disjoint 2/3-cell pair. f(X) = (2,1,1,1), |AP(X)| = 47,
-    # |AP^c(X)| well under that. Small enough to fully enumerate both
+    # Mixed-degree six-cell complex: X = Y ⊔ Z, an edge
+    # union a disjoint 2/3-cell pair. f(X) = (2,1,1,1), |AP^d(X)| = 47,
+    # |AP(X)| well under that. Small enough to fully enumerate both
     # ways and cross-check construct_ap_stratum against the ground truth
     # for two different targets: the global-minimum Morse vector (where
     # pruning provably cannot help, per construct_ap_stratum's docstring)
@@ -142,8 +141,8 @@ end
 
 @testset "Eventual reachability (stratum_reachability)" begin
     #
-    # Same 5-cell path as above; the unrestricted AP(X) (45 elements) has
-    # more room for multi-step chains than the connected AP^c(X) (16).
+    # Same 5-cell path as above; the unrestricted AP^d(X) (45 elements) has
+    # more room for multi-step chains than the connected AP(X) (16).
     #
     labels    = ["v1", "v2", "v3"]
     simplices = [[1, 2], [2, 3]]

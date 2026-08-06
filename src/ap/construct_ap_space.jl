@@ -10,20 +10,20 @@ the finest possible acyclic partition), repeatedly merges pairs of blocks
 of an already-found acyclic partition into a single block, keeping only
 merges that preserve acyclicity (`mvf_is_acyclic`), until every pair of
 blocks at every level has been tried. This reaches every element of the
-poset `AP(X)` (see `stratum_partition` and `stratum_adjacency` for its
+poset `AP^d(X)` (see `stratum_partition` and `stratum_adjacency` for its
 Morse-vector stratification), ordered by atomic refinement
 (`is_atomic_refinement`).
 
 If `connected=true` (the default), a merge is only attempted when the two
 blocks are topologically adjacent (`lefschetz_neighbors`), so only
 partitions built from connected multivectors are reached -- this is
-`AP^c(X)`, the sub-poset of practical interest for e.g. Forman-vector-field
+`AP(X)`, the sub-poset of practical interest for e.g. Forman-vector-field
 style examples, and is dramatically cheaper to enumerate. If
 `connected=false`, every pair of blocks is tried regardless of adjacency,
-reaching the full, unrestricted `AP(X)`, including partitions with
+reaching the full, unrestricted `AP^d(X)`, including partitions with
 disconnected multivectors; this is needed whenever a question genuinely
 requires disconnected pieces (a weight-1 Morse-vector jump, for instance,
-is only *guaranteed* uniform when drawn from the unrestricted `AP(X)` --
+is only *guaranteed* uniform when drawn from the unrestricted `AP^d(X)` --
 see `stratum_adjacency`). The unrestricted enumeration can be substantially
 larger than the connected one, and may not be tractable for complexes with
 more than a handful of cells; `construct_ap_stratum` targets a single
@@ -31,7 +31,7 @@ Morse-vector stratum directly and can remain tractable well past that
 point.
 
 Returns a `Vector{Vector{Vector{Int}}}`: each entry is one element of
-`AP(X)` (or `AP^c(X)`) as a multivector field in integer form (singletons
+`AP^d(X)` (or `AP(X)`) as a multivector field in integer form (singletons
 omitted, matching the usual `CellSubsets` convention).
 """
 function construct_ap_space(lc::AbstractComplex; connected::Bool=true)
@@ -45,7 +45,7 @@ function construct_ap_space(lc::AbstractComplex; connected::Bool=true)
 
     cmvf = Set(Set.([[k] for k in 1:lc.ncells]))
 
-    # Initialize the data structure to hold AP(X)
+    # Initialize the data structure to hold AP^d(X)
 
     ap = Vector{Vector{Set{Set{Int}}}}()
     push!(ap, [cmvf,])

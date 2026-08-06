@@ -14,7 +14,7 @@ regardless of how many intermediate steps -- possibly staying within the
 source stratum for a while -- it takes.
 
 Since every atomic refinement increases the total block count
-(`mvf_length`) by exactly 1, `AP^c(X)` (or `AP(X)`) is graded by block
+(`mvf_length`) by exactly 1, `AP(X)` (or `AP^d(X)`) is graded by block
 count and hence acyclic; reachability is computed with a single dynamic-
 programming pass in decreasing block-count order (finest elements, which
 have no successors, first), rather than a full pairwise transitive

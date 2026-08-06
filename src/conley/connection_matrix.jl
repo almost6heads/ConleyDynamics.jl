@@ -27,9 +27,10 @@ by passing the optional argument `algorithm::String`:
   on Morse reductions.
 
 By default, the function uses the parallelized Morse reduction
-algorithm `pmorse`. If the flag `returnbasis::Bool=true` is given,
-then the function automatically chooses the slower matrix-based
-`algorithm = "DLMS"`.
+algorithm `pmorse`.
+
+Passing `returnbasis=true` automatically switches it to the slower
+matrix-based `algorithm = "DLMS"` instead.
 """
 function connection_matrix(lc::AbstractComplex, mvfarg::CellSubsets;
                            algorithm::String="pmorse",

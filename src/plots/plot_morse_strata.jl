@@ -3,10 +3,10 @@ export plot_morse_strata
 """
     plot_morse_strata(lc, ap, fname; A=nothing, title="", figw=nothing, figh=nothing, pv=false)
 
-Hasse-style diagram of the Morse-vector strata of AP(X). Nodes are
+Hasse-style diagram of the Morse-vector strata of AP^d(X). Nodes are
 distinct Morse vectors, drawn as circles labeled `(M)` and `n=...` (the
-number of AP(X) partitions with that Morse vector), placed by *level*
-sum(M) (monotone under refinement, Section 3.3) -- note that "adjacent"
+number of AP^d(X) partitions with that Morse vector), placed by *level*
+sum(M) (monotone under refinement) -- note that "adjacent"
 levels need not differ by 1 in sum(M): every weight-1 jump already
 raises it by 2, since e_k + e_{k-1} sums to 2.
 
@@ -14,9 +14,8 @@ Edges are drawn between every pair of strata found adjacent by
 `stratum_adjacency`, labeled `|c|=<weight>, <covered>/<total>` (how
 many of the coarser stratum's partitions admit an atomic refinement
 into the finer one, out of how many total), and styled by the
-classification of Theorem 7.1 (also spelled out in the figure's own
-legend):
-  * solid green:  weight |c| = 1 (Theorem 5.4: always uniform)
+classification spelled out in the figure's own legend:
+  * solid green:  weight |c| = 1 (always uniform)
   * solid gray:   weight |c| >= 2, but every partition happens to be
                   covered for this particular complex anyway
   * dashed red:   weight |c| >= 2 and *not* every partition is covered
@@ -76,19 +75,19 @@ function plot_morse_strata(lc::AbstractComplex,
                                  ("firebrick", "shortdashed", 2.0)
 
     legend_header = [
-        "Node: (Morse vector M)  --  n = number of AP(X) partitions with that M",
+        "Node: (Morse vector M)  --  n = number of AP^d(X) partitions with that M",
         "Edge label: |c| = jump weight of M1-M2  --  covered/total = how many of the",
         "coarser stratum's partitions admit an atomic refinement into the finer one",
     ]
 
     legend_swatches = [
         (color="seagreen", dash="solid", width=2.6,
-         caption=["|c|=1 and uniform (guaranteed by Theorem 5.4 for the full, unrestricted AP(X))"]),
+         caption=["|c|=1 and uniform (guaranteed for the full, unrestricted AP^d(X))"]),
         (color="gray50", dash="solid", width=1.8,
          caption=["|c|>=2, but every partition happens to be covered here"]),
         (color="firebrick", dash="shortdashed", width=2.0,
          caption=["NOT every partition is covered (a realized counterexample -- can happen even",
-                   "at |c|=1 if this is a restricted sub-poset like AP^c(X); Thm 5.4 only covers AP(X))"]),
+                   "at |c|=1 if this is a restricted sub-poset like AP(X); the guarantee only covers AP^d(X))"]),
     ]
 
     pos, figwI, fighI = _plot_strata_diagram(strata, edges, fname;
@@ -108,15 +107,21 @@ end
 Shared Luxor rendering core behind `plot_morse_strata` and
 `plot_morse_reachability`: lays out one node per key of `strata` (a
 `Dict{Vector{Int},Vector{Int}}` as returned by `stratum_partition`) by
-level sum(M), draws an edge for every element of `edges` (`NamedTuple`s
-shaped like `stratum_adjacency`/`stratum_reachability`'s output, using
-`.M1`, `.M2`, `.weight`, `.ncovered`, `.ntotal`), and renders a legend
-built from `legend_header` (plain text lines) and `legend_swatches`
-(a vector of `(color, dash, width, caption::Vector{String})`, one colored
-line-and-caption block per entry). `edge_style(e)` maps an edge to its
-`(color, dash, width)` -- this is the one piece of classification logic
-that differs between callers. `legendh` is the fixed height reserved for
-the legend block; callers size it to their own header/swatch content.
+level sum(M), and draws an edge for every element of `edges`
+(`NamedTuple`s shaped like the output of `stratum_adjacency` and
+`stratum_reachability`, using `.M1`, `.M2`, `.weight`, `.ncovered`,
+`.ntotal`).
+
+The legend is built from two pieces:
+  * `legend_header`: plain text lines shown at the top of the legend.
+  * `legend_swatches`: one colored line-and-caption block per entry,
+    given as a vector of named tuples with fields `color`, `dash`,
+    `width`, and `caption` (a `Vector{String}`).
+
+`edge_style(e)` maps an edge to its `(color, dash, width)` -- this is
+the one piece of classification logic that differs between callers.
+`legendh` is the fixed height reserved for the legend block; callers
+size it to their own header/swatch content.
 
 Returns `(pos, figwI, fighI)` for the caller to fold into its own return
 value alongside whatever edge/strata data it wants to expose.

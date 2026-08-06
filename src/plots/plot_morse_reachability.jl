@@ -4,7 +4,7 @@ export plot_morse_reachability
     plot_morse_reachability(lc, ap, fname; A=nothing, title="", figw=nothing, figh=nothing, pv=false)
 
 Hasse-style diagram of *eventual* reachability between the Morse-vector
-strata of AP(X), i.e. the multi-step generalization of `plot_morse_strata`:
+strata of AP^d(X), i.e. the multi-step generalization of `plot_morse_strata`:
 an edge `M2 -> M1` here means some element of `AP_{M2}` reaches `AP_{M1}`
 via a chain of atomic refinements of any length (`stratum_reachability`),
 not just a single one (`stratum_adjacency`). Nodes are laid out exactly as
@@ -15,11 +15,12 @@ Because eventual reachability is transitive, `stratum_reachability` reports
 an edge for *every* comparable pair of strata reachable by some chain --
 far denser than the single-step covering relation `plot_morse_strata`
 draws. To keep the picture legible, only the *transitive reduction* of
-that relation is drawn (`_stratum_transitive_reduction`): an edge `M2 ->
-M1` is omitted whenever it is already implied by some other drawn path
-`M2 -> ... -> M1`. This means the *absence* of a drawn edge between two
-strata does not mean one is unreachable from the other -- only that a
-shown path already establishes it. The full (unreduced) edge set and
+that relation is drawn, computed by `_stratum_transitive_reduction`.
+An edge `M2 -> M1` is omitted whenever it is already implied by some
+other drawn path `M2 -> ... -> M1`. This means the *absence* of a drawn
+edge between two strata does not mean one is unreachable from the
+other -- only that a shown path already establishes it. The full
+(unreduced) edge set and
 underlying element-level reachability are both available in the return
 value for anything needing the raw data.
 
@@ -30,8 +31,8 @@ many total), and colored:
                   eventually reaches the finer one
   * dashed red:   not uniform -- at least one partition of the coarser
                   stratum never reaches the finer one
-Unlike `plot_morse_strata`, there is no weight-based three-way split:
-Theorem 5.4's uniformity guarantee is specifically about single atomic
+Unlike `plot_morse_strata`, there is no weight-based three-way split: the
+weight-1 uniformity guarantee is specifically about single atomic
 refinements and does not extend to multi-step chains, so no analogous
 "guaranteed" tier exists here to draw a distinction around.
 
@@ -76,7 +77,7 @@ function plot_morse_reachability(lc::AbstractComplex,
     edge_style(e) = e.uniform ? ("seagreen", "solid", 2.2) : ("firebrick", "shortdashed", 2.0)
 
     legend_header = [
-        "Node: (Morse vector M)  --  n = number of AP(X) partitions with that M",
+        "Node: (Morse vector M)  --  n = number of AP^d(X) partitions with that M",
         "Edge label: |c| = jump weight of M1-M2  --  covered/total = how many of the coarser",
         "stratum's partitions eventually reach the finer one via some chain of atomic refinements",
     ]
