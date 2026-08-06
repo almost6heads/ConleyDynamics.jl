@@ -13,6 +13,14 @@ description, etc.
 
 Release notes:
 
+## v0.7.20 (August 6, 2026)
+
+* Added `stratum_reachability`, which is multi-step atomic-refinement
+  reachability.
+* Added `plot_morse_reachability`, which provides Hasse-style plot for
+  stratum reachability.
+* Various manual changes.
+
 ## v0.7.19 (July 30, 2026)
 
 * Added acyclic partition construction (`construct_ap_space`)
