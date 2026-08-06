@@ -185,4 +185,49 @@ end
         er = only(filter(x -> x.M1 == e.M1 && x.M2 == e.M2, edges))
         @test er.ncovered >= e.ncovered
     end
+
+    # The transitive reduction used by plot_morse_reachability must drop
+    # only genuinely redundant edges: the reachability closure computed
+    # from the reduced edge set must match the closure from the full set.
+    reduced = ConleyDynamics._stratum_transitive_reduction(edges)
+    @test length(reduced) <= length(edges)
+
+    function _closure(es)
+        succ = Dict{Vector{Int},Set{Vector{Int}}}()
+        for e in es
+            push!(get!(() -> Set{Vector{Int}}(), succ, e.M2), e.M1)
+        end
+        nodes = union(Set(e.M1 for e in es), Set(e.M2 for e in es))
+        clo = Dict(M => Set{Vector{Int}}([M]) for M in nodes)
+        changed = true
+        while changed
+            changed = false
+            for M in nodes, w in get(succ, M, Set{Vector{Int}}())
+                for N in clo[w]
+                    if !(N in clo[M])
+                        push!(clo[M], N)
+                        changed = true
+                    end
+                end
+            end
+        end
+        return clo
+    end
+
+    @test _closure(reduced) == _closure(edges)
+end
+
+@testset "_stratum_transitive_reduction" begin
+    A, B, C, D = [0, 0], [1, 0], [2, 0], [0, 1]
+
+    # A->B->C plus a redundant direct A->C: the direct edge must be dropped
+    edges = [(M1=B, M2=A), (M1=C, M2=B), (M1=C, M2=A)]
+    red = ConleyDynamics._stratum_transitive_reduction(edges)
+    @test Set((e.M2, e.M1) for e in red) == Set([(A, B), (B, C)])
+
+    # Diamond A->B->D, A->C->D with no direct A->D edge: nothing is
+    # redundant here, so every edge must be kept
+    edges2 = [(M1=B, M2=A), (M1=D, M2=B), (M1=C, M2=A), (M1=D, M2=C)]
+    red2 = ConleyDynamics._stratum_transitive_reduction(edges2)
+    @test Set((e.M2, e.M1) for e in red2) == Set((e.M2, e.M1) for e in edges2)
 end

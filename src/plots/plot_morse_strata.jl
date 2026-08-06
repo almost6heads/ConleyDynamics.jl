@@ -32,6 +32,33 @@ else to draw), so nothing is ever cut off regardless of how far a bend
 ends up needing to reach. Pass explicit values to override -- explicit
 `figw` and `figh` are used as-is, not auto-corrected. `title`, if
 given, is drawn at the top of the figure.
+
+See also `plot_morse_reachability` for the analogous diagram of *eventual*
+(multi-step) reachability between strata, rather than single-step
+adjacency.
+
+# Examples
+
+Consider the triangle `ABC` with a pendant edge `CD` attached at `C`:
+
+```julia
+labels    = ["A", "B", "C", "D"]
+simplices = [[1, 2, 3], [3, 4]]
+lc = create_simplicial_complex(labels, simplices)
+
+ap = construct_ap_space(lc)
+plot_morse_strata(lc, ap, "strata.pdf", title="Triangle ABC with pendant edge CD")
+```
+
+If both `plot_morse_strata` and `plot_morse_reachability` are wanted for the
+same complex, precompute `atomic_distances` once and pass it to both, since
+it is the expensive step and is otherwise recomputed by each call:
+
+```julia
+A = atomic_distances(lc, ap)
+plot_morse_strata(lc, ap, "adjacency.pdf"; A=A)
+plot_morse_reachability(lc, ap, "reachability.pdf"; A=A)
+```
 """
 function plot_morse_strata(lc::AbstractComplex,
                            ap::Vector{Vector{Vector{Int}}},
@@ -41,12 +68,73 @@ function plot_morse_strata(lc::AbstractComplex,
                            figw::Union{Int,Nothing}=nothing,
                            figh::Union{Int,Nothing}=nothing,
                            pv::Bool=false)
+    strata = stratum_partition(lc, ap)
+    edges  = stratum_adjacency(lc, ap; A=A)
+
+    edge_style(e) = e.uniform ? (e.weight <= 1 ? ("seagreen", "solid", 2.6) :
+                                                  ("gray50",   "solid", 1.8)) :
+                                 ("firebrick", "shortdashed", 2.0)
+
+    legend_header = [
+        "Node: (Morse vector M)  --  n = number of AP(X) partitions with that M",
+        "Edge label: |c| = jump weight of M1-M2  --  covered/total = how many of the",
+        "coarser stratum's partitions admit an atomic refinement into the finer one",
+    ]
+
+    legend_swatches = [
+        (color="seagreen", dash="solid", width=2.6,
+         caption=["|c|=1 and uniform (guaranteed by Theorem 5.4 for the full, unrestricted AP(X))"]),
+        (color="gray50", dash="solid", width=1.8,
+         caption=["|c|>=2, but every partition happens to be covered here"]),
+        (color="firebrick", dash="shortdashed", width=2.0,
+         caption=["NOT every partition is covered (a realized counterexample -- can happen even",
+                   "at |c|=1 if this is a restricted sub-poset like AP^c(X); Thm 5.4 only covers AP(X))"]),
+    ]
+
+    pos, figwI, fighI = _plot_strata_diagram(strata, edges, fname;
+                                             title=title, figw=figw, figh=figh, pv=pv,
+                                             legendh=155.0,
+                                             edge_style=edge_style,
+                                             legend_header=legend_header,
+                                             legend_swatches=legend_swatches)
+
+    return (pos=pos, edges=edges, strata=strata, figw=figwI, figh=fighI)
+end
+
+"""
+    _plot_strata_diagram(strata, edges, fname; title, figw, figh, pv, legendh,
+                         edge_style, legend_header, legend_swatches)
+
+Shared Luxor rendering core behind `plot_morse_strata` and
+`plot_morse_reachability`: lays out one node per key of `strata` (a
+`Dict{Vector{Int},Vector{Int}}` as returned by `stratum_partition`) by
+level sum(M), draws an edge for every element of `edges` (`NamedTuple`s
+shaped like `stratum_adjacency`/`stratum_reachability`'s output, using
+`.M1`, `.M2`, `.weight`, `.ncovered`, `.ntotal`), and renders a legend
+built from `legend_header` (plain text lines) and `legend_swatches`
+(a vector of `(color, dash, width, caption::Vector{String})`, one colored
+line-and-caption block per entry). `edge_style(e)` maps an edge to its
+`(color, dash, width)` -- this is the one piece of classification logic
+that differs between callers. `legendh` is the fixed height reserved for
+the legend block; callers size it to their own header/swatch content.
+
+Returns `(pos, figwI, fighI)` for the caller to fold into its own return
+value alongside whatever edge/strata data it wants to expose.
+"""
+function _plot_strata_diagram(strata::Dict{Vector{Int},Vector{Int}},
+                              edges::Vector{<:NamedTuple},
+                              fname::String;
+                              title::String,
+                              figw::Union{Int,Nothing},
+                              figh::Union{Int,Nothing},
+                              pv::Bool,
+                              legendh::Float64,
+                              edge_style::Function,
+                              legend_header::Vector{String},
+                              legend_swatches::Vector{<:NamedTuple})
     if !(lowercase(fname[end-3:end]) in [".png", ".pdf", ".eps", ".svg"])
         error("The filename must have one of the following extensions: .png, .pdf, .eps, .svg")
     end
-
-    strata = stratum_partition(lc, ap)
-    edges  = stratum_adjacency(lc, ap; A=A)
 
     Ms     = collect(keys(strata))
     ranks  = Dict(M => sum(M) for M in Ms)
@@ -75,7 +163,6 @@ function plot_morse_strata(lc::AbstractComplex,
 
     colspacing = 230.0
     margin     = 110.0
-    legendh    = 155.0
     titleh     = title == "" ? 20.0 : 46.0
 
     provw = max(950.0, 2margin + max(0, maxrow - 1) * colspacing)
@@ -204,15 +291,10 @@ function plot_morse_strata(lc::AbstractComplex,
         p1, p2 = pos[e.M2], pos[e.M1]
         gap = lvidx[ranks[e.M1]] - lvidx[ranks[e.M2]]
 
-        if e.uniform
-            sethue(e.weight <= 1 ? "seagreen" : "gray50")
-            setdash("solid")
-            setline(e.weight <= 1 ? 2.6 : 1.8)
-        else
-            sethue("firebrick")
-            setdash("shortdashed")
-            setline(2.0)
-        end
+        color, dash, width = edge_style(e)
+        sethue(color)
+        setdash(dash)
+        setline(width)
 
         if gap <= 1
             line(p1, p2, action = :stroke)
@@ -242,39 +324,33 @@ function plot_morse_strata(lc::AbstractComplex,
         Luxor.text("n=$(length(strata[M]))", p + Point(0, 14), halign=:center)
     end
 
-    # Legend, explaining what the node and edge labels mean
+    # Legend, explaining what the node and edge labels mean, followed by
+    # one colored line-and-caption block per entry of legend_swatches.
 
     lx, ly = 22.0, plotbottom + 14.0
     sethue("black")
     fontsize(12)
-    Luxor.text("Node: (Morse vector M)  --  n = number of AP(X) partitions with that M",
-              Point(lx, ly), halign=:left)
-    Luxor.text("Edge label: |c| = jump weight of M1-M2  --  covered/total = how many of the",
-              Point(lx, ly + 18), halign=:left)
-    Luxor.text("coarser stratum's partitions admit an atomic refinement into the finer one",
-              Point(lx, ly + 34), halign=:left)
+    headerlinesp = 17.0
+    for (i, ln) in enumerate(legend_header)
+        Luxor.text(ln, Point(lx, ly + headerlinesp * (i - 1)), halign=:left)
+    end
 
-    sethue("seagreen"); setline(2.6); setdash("solid")
-    line(Point(lx, ly + 56), Point(lx + 40, ly + 56), action = :stroke)
-    sethue("black"); fontsize(12)
-    Luxor.text("|c|=1 and uniform (guaranteed by Theorem 5.4 for the full, unrestricted AP(X))",
-              Point(lx + 50, ly + 60), halign=:left)
-
-    sethue("gray50"); setline(1.8); setdash("solid")
-    line(Point(lx, ly + 76), Point(lx + 40, ly + 76), action = :stroke)
-    sethue("black")
-    Luxor.text("|c|>=2, but every partition happens to be covered here", Point(lx + 50, ly + 80), halign=:left)
-
-    sethue("firebrick"); setline(2.0); setdash("shortdashed")
-    line(Point(lx, ly + 96), Point(lx + 40, ly + 96), action = :stroke)
-    sethue("black")
-    Luxor.text("NOT every partition is covered (a realized counterexample -- can happen even",
-              Point(lx + 50, ly + 100), halign=:left)
-    Luxor.text("at |c|=1 if this is a restricted sub-poset like AP^c(X); Thm 5.4 only covers AP(X))",
-              Point(lx + 50, ly + 116), halign=:left)
+    swy = ly + headerlinesp * (length(legend_header) - 1) + 22.0
+    capgap    = 4.0
+    caplinesp = 16.0
+    swatchgap = 20.0
+    for sw in legend_swatches
+        sethue(sw.color); setline(sw.width); setdash(sw.dash)
+        line(Point(lx, swy), Point(lx + 40, swy), action = :stroke)
+        sethue("black"); fontsize(12)
+        for (j, ln) in enumerate(sw.caption)
+            Luxor.text(ln, Point(lx + 50, swy + capgap + caplinesp * (j - 1)), halign=:left)
+        end
+        swy += swatchgap + caplinesp * max(0, length(sw.caption) - 1)
+    end
 
     finish()
     pv && preview()
 
-    return (pos=pos, edges=edges, strata=strata, figw=figwI, figh=fighI)
+    return (pos, figwI, fighI)
 end

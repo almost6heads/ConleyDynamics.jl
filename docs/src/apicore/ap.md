@@ -57,4 +57,5 @@ stratum_reachability
 
 ```@docs
 ConleyDynamics._rank_decomposition
+ConleyDynamics._stratum_transitive_reduction
 ```

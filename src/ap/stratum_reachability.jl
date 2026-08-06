@@ -87,3 +87,45 @@ function stratum_reachability(lc::AbstractComplex,
 
     return reach, edges
 end
+
+"""
+    _stratum_transitive_reduction(edges::Vector{<:NamedTuple})
+
+Transitive reduction of the stratum graph described by `edges` (as
+returned by `stratum_reachability`, or any `NamedTuple` vector with `.M1`
+and `.M2` fields defining a directed arc `M2 -> M1`): drop an arc
+`M2 -> M1` whenever some other direct successor `w` of `M2` (`w != M1`)
+already reaches `M1` via the remaining arcs, since that makes `M2 -> M1`
+redundant for reachability -- it is implied by the two-hop-or-longer path
+`M2 -> w -> ... -> M1`. The underlying graph is a DAG (`stratum_reachability`
+only ever reports `M1 >= M2` componentwise), so this reduction is unique.
+
+Used by `plot_morse_reachability` to draw only the covering relation of
+the reachability order (a proper Hasse diagram) instead of every
+comparable pair, which `stratum_reachability`'s raw `edges` -- being
+closed under transitivity -- reports for all of them.
+
+Returns the filtered subset of `edges` (same `NamedTuple`s, just fewer).
+"""
+function _stratum_transitive_reduction(edges::Vector{<:NamedTuple})
+    succ = Dict{Vector{Int},Vector{Vector{Int}}}()
+    for e in edges
+        push!(get!(() -> Vector{Int}[], succ, e.M2), e.M1)
+    end
+
+    memo = Dict{Vector{Int},Set{Vector{Int}}}()
+    function descendants(u::Vector{Int})
+        haskey(memo, u) && return memo[u]
+        s = Set{Vector{Int}}()
+        memo[u] = s
+        for w in get(succ, u, Vector{Int}[])
+            push!(s, w)
+            union!(s, descendants(w))
+        end
+        return s
+    end
+
+    return filter(edges) do e
+        !any(w -> w != e.M1 && e.M1 in descendants(w), get(succ, e.M2, Vector{Int}[]))
+    end
+end

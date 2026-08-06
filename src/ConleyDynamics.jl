@@ -155,6 +155,7 @@ include("./plots/plot_planar_cubical.jl")
 include("./plots/plot_planar_cubical_morse.jl")
 include("./plots/plot_data_types.jl")
 include("./plots/plot_morse_strata.jl")
+include("./plots/plot_morse_reachability.jl")
 
 end
 

@@ -18,6 +18,7 @@ plot_planar_cubical_morse
 
 ```@docs
 plot_morse_strata
+plot_morse_reachability
 ```
 
 ## Plot Data Types (Plots.jl)
@@ -47,5 +48,11 @@ plot_cubical
 plot_cubical_morse
 plot_cubical_mvf
 plot_cubical_mv
+```
+
+## Internal Helpers
+
+```@docs
+ConleyDynamics._plot_strata_diagram
 ```
 
