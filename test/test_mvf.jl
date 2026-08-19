@@ -10,6 +10,10 @@
     # Periodic orbit example from example_three_cm(0) is NOT acyclic
     lc_three, mvf_periodic = example_three_cm(0)
     @test !mvf_is_acyclic(lc_three, mvf_periodic)
+
+    # Empty mvf (all cells critical singletons) must not crash and is acyclic
+    sc_singletons = create_simplicial_complex(["a","b","c"], [["a"],["b"],["c"]])
+    @test mvf_is_acyclic(sc_singletons, Vector{Int}[])
 end
 
 @testset "MVF information" begin
