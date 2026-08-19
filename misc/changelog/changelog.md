@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.7.21 (August 19, 2026)
+
+Bug fix release
+
 ## v0.7.20 (August 6, 2026)
 
 * Added `stratum_reachability`, which is multi-step atomic-refinement
