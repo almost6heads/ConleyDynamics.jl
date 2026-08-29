@@ -61,7 +61,7 @@ if "--local-html" in ARGS
      makedocs(sitename="ConleyDynamics.jl",
         modules=[ConleyDynamics],
         format = Documenter.HTML(prettyurls = false,
-                                 assets=String["assets/citations.css","assets/favicon.ico"],
+                                 assets=String["assets/favicon.ico"],
                                  search_size_threshold_warn = 600 * 2^10),
         pages = pageslist,
         authors = "Thomas Wanner",
@@ -91,7 +91,7 @@ elseif "--latex-pdf" in ARGS
 else
     makedocs(sitename="ConleyDynamics.jl",
         modules=[ConleyDynamics],
-        format = Documenter.HTML(assets=String["assets/citations.css","assets/favicon.ico"],
+        format = Documenter.HTML(assets=String["assets/favicon.ico"],
                                  search_size_threshold_warn = 600 * 2^10),
         build = "build",
         pages = pageslist,
