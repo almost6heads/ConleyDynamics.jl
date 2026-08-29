@@ -13,6 +13,11 @@ description, etc.
 
 Release notes:
 
+## v0.7.22 (August 29, 2026)
+
+* Speed improvements for `mvf_forward_orbit` and `mvf_backward_orbit`.
+* Fixed Documenter asset warning.
+
 ## v0.7.21 (August 19, 2026)
 
 Bug fix release
