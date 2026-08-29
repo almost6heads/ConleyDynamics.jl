@@ -95,10 +95,16 @@ function mvf_forward_orbit(lc::AbstractComplex, mvf::CellSubsets,
 
     # Determine the edges in the directed graph
 
+    cell2mv = Vector{Int}(undef, lc.ncells)
+    for m = 1:length(mvfI), c in mvfI[m]
+        cell2mv[c] = m
+    end
+
     g = DiGraph(length(mvfI))
     for k = 1:length(mvfI)
-        for m = 1:length(mvfI)
-            if (!(k == m)) && length(intersect(mvfIcl[k], mvfI[m]))>0
+        for c in mvfIcl[k]
+            m = cell2mv[c]
+            if m != k
                 add_edge!(g, k, m)
             end
         end
@@ -241,10 +247,16 @@ function mvf_backward_orbit(lc::AbstractComplex, mvf::CellSubsets,
 
     # Determine the edges in the directed graph
 
+    cell2mv = Vector{Int}(undef, lc.ncells)
+    for m = 1:length(mvfI), c in mvfI[m]
+        cell2mv[c] = m
+    end
+
     g = DiGraph(length(mvfI))
     for k = 1:length(mvfI)
-        for m = 1:length(mvfI)
-            if (!(k == m)) && length(intersect(mvfIcl[k], mvfI[m]))>0
+        for c in mvfIcl[k]
+            m = cell2mv[c]
+            if m != k
                 add_edge!(g, m, k)   # Reverse direction of time!
             end
         end
