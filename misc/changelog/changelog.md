@@ -13,6 +13,12 @@ description, etc.
 
 Release notes:
 
+## v0.7.23 (September 17, 2026)
+
+* Added top-layer functions for Morse strata of acyclic
+  partitions, specifically, `is_top_layer`, `stratum_top_layer`,
+  and `construct_ap_stratum_top`.
+
 ## v0.7.22 (August 29, 2026)
 
 * Speed improvements for `mvf_forward_orbit` and `mvf_backward_orbit`.
