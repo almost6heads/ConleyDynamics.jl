@@ -85,7 +85,7 @@ More details, including on the underlying mathematics, are provided in
 the following three sections, which cover Lefschetz complexes, homology,
 and Conley theory, including connection matrices and algorithms for their
 computation. After discussing a number of examples in the sections
-[First Examples](@ref) and [Further Examples](@ref), the
+[Flow Examples](@ref) and [Further Examples](@ref), the
 manual concludes with a description of the sparse matrix format
 underlying the package.
 
