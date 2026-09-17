@@ -112,6 +112,7 @@ include("./ap/block_split_deltas.jl")
 include("./ap/stratum_partition.jl")
 include("./ap/stratum_adjacency.jl")
 include("./ap/stratum_reachability.jl")
+include("./ap/stratum_top_layer.jl")
 
 include("./sparse/sparse_basic_functions.jl")
 include("./sparse/sparse_from_lists.jl")

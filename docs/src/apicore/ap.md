@@ -53,6 +53,14 @@ stratum_adjacency
 stratum_reachability
 ```
 
+## Top Layer
+
+```@docs
+is_top_layer
+stratum_top_layer
+construct_ap_stratum_top
+```
+
 ## Internal Helpers
 
 ```@docs

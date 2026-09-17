@@ -230,3 +230,90 @@ end
     red2 = ConleyDynamics._stratum_transitive_reduction(edges2)
     @test Set((e.M2, e.M1) for e in red2) == Set((e.M2, e.M1) for e in edges2)
 end
+
+@testset "Top layer of a Morse stratum" begin
+    #
+    # Cross-check is_top_layer, for every element of a small ap, against
+    # the global (poset-level) definition: v is in the top layer of its
+    # own stratum iff none of its one-step atomic refinements (from
+    # atomic_distances) shares its Morse vector.
+    #
+    labels    = ["v1", "v2", "v3"]
+    simplices = [[1, 2], [2, 3]]
+    lc = create_simplicial_complex(labels, simplices)
+
+    for connected in (true, false)
+        ap = construct_ap_space(lc; connected=connected)
+        A  = atomic_distances(lc, ap)
+        Ms = map(t -> morse_vector(lc, t), ap)
+
+        for i in eachindex(ap)
+            brute = !any(j -> Ms[j] == Ms[i], sparse_get_nz_row(A, i))
+            @test is_top_layer(lc, ap[i]; connected=connected) == brute
+        end
+
+        strata = stratum_partition(lc, ap)
+        stl    = stratum_top_layer(lc, ap; connected=connected)
+        for M in keys(strata)
+            @test stl[M] == filter(i -> is_top_layer(lc, ap[i]; connected=connected), strata[M])
+        end
+
+        # construct_ap_stratum_top matches stratum_top_layer for one target
+        M0 = first(keys(strata))
+        ctop = Set(convert_mvf_partition(lc, w)
+                   for w in construct_ap_stratum_top(lc, M0; connected=connected))
+        stop = Set(convert_mvf_partition(lc, ap[i]) for i in stl[M0])
+        @test ctop == stop
+    end
+
+    # Every Forman vector field is a facet of its stratum, hence in the
+    # top layer (Proposition on invariants of the top layer)
+    lcf, mvf = example_forman1d()
+    @test is_top_layer(lcf, mvf)
+
+    #
+    # Twisted 4-cycle over GF(3): u1,u2 (dim 0), w1,w2 (dim 1),
+    # dw1=u1+u2, dw2=u1-u2. beta(X)=(0,0), and AP_(0,0)(X) = L_(0,0) =
+    # {{X}} -- a single, genuinely rigid partition that is not a Forman
+    # vector field (its mvf_length is 1, not the card bound 2).
+    #
+    labels4 = ["u1", "u2", "w1", "w2"]
+    dims4   = [0, 0, 1, 1]
+    r4 = [1, 2, 1, 2]
+    c4 = [3, 3, 4, 4]
+    v4 = Rational{Int}[1, 1, 1, -1]
+    bnd4 = sparse_from_lists(4, 4, 0, Rational{Int}(0), Rational{Int}(1), r4, c4, v4)
+    lc4 = lefschetz_gfp_conversion(LefschetzComplex(labels4, dims4, bnd4), 3)
+
+    X4 = collect(1:4)
+    @test conley_index(lc4, X4) == [0, 0]
+
+    ap00 = construct_ap_stratum(lc4, [0, 0])
+    @test length(ap00) == 1
+    @test is_top_layer(lc4, ap00[1])
+    @test mvf_length(lc4, ap00[1]) < (lc4.ncells + sum([0, 0])) / 2   # not Forman
+
+    #
+    # Hex-arrow example: u1,u2,u3,x (dim 0), w1,w2,w3,y (dim 1),
+    # dw1=u1-u2, dw2=u2-u3, dw3=u3+u1, dy=x-u3, over GF(3). The twisted
+    # hexagon H={u1,u2,u3,w1,w2,w3} is regular and genuinely rigid, and
+    # the top layer of AP_(1,1)(X) contains partitions of two different
+    # sizes: {H,{x},{y}} (3 blocks) and Forman vector fields (5 blocks).
+    #
+    labels8 = ["u1", "u2", "u3", "x", "w1", "w2", "w3", "y"]
+    dims8   = [0, 0, 0, 0, 1, 1, 1, 1]
+    r8 = [1, 2, 2, 3, 3, 1, 4, 3]
+    c8 = [5, 5, 6, 6, 7, 7, 8, 8]
+    v8 = Rational{Int}[1, -1, 1, -1, 1, 1, 1, -1]
+    bnd8 = sparse_from_lists(8, 8, 0, Rational{Int}(0), Rational{Int}(1), r8, c8, v8)
+    lc8 = lefschetz_gfp_conversion(LefschetzComplex(labels8, dims8, bnd8), 3)
+
+    H = [1, 2, 3, 5, 6, 7]
+    @test conley_index(lc8, H) == [0, 0]
+    @test is_connected_block(lc8, H)
+
+    top11 = construct_ap_stratum_top(lc8, [1, 1])
+    sizes = sort(unique(mvf_length.(Ref(lc8), top11)))
+    @test sizes == [3, 5]
+    @test any(w -> convert_mvf_partition(lc8, w) == convert_mvf_partition(lc8, [H]), top11)
+end

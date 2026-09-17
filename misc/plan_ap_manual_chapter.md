@@ -5,6 +5,12 @@ Status: not started. API reference coverage (`docs/src/apicore/ap.md`,
 covers only the narrative "Manual" part of the docs, which was
 deliberately deferred.
 
+This includes the top-layer functions `is_top_layer`, `stratum_top_layer`,
+and `construct_ap_stratum_top` (added to `src/ap/stratum_top_layer.jl`):
+their `apicore/ap.md` entries (under a "Top Layer" heading) are already in
+place, so only the narrative chapter coverage described in step 7a below
+remains outstanding for them, same as for everything else on this page.
+
 ## Goal
 
 Add a `man/ap.md` chapter, analogous in depth and style to the existing
@@ -30,6 +36,16 @@ implements. Section map, for picking what to condense:
 | 7 | Classification (uniform vs. non-uniform jumps) | `stratum_adjacency` section — this is the theorem the coloring in `plot_morse_strata` visualizes |
 | 8 | What remains open | Optional "Further reading" note |
 | Appendix | Exhaustive machine verification | Not needed — mention `test/test_ap.jl` instead as the code-side analog |
+
+The top layer (`is_top_layer`, `stratum_top_layer`,
+`construct_ap_stratum_top`) is **not** covered by
+`morse-vector-strata.md` and has no other citable source at this time —
+it comes from separate, unpublished work-in-progress notes that must not
+be named or cited anywhere in the docs. Write step 7a's content directly
+from the functions' own docstrings and the definitions already
+established earlier in the chapter (atomic refinement, Morse vector,
+`block_split_deltas`/`connected_split_deltas`), phrased independently
+rather than summarized from any outside note. See "Citation" below.
 
 Do **not** try to port the proofs (sections 2, 4-6) — the manual chapters
 elsewhere in this package explain definitions/theorems and how to use the
@@ -81,6 +97,34 @@ over abstract descriptions — see `man/tutorial.md`, `man/conley.md`).
      Theorem 7.1 classification (source section 7) informally: when is
      coverage between adjacent strata uniform vs. not. This is the
      mathematical payoff of the chapter — spend the most space here.
+7a. `## The Top Layer of a Stratum`
+   - New subsection, placed right after "Stratification and Refinement
+     Coverage" since it refines the same idea (a stratum's *internal*
+     structure) rather than coverage *between* strata.
+   - Definition admonition, phrased from scratch (no outside citation —
+     see the note above the section-map table): within a fixed Morse
+     stratum, the top layer is the set of partitions that admit no
+     further atomic refinement preserving that Morse vector — i.e. every
+     explicit block's split spectrum (section 6) avoids the zero delta.
+   - `is_top_layer` worked example: take one partition from a stratum and
+     check it directly; a good place to show a partition that *fails*
+     the test alongside one that passes, so the "can still be refined
+     conservatively" failure mode is visible, not just asserted.
+   - `stratum_top_layer` example: filter a full `stratum_partition` result
+     down to each stratum's top layer, on the same running example used
+     in section 7 (reuse the complex/`ap` already built there rather than
+     introducing a new one).
+   - `construct_ap_stratum_top` example: the direct one-target-vector
+     shortcut, contrasted with `construct_ap_stratum` (section 2) the
+     same way `construct_ap_stratum` itself was contrasted with
+     `construct_ap_space` there.
+   - One or two sentences noting a Forman vector field is always in the
+     top layer of its stratum, tying back to the Forman-pair language
+     used in `man/tutorial.md`/`man/conley.md`.
+   - Fold in (or forward-reference from) a caveat: this inherits
+     `block_split_deltas`'s brute-force `length(block) <= 20` limit, and
+     `stratum_top_layer` memoizes per-block rigidity across the whole
+     call (worth one sentence if section 9 below ends up thin).
 8. `## Visualizing Strata`
    - `plot_morse_strata` worked example with an embedded image, following
      the pattern in `man/plotting.md`'s "Plotting Morse Sets" subsection
@@ -91,6 +135,8 @@ over abstract descriptions — see `man/tutorial.md`, `man/conley.md`).
    - Performance notes from the migration doc's Section 8: pruning isn't
      automatic, `connected=false` can be intractable, `atomic_distances`
      emits `@info` progress lines.
+   - Top layer's own caveat from step 7a (`length(block) <= 20`), if not
+     already folded in there.
 10. Optional closing `## [References](@id refap)` section only if/when
     the source paper gets a real citation (see below).
 
@@ -111,6 +157,15 @@ add a bibtex entry (following the existing key convention,
 e.g. `wanner:2Xa`) and cite it from the new chapter's intro paragraph,
 matching how `man/conley.md` and others cite `wanner:25a` etc. Until
 then, skip the References subsection rather than inventing a citation.
+
+Step 7a (the top layer) is a separate case: it is **not** part of
+`morse-vector-strata.md` at all, and its own source is unpublished
+work-in-progress that must not be mentioned, named, filenamed, or cited
+anywhere in the docs, in code comments, or in commit messages — not even
+once the rest of the chapter gets a real citation above. If that source
+is ever published, revisit this note before adding any reference to it.
+Until then, step 7a stands entirely on its own definitions and the
+package's own docstrings/tests, with no References entry of its own.
 
 ## Suggested effort / sequencing
 
