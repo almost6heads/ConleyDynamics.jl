@@ -17,7 +17,7 @@ Release notes:
 
 * Added top-layer functions for Morse strata of acyclic
   partitions, specifically, `is_top_layer`, `stratum_top_layer`,
-  and `construct_ap_stratum_top`.
+  as well as `construct_ap_stratum_top`.
 
 ## v0.7.22 (August 29, 2026)
 
