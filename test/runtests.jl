@@ -12,6 +12,7 @@ include("test_homology.jl")
 include("test_mvf.jl")
 include("test_ap.jl")
 include("test_conley.jl")
+include("test_meshing.jl")
 
 @testset "Tutorial" begin
     #

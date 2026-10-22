@@ -1,0 +1,161 @@
+using Random
+
+euler_char(lc) = sum((-1)^d for d in lc.dimensions)
+
+@testset "Vertex labels" begin
+    #
+    # The label helper has to reproduce the zero-padded format used by
+    # create_simplicial_delaunay and delaunay_to_simplicial
+    #
+    for n in [1, 9, 10, 11, 99, 100, 101, 1000, 1234]
+        labwidth = Int(ceil(log(0.5+n)/log(10)))
+        labformat = "%0" * string(labwidth) * "d"
+        oldlabels = [ConleyDynamics.Printf.format(ConleyDynamics.Printf.Format(labformat), k)
+                     for k in 1:n]
+        @test ConleyDynamics._vertex_labels(n) == oldlabels
+    end
+
+    sc, coords = create_simplicial_delaunay(2.0, 1.0, 50)
+    @test sc.labels[1:50] == ConleyDynamics._vertex_labels(50)
+    ec = create_simplicial_delaunay(2.0, 1.0, 0.2, 20; euclidean=true)
+    nv = count(==(0), ec.dimensions)
+    @test ec.labels[1:nv] == ConleyDynamics._vertex_labels(nv)
+end
+
+@testset "tetmesh_to_euclidean" begin
+    #
+    # Two tetrahedra sharing a face, plus an unused vertex
+    #
+    points = [[0.0,0.0,0.0], [1.0,0.0,0.0], [0.0,1.0,0.0],
+              [0.0,0.0,1.0], [1.0,1.0,1.0], [9.0,9.0,9.0]]
+    tets = [[1,2,3,4], [2,3,4,5]]
+
+    ec = tetmesh_to_euclidean(points, tets)
+    @test ec isa EuclideanComplex
+    @test ec.ncells == 23
+    @test count(==(0), ec.dimensions) == 5
+    @test count(==(3), ec.dimensions) == 2
+    @test homology(ec) == [1,0,0,0]
+    @test "1234" in ec.labels && "2345" in ec.labels
+    @test ec.coords[ec.indices["2345"]] == points[2:5]
+
+    ecorph = tetmesh_to_euclidean(points, tets; droporphans=false)
+    @test count(==(0), ecorph.dimensions) == 6
+    @test homology(ecorph) == [2,0,0,0]
+
+    ec3 = tetmesh_to_euclidean(points, tets; p=3)
+    @test homology(ec3) == [1,0,0,0]
+
+    # Matrix form, unsorted cells, and tuple points give the same complex
+
+    ecm = tetmesh_to_euclidean(reduce(hcat, points[1:5]), [4 5; 3 4; 2 3; 1 2])
+    @test ecm.labels == ec.labels
+    @test ecm.coords == ec.coords
+    ect = tetmesh_to_euclidean([Tuple(pt) for pt in points], tets)
+    @test ect.labels == ec.labels
+
+    # Surface meshes give two-dimensional complexes in three dimensions
+
+    V, T = trisurface_sphere([0,0,0], 1.0, 1)
+    ecs = tetmesh_to_euclidean(V, T)
+    @test ecs.dim == 2
+    @test euler_char(ecs) == 2
+    @test homology(ecs) == [1,0,1]
+
+    # Invalid input
+
+    @test_throws ArgumentError tetmesh_to_euclidean(points, [[1,2,3,7]])
+    @test_throws ArgumentError tetmesh_to_euclidean(points, [[1,2,2,3]])
+    @test_throws ArgumentError tetmesh_to_euclidean([[0.0,0.0],[1.0,0.0,0.0]], [[1,2]])
+    @test_throws ArgumentError tetmesh_to_euclidean(points, Vector{Int}[])
+end
+
+@testset "poisson_points_box" begin
+    for (bmin, bmax, pdist) in (([0,0], [2,1], 0.05), ([-1,0,0], [1,1,0.5], 0.1))
+        pts = poisson_points_box(bmin, bmax, pdist; rng=Xoshiro(123))
+        @test length(pts) > 100
+        @test all(length(x) == length(bmin) for x in pts)
+        @test all(all(bmin .<= x .<= bmax) for x in pts)
+        mindist = minimum(sqrt(sum(abs2, pts[i] .- pts[j]))
+                          for i in 1:length(pts) for j in i+1:length(pts))
+        @test mindist >= pdist
+        @test pts == poisson_points_box(bmin, bmax, pdist; rng=Xoshiro(123))
+    end
+
+    # The box should be filled: no empty ball of radius 2*pdist
+
+    pts = poisson_points_box([0,0,0], [1,1,1], 0.1; rng=Xoshiro(7))
+    rng = Xoshiro(8)
+    probes = [0.2 .+ 0.6 .* rand(rng, 3) for _ in 1:200]
+    @test all(minimum(sqrt(sum(abs2, q .- x)) for x in pts) < 0.2 for q in probes)
+
+    @test_throws ArgumentError poisson_points_box([0,0], [1,1,1], 0.1)
+    @test_throws ArgumentError poisson_points_box([0,0], [1,0], 0.1)
+    @test_throws ArgumentError poisson_points_box([0,0], [1,1], 0.0)
+end
+
+@testset "trisurface generators" begin
+    surfaces = [
+        ("sphere",    trisurface_sphere([1,2,3], 2.0, 2),                 true,  2),
+        ("ellipsoid", trisurface_ellipsoid([0,0,0], [1,2,3], 1),          true,  2),
+        ("cylinder",  trisurface_cylinder([0,0,0], [1,1,1], 0.5, 12, 4),  true,  2),
+        ("tube",      trisurface_cylinder([0,0,0], [1,1,1], 0.5, 12, 4;
+                                          capped=false),                   false, 0),
+        ("torus",     trisurface_torus([0,0,0], 2.0, 0.5, 16, 8;
+                                       axis=[1,0,0]),                      true,  0),
+        ("plane",     trisurface_plane_patch([0,0,0], [1,0,0], [0,1,0], 3, 4),
+                                                                           false, 1),
+        ("psphere",   trisurface_parametric((u,v) -> [cos(u)*sin(v), sin(u)*sin(v), cos(v)],
+                                            (0,2*pi), (pi,0), 24, 12; uperiodic=true),
+                                                                           true,  2),
+    ]
+
+    for (name, (V, T), closed, chi) in surfaces
+        isclosed, isoriented = ConleyDynamics._trisurface_check(T)
+        @test isclosed == closed
+        @test isoriented
+        @test all(allunique(t) for t in T)
+        # No duplicate vertices
+        @test length(unique(v -> round.(v, digits=8), V)) == length(V)
+        ec = tetmesh_to_euclidean(V, T)
+        @test count(==(0), ec.dimensions) == length(V)
+        @test euler_char(ec) == chi
+        if closed
+            @test ConleyDynamics._trisurface_volume(V, T) > 0
+        end
+    end
+
+    # Sizes and geometry
+
+    V, T = trisurface_sphere([1,2,3], 2.0, 2)
+    @test length(V) == 10*4^2 + 2
+    @test length(T) == 20*4^2
+    @test all(abs(sqrt(sum(abs2, v .- [1,2,3])) - 2.0) < 1e-12 for v in V)
+
+    V, T = trisurface_torus([0,0,0], 2.0, 0.5, 16, 8)
+    @test homology(tetmesh_to_euclidean(V, T)) == [1,2,1]
+    V, T = trisurface_torus([0,0,0], 2.0, 0.5, 128, 64)
+    @test abs(ConleyDynamics._trisurface_volume(V, T) - 2*pi^2*2.0*0.25) < 0.02
+
+    V, T = trisurface_cylinder([0,0,0], [0,0,2], 1.0, 64, 3)
+    @test abs(ConleyDynamics._trisurface_volume(V, T) - 2*pi) < 0.02
+
+    # Interior points of closed surfaces
+
+    for (V, T) in (trisurface_sphere([1,2,3], 2.0, 1),
+                   trisurface_torus([0,0,0], 2.0, 0.5, 16, 8),
+                   trisurface_cylinder([0,0,0], [1,1,1], 0.5, 12, 4))
+        q = ConleyDynamics._trisurface_interior_point(V, T)
+        @test length(q) == 3
+    end
+    q = ConleyDynamics._trisurface_interior_point(trisurface_sphere([1,2,3], 2.0, 1)...)
+    @test sqrt(sum(abs2, q .- [1,2,3])) < 2.0
+    q = ConleyDynamics._trisurface_interior_point(trisurface_torus([0,0,0], 2.0, 0.5, 16, 8)...)
+    @test abs(sqrt(q[1]^2 + q[2]^2) - 2.0)^2 + q[3]^2 < 0.25
+
+    # Invalid input
+
+    @test_throws ArgumentError trisurface_sphere([0,0,0], -1.0, 1)
+    @test_throws ArgumentError trisurface_torus([0,0,0], 1.0, 2.0, 8, 8)
+    @test_throws ArgumentError trisurface_cylinder([0,0,0], [0,0,1], 1.0, 2, 1)
+end

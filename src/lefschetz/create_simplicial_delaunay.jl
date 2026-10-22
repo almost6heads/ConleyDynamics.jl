@@ -51,13 +51,7 @@ function create_simplicial_delaunay(boxw::Real, boxh::Real, pdist::Real, attmpt:
 
     # Create the labels
 
-    labels = Vector{String}()
-    labwidth = Int(ceil(log(0.5+nvert)/log(10)))
-    labformat = "%0" * string(labwidth) * "d"
-    for k = 1:nvert
-        clabel = Printf.format(Printf.Format(labformat), k)
-        push!(labels, clabel)
-    end
+    labels = _vertex_labels(nvert)
 
     # Create the triangulation
 
@@ -124,13 +118,7 @@ function create_simplicial_delaunay(boxw::Real, boxh::Real, npoints::Int;
 
     # Create the labels
 
-    labels = Vector{String}()
-    labwidth = Int(ceil(log(0.5+nvert)/log(10)))
-    labformat = "%0" * string(labwidth) * "d"
-    for k = 1:nvert
-        clabel = Printf.format(Printf.Format(labformat), k)
-        push!(labels, clabel)
-    end
+    labels = _vertex_labels(nvert)
 
     # Create the triangulation
 
