@@ -469,16 +469,15 @@ savefig(pcombined12, "plots_single_mv.png")
 ## Three-Dimensional Plotting with Makie
 
 Complexes embedded in three dimensions, such as the tetrahedral meshes
-described in the [Extensions](@ref) chapter, cubical complexes created by
+described in the chapter [Three-Dimensional Meshes](@ref), cubical complexes created by
 [`create_cubical_box`](@ref), or triangulated surfaces, are visualized
 with the [Makie.jl](https://docs.makie.org) plotting ecosystem. Makie
 supports hardware-accelerated interactive three-dimensional graphics
 with correct depth ordering and transparency, which the planar backends
-above cannot provide. The following table lists the available
-functions:
+above cannot provide. The table below lists the available functions:
 
 | Function | Description |
-|----------|-------------|
+|:---------|:------------|
 | [`plot_simplicial3d`](@ref) | Simplicial complex in three dimensions |
 | [`plot_cubical3d`](@ref) | Cubical complex in three dimensions |
 | [`plot_simplicial3d_morse`](@ref) | Simplicial complex with colored Morse sets |
@@ -746,7 +745,7 @@ coordinates of its vertices.
 ![A torus surface with highlighted cell subsets](img/makie3d_cells.png)
 
 Further examples of [`plot_cells3d!`](@ref) can be found in the
-[Extensions](@ref) chapter, where it is used to show the constraint
+chapter [Three-Dimensional Meshes](@ref), where it is used to show the constraint
 surfaces and curves found by [`tetgen_marker_cells`](@ref) and
 [`gmsh_marker_cells`](@ref).
 
@@ -846,7 +845,7 @@ right panel shows. With `addcritical=true`, the singleton multivectors
 and all cells that are not covered by the multivector field are drawn as
 well.
 
-### Cubical Complexes
+### Plotting Cubical Complexes
 
 The cubical functions work in exactly the same way, and they accept the
 same optional arguments. Cubical complexes are usually created with

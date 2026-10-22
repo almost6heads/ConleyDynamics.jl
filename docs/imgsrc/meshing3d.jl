@@ -413,3 +413,26 @@ plot_cells3d!(ax2, ecs, meridian; color=:red)
 plot_cells3d!(ax2, ecs, band; color=:darkorange, alpha=0.9)
 plot_cells3d!(ax2, ecs, ecs.labels[1:3]; color=:black)
 savefig3d("makie3d_cells.png", fig)
+
+##############################################################################
+#
+# Tutorial: a spatial vector field on a TetGen mesh
+#
+##############################################################################
+
+function spatialvf(x::Vector{Float64})
+    x1, x2, x3 = x
+    return [x1 * (1.0 - x1*x1), -x2, -x3]
+end
+
+ect  = tetgen_to_simplicial(tetgen_mesh(tetgen_domain_box([-1.5,-1,-1], [1.5,1,1]);
+                                        maxvolume=0.01))
+mvft = create_spatial_mvf(ect, spatialvf)
+cmt  = connection_matrix(ect, mvft)
+
+fig = Figure(size=(1200,500))
+ax1 = panel(fig, (1,1), "Tetrahedral mesh, clipped at y = 0")
+plot_simplicial3d!(ax1, ect; clip=([0,1,0], 0.0), alpha=0.6)
+ax2 = panel(fig, (1,2), "Morse sets")
+plot_simplicial3d_morse!(ax2, ect, cmt.morse; ci=true)
+savefig3d("tutorialspatial.png", fig)

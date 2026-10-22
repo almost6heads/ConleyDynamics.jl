@@ -35,6 +35,7 @@ pageslist = ["Overview" => "index.md",
                  "man/flowexamples.md",
                  "man/examples.md",
                  "man/extensions.md",
+                 "man/meshing3d.md",
                  "man/plotting.md",
                  "man/sparse.md",
                  "man/references.md"
