@@ -31,8 +31,9 @@ Optional keyword arguments:
   number `offset`. Tetrahedra whose centroid `c` satisfies `n⋅c > offset`
   are removed, which shows the interior of the complex.
 - `alpha::Real=0.3`: opacity of the faces.
-- `facecolor=colorant"steelblue1"`, `edgecolor=colorant"royalblue3"`,
-  `vertexcolor=colorant"royalblue4"`: colors of the cells.
+- `facecolor`, `edgecolor`, `vertexcolor`: colors of the faces, edges,
+  and vertices. The defaults are `colorant"steelblue1"`,
+  `colorant"royalblue3"`, and `colorant"royalblue4"`.
 - `linewidth::Real=0.75`: width of the edges.
 - `linealpha::Real=1.0`: opacity of the edges.
 - `markersize=nothing`: radius of the vertex spheres, in data units. The

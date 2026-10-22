@@ -343,9 +343,10 @@ by points inside them. This data model maps directly onto the
 `DelaunayTriangulation.jl` workflow in the plane described in the
 [Extensions](@ref) chapter, and the extension follows the same pattern:
 
-1. Describe the domain with a [`TetDomain`](@ref), which is created with
-   [`tetgen_domain_box`](@ref) or [`tetgen_domain_from_surface`](@ref) and
-   extended with the other `tetgen_domain_*` functions.
+1. Describe the domain by a [`TetDomain`](@ref). Such a domain is usually
+   created with [`tetgen_domain_box`](@ref) or with
+   [`tetgen_domain_from_surface`](@ref), and then extended with the other
+   `tetgen_domain_*` functions.
 2. Create the mesh with [`tetgen_mesh`](@ref), which returns a
    [`TetGenResult`](@ref).
 3. Convert the mesh with [`tetgen_to_simplicial`](@ref), and find the
@@ -496,7 +497,8 @@ they do not guarantee the absence of *slivers*: Flat tetrahedra with four
 nearly coplanar vertices, whose radius-edge ratio can be small even
 though their dihedral angles are close to `0°` or `180°`. A few such
 tetrahedra are harmless for the construction of multivector fields.
-Second, `steiner_on_boundary=false` is a strong restriction. Since no
+Second, disallowing Steiner points on the boundary is a strong
+restriction. Since no
 boundary triangle may be split, `TetGen` cannot insert any point whose
 neighborhood reaches the boundary. In a coarse box, every tetrahedron
 touches the boundary, and therefore *no* refinement takes place at all,
@@ -834,11 +836,11 @@ tetgen_domain_from_surface(trisurface_cylinder([0,0,-1], [0,0,1], 0.5, 16, 4;
 
 ### Delaunay Triangulations of Random Points
 
-The function [`create_simplicial_delaunay3d`](@ref) is the
-three-dimensional analogue of [`create_simplicial_delaunay`](@ref). It
-computes the Delaunay tetrahedralization of a random point sample in a
-box, and it returns it directly as an [`EuclideanComplex`](@ref). There
-are two methods. The first one uses a Poisson-disk sample with minimum
+The function [`create_simplicial_delaunay3d`](@ref) computes the
+Delaunay tetrahedralization of a random point sample in a box, and it
+returns it directly as an [`EuclideanComplex`](@ref). It is the
+three-dimensional analogue of the planar function
+[`create_simplicial_delaunay`](@ref). There are two methods. The first one uses a Poisson-disk sample with minimum
 distance `pdist`, and the second one uses `npoints` uniformly distributed
 points:
 

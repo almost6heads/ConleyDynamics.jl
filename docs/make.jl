@@ -63,7 +63,7 @@ if "--local-html" in ARGS
         modules=[ConleyDynamics],
         format = Documenter.HTML(prettyurls = false,
                                  assets=String["assets/favicon.ico"],
-                                 search_size_threshold_warn = 600 * 2^10),
+                                 search_size_threshold_warn = 800 * 2^10),
         pages = pageslist,
         authors = "Thomas Wanner",
         plugins = [CitationBibliography(
@@ -93,7 +93,7 @@ else
     makedocs(sitename="ConleyDynamics.jl",
         modules=[ConleyDynamics],
         format = Documenter.HTML(assets=String["assets/favicon.ico"],
-                                 search_size_threshold_warn = 600 * 2^10),
+                                 search_size_threshold_warn = 800 * 2^10),
         build = "build",
         pages = pageslist,
         authors = "Thomas Wanner",
