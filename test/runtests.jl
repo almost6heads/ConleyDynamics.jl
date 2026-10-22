@@ -11,6 +11,11 @@ if !isnothing(Base.find_package("TetGen"))
     include("test_tetgen.jl")
 end
 
+if !isnothing(Base.find_package("Gmsh"))
+    using Gmsh: gmsh
+    include("test_gmsh.jl")
+end
+
 include("test_sparse.jl")
 include("test_lefschetz.jl")
 include("test_homology.jl")

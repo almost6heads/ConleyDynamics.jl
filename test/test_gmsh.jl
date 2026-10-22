@@ -1,0 +1,140 @@
+function gmsh_box_mesh(h)
+    gmsh.model.add("box")
+    gmsh.model.occ.addBox(0, 0, 0, 2, 1, 1)
+    gmsh.model.occ.synchronize()
+    gmsh.option.setNumber("Mesh.MeshSizeMax", h)
+    gmsh.model.mesh.generate(3)
+end
+
+@testset "Gmsh extension: conversion" begin
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+
+    # A box
+
+    gmsh_box_mesh(0.3)
+    ec = gmsh_to_simplicial()
+    @test ec isa EuclideanComplex
+    @test ec.dim == 3
+    @test homology(ec) == [1,0,0,0]
+    tets = [c for (c, d) in zip(ec.coords, ec.dimensions) if d == 3]
+    vol(c) = abs(sum((c[2] .- c[1]) .* ConleyDynamics._cross3(c[3] .- c[1], c[4] .- c[1]))) / 6
+    @test abs(sum(vol.(tets)) - 2.0) < 1e-10
+    @test homology(gmsh_to_simplicial(dim=2)) == [1,0,1]
+    @test homology(gmsh_to_simplicial(p=0)) == [1,0,0,0]
+
+    # Boundary cells via an entity and via a physical group
+
+    surfaces = [t for (d, t) in gmsh.model.getEntities(2)]
+    pg = gmsh.model.addPhysicalGroup(2, surfaces)
+    bnd = gmsh_marker_cells(ec, 2, pg)
+    @test homology(lefschetz_subcomplex(ec, bnd)) == [1,0,1]
+    face1 = gmsh_marker_cells(ec, 2, surfaces[1]; physical=false)
+    @test homology(lefschetz_subcomplex(ec, face1)) == [1,0,0]
+    @test issubset(face1, bnd)
+    face1tri = gmsh_marker_cells(ec, 2, surfaces[1]; physical=false, closure=false)
+    @test all(ec.dimensions[face1tri] .== 2)
+
+    # Physical group of the volume
+
+    pv = gmsh.model.addPhysicalGroup(3, [1])
+    @test gmsh_to_simplicial(physical=(3, pv)).ncells == ec.ncells
+    @test_throws ArgumentError gmsh_to_simplicial(physical=(2, pg))
+
+    # Second order elements are rejected
+
+    gmsh.model.mesh.setOrder(2)
+    @test_throws ArgumentError gmsh_to_simplicial()
+    gmsh.model.remove()
+
+    # A box with a spherical hole
+
+    gmsh.model.add("hole")
+    box = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+    sph = gmsh.model.occ.addSphere(0, 0, 0, 1.0)
+    gmsh.model.occ.cut([(3, box)], [(3, sph)])
+    gmsh.model.occ.synchronize()
+    gmsh.option.setNumber("Mesh.MeshSizeMax", 0.6)
+    gmsh.model.mesh.generate(3)
+    @test homology(gmsh_to_simplicial()) == [1,0,1,0]
+    gmsh.model.remove()
+
+    # No mesh
+
+    gmsh.model.add("empty")
+    @test_throws ArgumentError gmsh_to_simplicial()
+    gmsh.model.remove()
+
+    gmsh.finalize()
+    @test_throws ArgumentError gmsh_to_simplicial()
+end
+
+@testset "Gmsh extension: intersecting surfaces" begin
+    #
+    # The fragment example from the manual: a box cut by a plane, with
+    # an embedded sphere which intersects the plane in a circle
+    #
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+    gmsh.model.add("intersecting")
+
+    box    = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+    sphere = gmsh.model.occ.addSphere(0, 0, 0, 1.0)
+    plane  = gmsh.model.occ.addRectangle(-2, -2, 0.3, 4, 4)
+    gmsh.model.occ.synchronize()
+    sphsurf = gmsh.model.getBoundary([(3, sphere)], false, false)
+    gmsh.model.occ.remove([(3, sphere)])
+    out, outmap = gmsh.model.occ.fragment([(3, box)], vcat([(2, plane)], sphsurf))
+    gmsh.model.occ.synchronize()
+
+    plane_pieces  = [tag for (d, tag) in outmap[2] if d == 2]
+    sphere_pieces = [tag for m in outmap[3:end] for (d, tag) in m if d == 2]
+    pg_plane  = gmsh.model.addPhysicalGroup(2, plane_pieces)
+    pg_sphere = gmsh.model.addPhysicalGroup(2, sphere_pieces)
+
+    gmsh.option.setNumber("Mesh.MeshSizeMax", 0.4)
+    gmsh.model.mesh.generate(3)
+
+    ec = gmsh_to_simplicial()
+    @test homology(ec) == [1,0,0,0]
+    plane_cells  = gmsh_marker_cells(ec, 2, pg_plane)
+    sphere_cells = gmsh_marker_cells(ec, 2, pg_sphere)
+    @test homology(lefschetz_subcomplex(ec, plane_cells)) == [1,0,0]
+    @test homology(lefschetz_subcomplex(ec, sphere_cells)) == [1,0,1]
+    circle = intersect(plane_cells, sphere_cells)
+    @test homology(lefschetz_subcomplex(ec, circle)) == [1,1]
+    @test all(abs(ec.coords[k][1][3] - 0.3) < 1e-12 for k in circle if ec.dimensions[k] == 0)
+
+    gmsh.finalize()
+end
+
+@testset "Gmsh extension: files" begin
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+    gmsh_box_mesh(0.3)
+    ec = gmsh_to_simplicial()
+    dir = mktempdir()
+    mshfile = joinpath(dir, "box.msh")
+    gmsh.write(mshfile)
+    gmsh.finalize()
+
+    # Mesh file, with Gmsh not running
+
+    ecf = gmsh_file_to_simplicial(mshfile)
+    @test gmsh.isInitialized() == 0
+    @test ecf.ncells == ec.ncells
+    @test homology(ecf) == [1,0,0,0]
+
+    # Geometry file, which is meshed automatically
+
+    geofile = joinpath(dir, "ball.geo")
+    write(geofile, """
+        SetFactory("OpenCASCADE");
+        Sphere(1) = {0, 0, 0, 1.0};
+        Mesh.MeshSizeMax = 0.4;
+        """)
+    ecb = gmsh_file_to_simplicial(geofile)
+    @test homology(ecb) == [1,0,0,0]
+    @test homology(gmsh_file_to_simplicial(geofile; dim=2)) == [1,0,1]
+    @test_throws ArgumentError gmsh_file_to_simplicial(joinpath(dir, "missing.msh"))
+end

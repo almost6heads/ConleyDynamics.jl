@@ -41,3 +41,14 @@ tetgen_to_simplicial
 tetgen_marker_cells
 tetgen_region_cells
 ```
+
+## Gmsh.jl
+
+The following functions are available when `Gmsh.jl` is loaded alongside
+`ConleyDynamics.jl`.
+
+```@docs
+gmsh_to_simplicial
+gmsh_file_to_simplicial
+gmsh_marker_cells
+```
