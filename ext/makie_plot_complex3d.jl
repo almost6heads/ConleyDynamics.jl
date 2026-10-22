@@ -1,7 +1,7 @@
 # Plotting of complexes and cell subsets in three dimensions
 
 function _plot_complex3d!(ax, ec::EuclideanComplex, fname::String;
-                          pdim::Vector{Bool}=[false,true,true,true],
+                          pdim::AbstractVector{Bool}=[false,true,true,true],
                           hull_only::Bool=true, clip=nothing, alpha::Real=0.3,
                           facecolor=colorant"steelblue1",
                           edgecolor=colorant"royalblue3",
@@ -28,7 +28,7 @@ end
 
 function _plot_cells3d!(ax, ec::EuclideanComplex, cells, keep::BitVector;
                         color=colorant"darkorange", alpha::Real=1.0,
-                        pdim::Vector{Bool}=[true,true,true,true],
+                        pdim::AbstractVector{Bool}=[true,true,true,true],
                         hull_only::Bool=true, linewidth::Real=4,
                         markersize::Real=0.05)
     #

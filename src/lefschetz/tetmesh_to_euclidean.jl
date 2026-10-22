@@ -11,8 +11,8 @@ if `p=0`, and over `GF(p)` if `p>0`.
 The vector `points` contains the vertex coordinates, where `points[k]`
 can be any vector or tuple of real numbers. Usually these are points in
 three dimensions, but any dimension is allowed. The vector `cells`
-contains the maximal simplices of the mesh, as vectors of 1-based
-indices into `points`. Typically these are the tetrahedra of a
+contains the maximal simplices of the mesh, as vectors or tuples of
+1-based indices into `points`. Typically these are the tetrahedra of a
 tetrahedral mesh, or the triangles of a triangulated surface, but
 simplices of different dimensions can be mixed. All faces of the
 given simplices are generated automatically.
@@ -68,8 +68,9 @@ function tetmesh_to_euclidean(points::AbstractVector, cells::AbstractVector;
         throw(ArgumentError("tetmesh_to_euclidean: all coordinates need to be finite"))
     end
 
-    # Check the cells
+    # Check the cells, which can be given as vectors or tuples
 
+    cells = [collect(Int, cell) for cell in cells]
     for cell in cells
         if isempty(cell)
             throw(ArgumentError("tetmesh_to_euclidean: cells cannot be empty"))
@@ -96,7 +97,7 @@ function tetmesh_to_euclidean(points::AbstractVector, cells::AbstractVector;
         simplices = [sort([newindex[v] for v in cell]) for cell in cells]
     else
         vcoords   = coords
-        simplices = [sort(Int.(collect(cell))) for cell in cells]
+        simplices = [sort(cell) for cell in cells]
     end
 
     # Create the labels and the complex

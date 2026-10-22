@@ -3,7 +3,7 @@
 function _plot_subsets3d!(ax, ec::EuclideanComplex, subsets::Vector{Vector{Int}},
                           colors, fname::String;
                           alpha::Real=0.9, bgalpha::Real=0.08,
-                          pdim::Vector{Bool}=[false,true,true,true],
+                          pdim::AbstractVector{Bool}=[false,true,true,true],
                           hull_only::Bool=true, clip=nothing,
                           linewidth::Real=4, markersize=nothing)
     #

@@ -105,3 +105,13 @@ end
     @test_throws ArgumentError CDG._cells3d_indices(ec, [ec.ncells+1], "f")
     @test_throws ArgumentError CDG._cells3d_indices(ec, [1.0], "f")
 end
+
+@testset "3D plot geometry: pdim as BitVector" begin
+    ec = tetmesh_to_euclidean([[0,0,0], [1,0,0], [0,1,0], [0,0,1]], [[1,2,3,4]])
+    cof  = CDG._coface_lists(ec)
+    keep = CDG._clip_mask(ec, nothing, cof)
+    @test CDG._background3d_geometry(ec, keep, cof; pdim=trues(4)) ==
+          CDG._background3d_geometry(ec, keep, cof; pdim=[true,true,true,true])
+    @test CDG._cells3d_geometry(ec, [15], keep; pdim=trues(4)) ==
+          CDG._cells3d_geometry(ec, [15], keep; pdim=[true,true,true,true])
+end

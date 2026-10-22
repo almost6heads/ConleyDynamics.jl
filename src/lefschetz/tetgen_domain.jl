@@ -119,6 +119,11 @@ function tetgen_domain_from_surface(V::AbstractVector, T::AbstractVector)
     # Create a domain bounded by a closed triangulated surface
     #
 
+    nv = length(V)
+    if any(any(v -> !(1 <= v <= nv), t) for t in T)
+        throw(ArgumentError("tetgen_domain_from_surface: the triangles contain " *
+                            "indices outside of 1:$nv"))
+    end
     closed, _ = _trisurface_check(T)
     if !closed
         throw(ArgumentError("tetgen_domain_from_surface: the surface is not closed"))
@@ -167,7 +172,8 @@ marker is given, the next free marker `maximum(dom.markers) + 1` is used,
 or `1` if this maximum is zero or less. The cells of the final complex
 on the surface can be found with `tetgen_marker_cells`.
 
-For closed surfaces, two additional options are available:
+For closed surfaces, two additional options are available, which
+cannot be combined:
 * `hole=true` removes the inside of the surface from the domain.
 * `region=(attr, maxvol)` marks the inside of the surface as a region
   with integer attribute `attr`, and with maximum tetrahedron volume
@@ -198,6 +204,16 @@ function tetgen_domain_add_surface(dom::TetDomain, V::AbstractVector, T::Abstrac
     #
     # Add a triangulated constraint surface to a domain
     #
+
+    nv = length(V)
+    if any(any(v -> !(1 <= v <= nv), t) for t in T)
+        throw(ArgumentError("tetgen_domain_add_surface: the triangles contain " *
+                            "indices outside of 1:$nv"))
+    end
+    if hole && !isnothing(region)
+        throw(ArgumentError("tetgen_domain_add_surface: a surface cannot bound " *
+                            "both a hole and a region"))
+    end
 
     if hole || !isnothing(region)
         closed, oriented = _trisurface_check(T)
@@ -250,7 +266,10 @@ segments which occur more than once are ignored. The facets get the marker
 
 Vertices of the curve which coincide exactly with existing points of
 the domain are identified with them. Apart from such shared vertices,
-the curve must not intersect any facets of the domain. The function
+the curve must not intersect any facets of the domain, and in
+particular it cannot lie inside a face of the outer boundary. Curves
+outside of the domain or inside holes are ignored by `TetGen`, and
+`tetgen_mesh` prints a warning in this case. The function
 returns a new `TetDomain`, and the original domain is not changed.
 """
 function tetgen_domain_add_curve(dom::TetDomain, curve::AbstractVector;

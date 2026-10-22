@@ -185,8 +185,9 @@ end
 
 Find the cells of a complex which lie on the facets with a given marker.
 
-The complex `ec` has to be created from `res` via `tetgen_to_simplicial`.
-The function returns the indices of all triangles of `ec` which lie on
+The complex `ec` has to be created from `res` via `tetgen_to_simplicial`,
+otherwise an `ArgumentError` is raised. The function returns the
+indices of all triangles of `ec` which lie on
 facets of the domain with marker `marker`, as well as all edges on
 constraint curves with this marker. If `closure=true` (default), all
 faces of these cells are included as well, so the result is a closed
@@ -203,7 +204,7 @@ function tetgen_marker_cells(res::TetGenResult, ec::EuclideanComplex, marker::In
     # Find the cells on the facets with a given marker
     #
 
-    labels = _tetgen_point_labels(res)
+    labels = _tetgen_check_complex(res, ec, "tetgen_marker_cells")
     cells  = Vector{Int}()
 
     # Triangles on surface facets
@@ -232,7 +233,8 @@ Find the tetrahedra of a complex which lie in the regions with a given
 attribute.
 
 The complex `ec` has to be created from `res` via `tetgen_to_simplicial`,
-and the domain has to contain regions, see `tetgen_domain_add_region`
+otherwise an `ArgumentError` is raised, and the domain has to contain
+regions, see `tetgen_domain_add_region`
 and `tetgen_domain_add_surface`. The function returns the indices of all
 tetrahedra with region attribute `attr`. If `closure=true` (default),
 all faces of these tetrahedra are included as well, so the result is a
@@ -255,7 +257,7 @@ function tetgen_region_cells(res::TetGenResult, ec::EuclideanComplex, attr::Int;
         throw(ArgumentError("tetgen_region_cells: the mesh has no region attributes"))
     end
 
-    labels = _tetgen_point_labels(res)
+    labels = _tetgen_check_complex(res, ec, "tetgen_region_cells")
     cells  = Vector{Int}()
     for (t, a) in zip(res.tetrahedra, res.tetattributes)
         a == attr || continue
@@ -284,6 +286,28 @@ function _tetgen_point_labels(res::TetGenResult)
     newindex = cumsum(used)
     vlabels  = _vertex_labels(newindex[end])
     return [used[k] ? vlabels[newindex[k]] : "" for k in 1:length(res.points)]
+end
+
+function _tetgen_check_complex(res::TetGenResult, ec::EuclideanComplex, fname::String)
+    #
+    # Check that ec was created from res with tetgen_to_simplicial, by
+    # comparing the vertex labels and coordinates. Returns the vertex
+    # labels of the mesh points.
+    #
+    labels = _tetgen_point_labels(res)
+    for (k, lab) in enumerate(labels)
+        isempty(lab) && continue
+        idx = get(ec.indices, lab, 0)
+        if (idx == 0) || (ec.dimensions[idx] != 0) || (ec.coords[idx][1] != res.points[k])
+            throw(ArgumentError("$fname: the complex was not created from this " *
+                                "mesh with tetgen_to_simplicial"))
+        end
+    end
+    if count(!isempty, labels) != count(==(0), ec.dimensions)
+        throw(ArgumentError("$fname: the complex was not created from this " *
+                            "mesh with tetgen_to_simplicial"))
+    end
+    return labels
 end
 
 function _tetgen_segment_param(x, a, d, len2)

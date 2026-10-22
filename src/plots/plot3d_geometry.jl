@@ -150,7 +150,7 @@ end
 
 function _cells3d_geometry(ec::EuclideanComplex, cells::Vector{Int},
                            keep::BitVector; hull_only::Bool=true,
-                           pdim::Vector{Bool}=[true,true,true,true])
+                           pdim::AbstractVector{Bool}=[true,true,true,true])
     #
     # Geometry of a cell subset. Three-dimensional cells are shown by
     # their boundary surface (hull_only=true) or by all of their faces.
@@ -220,7 +220,7 @@ end
 
 function _background3d_geometry(ec::EuclideanComplex, keep::BitVector,
                                 cof::Vector{Vector{Int}}; hull_only::Bool=true,
-                                pdim::Vector{Bool}=[true,true,true,true])
+                                pdim::AbstractVector{Bool}=[true,true,true,true])
     #
     # Geometry of the whole visible complex. For hull_only=true, only
     # the boundary surface of the visible three-dimensional cells is

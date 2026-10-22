@@ -219,3 +219,28 @@ end
     end
     @test homology(lefschetz_subcomplex(ec, tetgen_marker_cells(res, ec, 1))) == [1,1]
 end
+
+@testset "TetGen extension: consistency checks" begin
+    box = tetgen_domain_box([-2,-2,-2], [2,2,2])
+    V, T = trisurface_sphere([0,0,0], 1.0, 1)
+    res1 = tetgen_mesh(tetgen_domain_add_surface(box, V, T; region=(1, 0.05)); maxvolume=0.5)
+    res2 = tetgen_mesh(box; maxvolume=0.1)
+    ec1 = tetgen_to_simplicial(res1)
+    ec2 = tetgen_to_simplicial(res2)
+
+    # A complex from a different mesh is rejected
+
+    @test_throws ArgumentError tetgen_marker_cells(res1, ec2, 0)
+    @test_throws ArgumentError tetgen_marker_cells(res2, ec1, 0)
+    @test_throws ArgumentError tetgen_region_cells(res1, ec2, 1)
+    @test !isempty(tetgen_marker_cells(res1, ec1, 1))
+    @test tetgen_marker_cells(res1, tetgen_to_simplicial(res1; p=3), 1) ==
+          tetgen_marker_cells(res1, ec1, 1)
+
+    # Constraint curves outside of the domain are reported
+
+    dom = tetgen_domain_add_curve(box, [[3,3,3], [4,4,4]])
+    res = @test_logs (:warn, r"outside") tetgen_mesh(dom)
+    @test isempty(tetgen_marker_cells(res, tetgen_to_simplicial(res), 1))
+    @test_logs tetgen_mesh(tetgen_domain_add_curve(box, [[0,0,0], [1,1,1]]))
+end

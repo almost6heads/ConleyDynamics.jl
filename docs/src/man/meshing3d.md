@@ -650,15 +650,22 @@ length(sphere_tris), unique(ec2.dimensions[sphere_tris])   # (320, [2])
 
 The marker `0` gives the outer boundary of the domain. This makes it easy
 to work with exit sets or relative homology. For example, for the box
-mesh `res` and `ec` from the previous section, the boundary is a sphere,
-and the homology of the box relative to its boundary is the homology of
-a three-dimensional sphere (with the zeroth homology removed):
+mesh from the beginning of this section, the boundary is a sphere, and
+the homology of the box relative to its boundary is the homology of a
+three-dimensional sphere (with the zeroth homology removed):
 
 ```julia
-bnd = tetgen_marker_cells(res, ec, 0)
-homology(ec, bnd)              # [1, 0, 1, 0], the homology of the boundary
-relative_homology(ec, bnd)     # [0, 0, 0, 1]
+resbox = tetgen_mesh(tetgen_domain_box([-1.5,-1,-1], [1.5,1,1]); maxvolume=0.01)
+ecbox  = tetgen_to_simplicial(resbox)
+bnd    = tetgen_marker_cells(resbox, ecbox, 0)
+homology(ecbox, bnd)           # [1, 0, 1, 0], the homology of the boundary
+relative_homology(ecbox, bnd)  # [0, 0, 0, 1]
 ```
+
+The complex passed to [`tetgen_marker_cells`](@ref) has to be the one
+created from the given mesh by [`tetgen_to_simplicial`](@ref). This is
+checked by comparing the vertex coordinates, and an `ArgumentError` is
+raised for a mismatch, such as a complex from a different mesh.
 
 !!! warning "Constraints must not intersect"
     `TetGen` requires that all facets intersect only in common vertices
@@ -670,7 +677,11 @@ relative_homology(ec, bnd)     # [0, 0, 0, 1]
     particular, a surface whose boundary curve lies in a face of the box,
     such as an open cylinder whose ends are on two opposite faces, is
     rejected, since its boundary curve is not made of edges of the box
-    facets. For intersecting geometry, use `Gmsh.jl` instead, see
+    facets. Similarly, a constraint curve cannot lie inside a face of the
+    box, although it can run along an edge of the box. Curves outside of
+    the domain are ignored by `TetGen`, and [`tetgen_mesh`](@ref) prints
+    a warning in this case. For intersecting geometry, use `Gmsh.jl`
+    instead, see
     [Gmsh.jl: Complex and Intersecting Geometry](@ref).
 
 ### Holes
@@ -1350,6 +1361,17 @@ difference is that [`gmsh_to_simplicial`](@ref) creates a new complex
 with its own labels, while [`gmsh_marker_cells`](@ref) returns cell
 indices in the given complex.
 
+We finish the example by saving the mesh to a file, which is used again
+in the next section, and by ending the `Gmsh` session:
+
+```julia
+gmsh.option.setNumber("Mesh.SaveAll", 1)
+gmsh.write("intersecting.msh")
+gmsh.finalize()
+```
+
+The option `Mesh.SaveAll` is explained at the end of the next section.
+
 ### Reading Files
 
 `Gmsh` reads geometry files in its own `.geo` scripting language, CAD
@@ -1376,21 +1398,20 @@ homology(gmsh_file_to_simplicial("ball.geo"; dim=2))     # [1, 0, 1]
 ```
 
 creates a tetrahedral mesh of the ball, and a triangulation of its
-boundary sphere. If `Gmsh` is not running, the function initializes it
-and finalizes it at the end, so no other `Gmsh` commands are needed. If
-`Gmsh` is already running, the file is opened in the running session.
+boundary sphere. Since `Gmsh` is not running at this point, the function
+initializes it and finalizes it at the end, so no other `Gmsh` commands
+are needed.
+
+If `Gmsh` is already running, the file is opened in the running session.
 This creates a new model, which becomes the current model, while the
 previous models remain available, see `gmsh.model.list()` and
-`gmsh.model.setCurrent`. In that case, the new model remains available
-afterwards, including the physical groups stored in a mesh file. This allows the use of [`gmsh_marker_cells`](@ref) after reading a
-file. A mesh created in Julia can be saved with `gmsh.write`:
+`gmsh.model.setCurrent`. The new model also remains available after the
+conversion, including the physical groups stored in a mesh file. This
+allows the use of [`gmsh_marker_cells`](@ref) after reading a file. For
+example, the mesh of the intersecting surfaces which was saved at the
+end of the previous section can be read and analyzed as follows:
 
 ```julia
-# ... create and mesh the intersecting model as above, then:
-gmsh.option.setNumber("Mesh.SaveAll", 1)
-gmsh.write("intersecting.msh")
-gmsh.finalize()
-
 gmsh.initialize()
 ecm = gmsh_file_to_simplicial("intersecting.msh")
 lefschetz_cell_count(ecm)            # [4335, 26847, 43139, 20626]

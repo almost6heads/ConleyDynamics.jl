@@ -400,7 +400,7 @@ end
 
 _cross3(a, b) = [a[2]*b[3] - a[3]*b[2], a[3]*b[1] - a[1]*b[3], a[1]*b[2] - a[2]*b[1]]
 
-function _trisurface_check(T::AbstractVector{<:AbstractVector{<:Integer}})
+function _trisurface_check(T::AbstractVector)
     #
     # Check whether a triangulated surface is closed (every edge lies
     # in exactly two triangles), and whether it is consistently
@@ -489,7 +489,7 @@ function _trisurface_interior_point(V::AbstractVector, T::AbstractVector,
     return center .+ (tmin / 2.0) .* dir
 end
 
-function _trisurface_components(T::AbstractVector{<:AbstractVector{<:Integer}})
+function _trisurface_components(T::AbstractVector)
     #
     # Split a triangulated surface into its connected components, where
     # triangles are connected if they share a vertex. Returns vectors of

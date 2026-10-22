@@ -97,6 +97,19 @@ function ConleyDynamics.tetgen_mesh(dom::TetDomain;
     segments = [(dom.points[f[1]], dom.points[f[2]], m)
                 for (f, m) in zip(dom.facets, dom.markers) if length(f) == 2]
 
+    # TetGen silently drops constraint curves outside of the domain
+
+    if !isempty(segments)
+        meshpoints = Set(NTuple{3,Float64}(pt) for pt in points)
+        lost = sort(unique(m for (a, b, m) in segments
+                           if !(a in meshpoints) || !(b in meshpoints)))
+        if !isempty(lost)
+            @warn "tetgen_mesh: constraint curves with markers $lost lie at least " *
+                  "partly outside of the meshed domain or inside holes, and are " *
+                  "not contained in the mesh."
+        end
+    end
+
     return TetGenResult(points, tetrahedra, trifaces, trimarkers, tetattrs, segments)
 end
 
@@ -105,7 +118,12 @@ function _tetgen_tmpfiles()
     # Debugging files which TetGen writes into the current directory
     # when it detects intersecting facets
     #
-    return Set(f for f in readdir(pwd()) if startswith(f, "tetgen-tmpfile"))
+    files = try
+        readdir(pwd())
+    catch
+        String[]
+    end
+    return Set(f for f in files if startswith(f, "tetgen-tmpfile"))
 end
 
 function _tetgen_run(io::RawTetGenIO, switches::String, fname::String, hint::String)

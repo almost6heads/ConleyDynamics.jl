@@ -283,3 +283,42 @@ end
     @test all(allunique(f) for f in dom.facets)
     @test_throws ArgumentError tetgen_domain_add_curve(box, [[0,0,0], [0,0,0]])
 end
+
+@testset "Meshing inputs: tuples, indices, thin boxes" begin
+    box = tetgen_domain_box([-2,-2,-2], [2,2,2])
+    V, T = trisurface_sphere([0,0,0], 1.0, 1)
+    Vt = [Tuple(v) for v in V]
+    Tt = [Tuple(t) for t in T]
+
+    # Surfaces and cells given as tuples
+
+    @test length(tetgen_domain_from_surface(Vt, Tt).facets) == length(T)
+    dom = tetgen_domain_add_surface(box, Vt, Tt; hole=true)
+    @test length(dom.holes) == 1
+    @test sqrt(sum(abs2, collect(dom.holes[1]))) < 1.0
+    @test tetmesh_to_euclidean(Vt, Tt).ncells == tetmesh_to_euclidean(V, T).ncells
+
+    # Invalid triangle indices, and holes combined with regions
+
+    @test_throws ArgumentError tetgen_domain_add_surface(box, V, [t .- 1 for t in T])
+    @test_throws ArgumentError tetgen_domain_add_surface(box, V[1:10], T)
+    @test_throws ArgumentError tetgen_domain_from_surface(V[1:10], T)
+    @test_throws ArgumentError tetgen_domain_add_surface(box, V, T; hole=true,
+                                                         region=(1, 0.1))
+
+    # Boxes which are thinner than pdist in some directions are filled
+    # as lower-dimensional boxes
+
+    mindist(p) = minimum(sqrt(sum(abs2, p[i] .- p[j]))
+                         for i in 1:length(p) for j in i+1:length(p))
+    n2 = length(poisson_points_box([0,0], [1,1], 0.1; rng=Xoshiro(1)))
+    for h in (0.01, 0.05)
+        p = poisson_points_box([0,0,0], [1,1,h], 0.1; rng=Xoshiro(1))
+        @test length(p) >= 0.8 * n2
+        @test mindist(p) >= 0.1
+        @test all(all([0,0,0] .<= x .<= [1,1,h]) for x in p)
+    end
+    p = poisson_points_box([0,0,0], [1,0.01,0.01], 0.1; rng=Xoshiro(1))
+    @test length(p) >= 5
+    @test mindist(p) >= 0.1
+end

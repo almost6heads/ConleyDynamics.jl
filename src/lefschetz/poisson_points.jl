@@ -119,6 +119,17 @@ function poisson_points_box(bmin::AbstractVector{<:Real}, bmax::AbstractVector{<
         push!(active, length(points))
     end
 
+    # Directions in which the box is thinner than r. In these directions,
+    # candidate points get a uniformly distributed coordinate, while the
+    # offset from the center point lies in the remaining directions, so
+    # that the distance to the center point is still at least r. Without
+    # this, almost all candidates in a thin box fall outside of it.
+
+    thin = [(hi[k] - lo[k]) < r for k in 1:d]
+    if all(thin)
+        thin .= false
+    end
+
     # Start with a uniformly distributed random point
 
     active = Vector{Int}()
@@ -133,9 +144,13 @@ function poisson_points_box(bmin::AbstractVector{<:Real}, bmax::AbstractVector{<
         for _ in 1:attempts
             # Random point in the spherical shell with radii r and 2r
             dir = randn(rng, d)
+            dir[thin] .= 0.0
             nrm = sqrt(sum(abs2, dir))
             nrm == 0 && continue
             x = center .+ (r * (1 + rand(rng)) / nrm) .* dir
+            for k in 1:d
+                thin[k] && (x[k] = lo[k] + (hi[k] - lo[k]) * rand(rng))
+            end
             if all(lo .<= x .<= hi) && isvalid(x)
                 addpoint!(x, active)
                 found = true
