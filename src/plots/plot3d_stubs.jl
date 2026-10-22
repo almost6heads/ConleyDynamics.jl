@@ -34,6 +34,7 @@ Optional keyword arguments:
 - `facecolor=colorant"steelblue1"`, `edgecolor=colorant"royalblue3"`,
   `vertexcolor=colorant"royalblue4"`: colors of the cells.
 - `linewidth::Real=0.75`: width of the edges.
+- `linealpha::Real=1.0`: opacity of the edges.
 - `markersize=nothing`: radius of the vertex spheres, in data units. The
   default is a fraction of the typical edge length.
 
@@ -206,18 +207,22 @@ Plot a multivector field on a simplicial complex embedded in three
 dimensions, using Makie.
 
 Every multivector with at least two cells is drawn in the same way as a
-Morse set in `plot_simplicial3d_morse`, and consecutive multivectors get
-different colors. Since multivectors fill the complex, such plots are
-only readable for small complexes, or together with the `clip` keyword.
+Morse set in `plot_simplicial3d_morse`. The colors are chosen from a
+palette by a greedy coloring, so that adjacent multivectors get
+different colors whenever the palette is large enough. Since
+multivectors fill the complex, such plots are only readable for small
+complexes, or together with the `clip` keyword.
 
 Optional keyword arguments:
-- `colors=nothing`: a vector of colors which is cycled through. By
-  default, twelve distinguishable colors are used.
+- `colors=nothing`: the color palette. By default, twelve light
+  distinguishable colors are used.
 - `ci::Bool=false`: color each multivector by its Conley index instead.
-- `addcritical::Bool=false`: also draw the cells which do not belong to
-  any multivector of `mvf`, which are critical cells.
-- `alpha`, `bgalpha`, `pdim`, `hull_only`, `clip`, `linewidth`,
-  `markersize`: as for `plot_simplicial3d_morse`.
+- `addcritical::Bool=false`: also draw the singleton multivectors of
+  `mvf` and the cells which do not belong to any multivector of `mvf`,
+  which are critical cells.
+- `alpha::Real=0.8`: opacity of the multivectors.
+- `bgalpha`, `pdim`, `hull_only`, `clip`, `linewidth`, `markersize`: as
+  for `plot_simplicial3d_morse`.
 
 The first form also accepts the keywords `axis` and `size`, see
 `plot_simplicial3d`.

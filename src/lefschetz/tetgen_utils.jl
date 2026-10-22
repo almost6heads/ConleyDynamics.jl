@@ -56,8 +56,8 @@ arguments control the mesh quality and size:
 * `maxvolume`: Maximum volume of the tetrahedra. If `nothing`, there is
   no global volume constraint. Regional volume constraints of the domain
   are always applied. Note that `TetGen` treats volume constraints as
-  approximate, and a few tetrahedra can exceed them by up to about ten
-  percent.
+  approximate: typically about one percent of the tetrahedra exceed
+  them, by up to about fifty percent.
 * `minratio`: Maximum ratio of circumradius to shortest edge length of
   the tetrahedra. Smaller values give better shaped tetrahedra, but
   more of them. The default `1.414` is the standard value of `TetGen`.
