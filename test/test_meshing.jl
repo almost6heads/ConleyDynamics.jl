@@ -159,3 +159,68 @@ end
     @test_throws ArgumentError trisurface_torus([0,0,0], 1.0, 2.0, 8, 8)
     @test_throws ArgumentError trisurface_cylinder([0,0,0], [0,0,1], 1.0, 2, 1)
 end
+
+@testset "TetDomain builders" begin
+    dom = tetgen_domain_box([0,0,0], [2,1,1])
+    @test length(dom.points) == 8
+    @test length(dom.facets) == 6
+    @test dom.markers == zeros(Int, 6)
+    @test dom.points[7] == (2.0, 1.0, 1.0)
+    # The faces form a closed, outward oriented surface
+    tris = [[f[1],f[2],f[3]] for f in dom.facets]
+    append!(tris, [[f[1],f[3],f[4]] for f in dom.facets])
+    @test ConleyDynamics._trisurface_check(tris) == (true, true)
+    @test ConleyDynamics._trisurface_volume(dom.points, tris) ≈ 2.0
+
+    # Nodes, surfaces, curves, holes, and regions
+
+    dom2 = tetgen_domain_add_nodes(dom, [[0.5,0.5,0.5], (1.5,0.5,0.5)])
+    @test length(dom2.points) == 10
+    @test length(dom.points) == 8
+
+    V, T = trisurface_sphere([1,0.5,0.5], 0.3, 1)
+    dom3 = tetgen_domain_add_surface(dom2, V, T; hole=true)
+    @test length(dom3.facets) == 6 + length(T)
+    @test dom3.markers[end] == 1
+    @test length(dom3.holes) == 1
+    @test sqrt(sum(abs2, collect(dom3.holes[1]) .- [1,0.5,0.5])) < 0.3
+
+    dom4 = tetgen_domain_add_surface(dom3, trisurface_sphere([0.4,0.5,0.5], 0.2, 1)...;
+                                     region=(5, 0.01))
+    @test dom4.markers[end] == 2
+    @test length(dom4.regions) == 1
+    @test dom4.regions[1][2:3] == (5, 0.01)
+
+    curve = [[0.1,0.1,0.1], [0.1,0.9,0.1], [0.1,0.9,0.9], [0.1,0.1,0.1]]
+    dom5 = tetgen_domain_add_curve(dom4, curve; marker=9)
+    @test dom5.facets[end-2:end] == [[length(dom5.points)-2, length(dom5.points)-1],
+                                     [length(dom5.points)-1, length(dom5.points)],
+                                     [length(dom5.points), length(dom5.points)-2]]
+    @test all(==(9), dom5.markers[end-2:end])
+    @test ConleyDynamics._next_marker(dom5) == 10
+
+    # Points shared with existing points are identified
+
+    dom6 = tetgen_domain_add_curve(dom, [[0,0,0], [2,1,1]])
+    @test length(dom6.points) == 8
+    @test dom6.facets[end] == [1,7]
+
+    dom7 = tetgen_domain_add_hole(tetgen_domain_add_region(dom, [1,1,1], 3), [0,0,0])
+    @test dom7.holes == [(0.0,0.0,0.0)]
+    @test dom7.regions == [((1.0,1.0,1.0), 3, -1.0)]
+
+    # Domains from closed surfaces
+
+    Vt, Tt = trisurface_torus([0,0,0], 2.0, 0.5, 12, 6)
+    domt = tetgen_domain_from_surface(Vt, Tt)
+    @test length(domt.facets) == length(Tt)
+
+    # Invalid input
+
+    @test_throws ArgumentError tetgen_domain_box([0,0], [1,1])
+    @test_throws ArgumentError tetgen_domain_box([0,0,0], [1,0,1])
+    @test_throws ArgumentError tetgen_domain_from_surface(trisurface_plane_patch([0,0,0],[1,0,0],[0,1,0],2,2)...)
+    @test_throws ArgumentError tetgen_domain_add_surface(dom, trisurface_plane_patch([0,0,0],[1,0,0],[0,1,0],2,2)...; hole=true)
+    @test_throws ArgumentError tetgen_domain_add_nodes(dom, [[0.5,0.5]])
+    @test_throws ArgumentError TetDomain([(0.0,0.0,0.0)], [[1,2]], [0])
+end
