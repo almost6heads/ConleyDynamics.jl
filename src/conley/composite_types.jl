@@ -149,9 +149,9 @@ In addition it carries:
   - Triangle: `[[x1,y1],[x2,y2],[x3,y3]]` (length 3)
   - Cubical 2-cell: `[[x1,y1],[x2,y2],[x3,y3],[x4,y4]]` (length 4)
 
-An `EuclideanComplex` can be created from an existing `LefschetzComplex` using
-[`lefschetz_to_euclidean`](@ref), and converted back using
-[`euclidean_to_lefschetz`](@ref).
+The function [`lefschetz_to_euclidean`](@ref) creates an `EuclideanComplex`
+from an existing `LefschetzComplex`, and the function
+[`euclidean_to_lefschetz`](@ref) converts it back.
 """
 struct EuclideanComplex <: AbstractComplex
     #
