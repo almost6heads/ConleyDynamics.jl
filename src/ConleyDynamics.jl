@@ -163,6 +163,8 @@ include("./plots/plot_planar_cubical_morse.jl")
 include("./plots/plot_data_types.jl")
 include("./plots/plot_morse_strata.jl")
 include("./plots/plot_morse_reachability.jl")
+include("./plots/plot3d_geometry.jl")
+include("./plots/plot3d_stubs.jl")
 
 end
 

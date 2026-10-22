@@ -50,6 +50,28 @@ plot_cubical_mvf
 plot_cubical_mv
 ```
 
+## Visualizing Complexes in Three Dimensions (Makie)
+
+```@docs
+plot_simplicial3d
+plot_simplicial3d!
+plot_simplicial3d_morse
+plot_simplicial3d_morse!
+plot_simplicial3d_mv
+plot_simplicial3d_mv!
+plot_simplicial3d_mvf
+plot_simplicial3d_mvf!
+plot_cubical3d
+plot_cubical3d!
+plot_cubical3d_morse
+plot_cubical3d_morse!
+plot_cubical3d_mv
+plot_cubical3d_mv!
+plot_cubical3d_mvf
+plot_cubical3d_mvf!
+plot_cells3d!
+```
+
 ## Internal Helpers
 
 ```@docs

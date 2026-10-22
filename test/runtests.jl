@@ -18,6 +18,7 @@ include("test_mvf.jl")
 include("test_ap.jl")
 include("test_conley.jl")
 include("test_meshing.jl")
+include("test_plot3d_geometry.jl")
 
 @testset "Tutorial" begin
     #
