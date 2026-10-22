@@ -80,8 +80,9 @@ it is easy to generate a simplicial complex. This requires two objects:
 ![A first simplicial complex](img/tutorialsimplex.png)
 
 The following first example creates a simple simplicial complex.  The complex is
-shown in the above figure, and it has six vertices which we label by the first
-six letters.
+shown in the figure of a hollow triangle `ABC` connected by the edge `BD` to a
+filled triangle `DEF`, and it has six vertices which we label by the first six
+letters.
 
 ```@example T1
 using ..ConleyDynamics # hide
@@ -262,11 +263,13 @@ above:
 formanvf = [["A","AC"],["B","AB"],["C","BC"],["D","BD"],["E","DE"]]
 ```
 
-The Forman vector field `formanvf` is viualized in the accompanying figure.
+The Forman vector field `formanvf` is visualized in the figure which shows
+arrows and red critical cells on this simplicial complex.
 
 ![A first Forman vector field](img/tutorialforman.png)
 
-According to the figure, a Forman vector field is comprised of *arrows*, as well
+According to this figure, a Forman vector field is comprised of *arrows*,
+as well
 as *critical cells* which are indicated by red dots. Every simplex of the
 underlying simplicial complex is either critical, or it is contained in a unique
 arrow. In other words, the collection of critical cells and arrows forms a
@@ -296,7 +299,8 @@ induces the following *dynamical behavior* on the simplicial complex `sc`:
 - __Arrow targets__ create flow towards the boundary of ``\sigma^+``,
   except towards the source facet ``\sigma^-``.
 
-In the above figure, for example, the simplex `EF` is a critical cell, so it
+In the figure of the Forman vector field, for example, the simplex `EF` is a
+critical cell, so it
 contains an equilibrium. At the same time, it also allows for flow towards the
 boundary, which consists of the vertices `E` and `F`.  A solution flowing to the
 former then has to enter `DE`, flow through `D` to `BD`, before entering the
@@ -521,7 +525,8 @@ mvflogo = [["A","AB"],["C","AC"],["B","BC","BD","BCD"]]
 ```
 
 This example is taken from [mrozek:wanner:25a; Figure 2.1](@cite), and is
-visualized in the accompanying figure.
+visualized in the figure which shows the two triangles `ABC` and `BCD` together
+with the three multivectors of `mvflogo`.
 
 ![The logo multivector field](img/multivectorex.png)
 
@@ -900,7 +905,8 @@ fig2 = plot_simplicial3d_morse(ec, cm.morse; ci=true)
 show the mesh, clipped at the plane ``y = 0`` to reveal its interior, and
 the Morse sets, colored by their Conley indices. With `GLMakie`, both
 plots are opened in interactive windows, in which they can be rotated
-with the mouse. Static versions of the plots are shown below.
+with the mouse. Static versions of both plots are shown in the figure of the
+clipped tetrahedral mesh and the three Morse sets.
 
 ![A tetrahedral mesh and the Morse sets of a spatial vector field](img/tutorialspatial.png)
 

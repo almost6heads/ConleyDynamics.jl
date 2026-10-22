@@ -1,35 +1,78 @@
-# Extensions
+# Two-Dimensional Meshes
 
-[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
-exposes optional functionality through *weak dependencies* — packages that
-are loaded on demand and extend the library's capabilities without becoming
-hard dependencies. This chapter documents the functions that become
-available through these extensions. At present, the following backends
-are provided:
+This chapter describes how planar regions can be triangulated, possibly
+with prescribed constraint curves, and how the resulting triangulations
+are turned into simplicial complexes for the analysis with
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl).
+The core function [`create_simplicial_delaunay`](@ref) already creates
+Delaunay triangulations of random point samples in rectangles, see the
+[Tutorial](@ref). For more control over the mesh, and in particular for
+constraint curves, the package provides an extension for the mesh
+generator
+[DelaunayTriangulation.jl](https://github.com/JuliaGeometry/DelaunayTriangulation.jl),
+which is described in the remainder of this chapter. Meshes of
+three-dimensional domains are the topic of the chapter
+[Three-Dimensional Meshes](@ref), and the visualization of planar
+complexes is described in the [Visualization](@ref) chapter.
 
-* `DelaunayTriangulation.jl` for constructing constrained planar
-  triangulations and converting them to simplicial complexes,
-* `TetGen.jl` for constructing constrained quality tetrahedral meshes of
-  three-dimensional domains,
-* `Gmsh.jl` for meshing curved CAD geometry and domains with intersecting
-  constraint surfaces, and
-* `Plots.jl` and `Makie.jl` for the visualization of Lefschetz complexes
-  and their dynamics in two and three dimensions.
+## [Loading the Required Packages](@id meshing2d_loading)
 
-The planar triangulation backend is described in this chapter. The two
-three-dimensional meshing backends are described in the separate chapter
-[Three-Dimensional Meshes](@ref), together with a number of core
-functions for three-dimensional geometry which do not need any extension.
-The plotting backends are described in the [Visualization](@ref)
-chapter.
+`DelaunayTriangulation.jl` is a *weak dependency* of
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl):
+It is not installed together with
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl),
+and the functions described in this chapter only become available once
+both packages have been loaded. The package has to be installed once in
+the active Julia environment, using
+
+```julia
+import Pkg
+Pkg.add("DelaunayTriangulation")
+```
+
+Versions `1.x` of `DelaunayTriangulation.jl` are supported. In every
+Julia session which uses the functions of this chapter, both packages
+then have to be loaded:
+
+```julia
+using DelaunayTriangulation
+using ConleyDynamics
+```
+
+The order of the two commands does not matter, and `import` can be used
+instead of `using`. As soon as both packages are loaded, Julia
+automatically loads the extension module `ConleyDynamicsDelaunayExt`,
+which provides the functions [`delaunay_points_bnd_rectangle`](@ref),
+[`delaunay_points_add_nodes`](@ref), [`delaunay_points_add_segment`](@ref),
+[`delaunay_points_add_split_segs`](@ref), and
+[`delaunay_to_simplicial`](@ref). The functions `triangulate`, `refine!`,
+and `get_area` used below belong to `DelaunayTriangulation.jl` itself,
+which is why it has to be loaded with `using` to call them without the
+module prefix. If one of the above functions is called without loading
+`DelaunayTriangulation.jl`, Julia reports that no matching method
+exists:
+
+```julia
+using ConleyDynamics
+delaunay_points_bnd_rectangle([-5, -5], [5, 5])
+# ERROR: MethodError: no method matching
+#        delaunay_points_bnd_rectangle(::Vector{Int64}, ::Vector{Int64})
+```
+
+In that case, it suffices to load `DelaunayTriangulation.jl` and to
+repeat the call. The function [`split_segments`](@ref), which is
+described at the end of this chapter, is part of the core package and
+can be used without the extension. For the figures in this chapter,
+the package `Plots.jl` was used in addition, see the
+[Visualization](@ref) chapter.
 
 ## DelaunayTriangulation.jl
 
 The
 [DelaunayTriangulation.jl](https://github.com/JuliaGeometry/DelaunayTriangulation.jl)
 package computes Delaunay triangulations of planar point sets, optionally with
-constrained edges and boundary curves.
-Loading it alongside `ConleyDynamics.jl` activates three functions:
+constrained edges and boundary curves. Of the five functions provided by
+the extension, the following three form the basic workflow:
 
 * [`delaunay_points_bnd_rectangle`](@ref) — initialise a point list and
   outer boundary for a rectangular domain,
@@ -61,7 +104,8 @@ sc1  = delaunay_to_simplicial(tri1)
 
 This already produces a valid `EuclideanComplex` — a triangulated filled
 rectangle without any internal constraints. It is shown in the left panel
-of the associated figure.
+of the figure with two sample Delaunay triangulations of a square, i.e.,
+the panel with only the four corners as vertices.
 
 ![Two sample Delaunay triangulations of a square](img/delaunayext1.png)
 
@@ -81,10 +125,10 @@ tri2 = triangulate(points; boundary_nodes = bndcurve)
 sc2  = delaunay_to_simplicial(tri2)
 ```
 
-This leads to the triangulation shown in the right panel of the above
-figure. Note that the new triangulation makes use of all new interior
-nodes, as well as the corners of the squares. The figure was created
-using the commands
+This leads to the triangulation shown in the right panel of the figure
+with two sample Delaunay triangulations of a square. Note that the new
+triangulation makes use of all new interior nodes, as well as the
+corners of the squares. This figure was created using the commands
 
 ```julia
 using Plots
@@ -141,8 +185,9 @@ sc1  = delaunay_to_simplicial(tri1)
 ![Delaunay triangulations with constraint curves](img/delaunayext2.png)
 
 The resulting Delaunay triangulation is shown in the left panel of the
-figure. In addition to the generated mesh, it also shows the two contraint 
-curves in red and green. This plot was generated using the following
+figure of the Delaunay triangulations with constraint curves. In addition
+to the generated mesh, it also shows the two constraint curves in red and
+green. This plot was generated using the following
 commands:
 
 ```julia
@@ -190,7 +235,9 @@ savefig(pcombined12, "delaunayext2.png")
 
 Clearly the added cut `badcut` intersects the circular constraint `circle`
 from before. The mesh generated by `DelaunayTriangulation.jl` is shown in
-the right panel of the above figure. Notice that the third constraint is
+the right panel of the figure of the Delaunay triangulations with
+constraint curves, where `badcut` is drawn as a dashed yellow line.
+Notice that the third constraint is
 not respected by the triangulation, even though the two vertices from
 the constraint have been added to the interior nodes.
 
@@ -211,7 +258,8 @@ The refined triangulation is then converted to a `EuclideanComplex` in the
 same way as before. The optional argument `min_angle` has to be chosen with
 care. If one chooses an angle larger than `30` then it is no longer certain
 that an appropriate triangulation can be generated. The resulting triangulation
-is shown in the left panel of the next figure.
+is shown in the left panel of the figure with two refined Delaunay
+triangulations of a square.
 
 ![Two refined Delaunay triangulations of a square](img/delaunayext3.png)
 
@@ -224,10 +272,11 @@ refine!(tri2; max_area = 0.007 * triarea2, min_angle = 25.0)
 sc4 = delaunay_to_simplicial(tri2)
 ```
 
-The resulting triangulation is shown in the right panel of the above figure.
-Notice that while the nodes determining `badcut` are still part of the
-triangulation, the edge is not -- just as before. The above figure
-was created using the following commands:
+The resulting triangulation is shown in the right panel of the figure
+with two refined Delaunay triangulations of a square. Notice that while
+the nodes determining `badcut` are still part of the triangulation, the
+edge is not -- just as before. This figure was created using the
+following commands:
 
 ```julia
 p3 = plot_simplicial(sc3)
@@ -295,7 +344,9 @@ plot!(pcombined, dpi=300)
 savefig(pcombined, "delaunayext4.png")
 ```
 
-The resulting Delaunay triangulations are shown in the next figure.
+The resulting Delaunay triangulations, before and after the refinement,
+are shown in the figure of the complete Delaunay triangulation example,
+with the ring in red and the elliptical disc in green.
 
 ![A complete Delaunay triangulation example](img/delaunayext4.png)
 
@@ -357,8 +408,10 @@ sc1  = delaunay_to_simplicial(tri1)
 
 ![Delaunay triangulations with split constraint curves](img/delaunayext5.png)
 
-The resulting triangulation is shown in the left panel of the figure.
-The five vertices (four original endpoints plus the crossing at the origin)
+The resulting triangulation is shown in the left panel of the figure
+of the Delaunay triangulations with split constraint curves, with the
+two diagonals drawn as dashed lines. The five vertices (four original
+endpoints plus the crossing at the origin)
 and the four sub-segments are all included as constraints in the triangulation.
 The result is a valid `EuclideanComplex` whose constraint edges are respected
 by the mesh.
@@ -389,11 +442,12 @@ tri2 = triangulate(points2; boundary_nodes = bndcurve2, segments = segments2)
 sc2  = delaunay_to_simplicial(tri2)
 ```
 
-For the produced triangulation, see the right panel of the above figure.
+For the produced triangulation, see the right panel of the figure of the
+Delaunay triangulations with split constraint curves.
 The three intersection points (origin, and the two axis crossings with the
 diagonal) are automatically detected, and each input segment is split into
-two sub-segments at its crossings. The figure was created using the following
-commands:
+two sub-segments at its crossings. This figure was created using the
+following commands:
 
 ```julia
 using Plots
@@ -414,16 +468,3 @@ pcombined = plot(p1, p2, layout=(1,2))
 plot!(pcombined, dpi=300)
 savefig(pcombined, "delaunayext5.png")
 ```
-
-## TetGen.jl and Gmsh.jl
-
-The extensions for the packages
-[TetGen.jl](https://github.com/JuliaGeometry/TetGen.jl) and
-[Gmsh.jl](https://github.com/JuliaFEM/Gmsh.jl) create tetrahedral meshes
-of three-dimensional domains, possibly with embedded constraint surfaces
-and curves, holes, and regions with different mesh sizes. `TetGen.jl` is
-the three-dimensional analogue of the `DelaunayTriangulation.jl`
-workflow described above, while `Gmsh.jl` handles curved CAD geometry and
-intersecting constraint surfaces. Since three-dimensional meshing involves
-a number of additional concepts, both extensions are described in their
-own chapter [Three-Dimensional Meshes](@ref).

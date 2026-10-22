@@ -127,7 +127,8 @@ simplices = [["A","B"],["A","C"],["B","C"],["B","D"],["D","E","F"]]
 sc = create_simplicial_complex(labels,simplices)
 ```
 
-This two-dimensional simplicial complex is shown in the figure.
+This two-dimensional simplicial complex is shown in the figure from the
+tutorial, with a hollow triangle `ABC` and a filled triangle `DEF`.
 
 ![The simplicial complex from the tutorial](img/tutorialsimplex.png)
 
@@ -238,8 +239,10 @@ that this simplicial complex has one hole, and it is obviously connected.
 
 ![Sample simplicial complex](img/lefschetzex2.png)
 
-The simplicial complex shown in the second figure can be created using
-the commands
+The simplicial complex with vertices `A` to `H`, which consists of a hollow
+triangle, two filled triangles, and a square without interior, as shown in
+the figure of the sample simplicial complex, can be created using the
+commands
 
 ```julia
 labels2 = ["A","B","C","D","E","F","G","H"]
@@ -263,7 +266,8 @@ However, this time one obtains two independent holes, which results in
 
 ![Sample cubical complex](img/lefschetzex4.png)
 
-Similarly, the cubical complex depicted in the next figure can be generated via
+Similarly, the cubical complex depicted in the figure of the sample cubical
+complex, with two filled squares, can be generated via
 
 ```julia
 cubes = ["00.11", "01.01", "02.10", "11.10", "11.01", "22.00", "20.11", "31.01"]
@@ -417,8 +421,8 @@ homology. It has the same options as [`homology`](@ref).
 
 In order to briefly illustrate the different usages of the command
 [`relative_homology`](@ref), we consider again the simplicial
-complex shown in the figure, which can be generated using the
-commands
+complex with vertices `A` to `H` shown in the figure of the sample
+simplicial complex, which can be generated using the commands
 
 ```julia
 labels2 = ["A","B","C","D","E","F","G","H"]
@@ -577,7 +581,8 @@ determined by a later level, i.e., we have ``e > d``.
 
 In order to illustrate this informal definition, we consider
 the filtration given by the four simplicial complexes shown
-in the figures. All of these are subcomplexes of, and the
+in the four figures of the complexes in the filtration. All of
+these are subcomplexes of, and the
 last one is equal to, one of our earlier examples.
 
 ![The 1-st complex in the filtration](img/persistence1.png)

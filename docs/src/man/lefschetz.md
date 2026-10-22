@@ -241,7 +241,9 @@ As mentioned above, note however that an object of type
 the field items in the order given in [`LefschetzComplex`](@ref).
 Consider for example the Lefschetz complex from Figure 2.4
 in [mrozek:wanner:25a](@cite), see also the left complex in the
-next image. This complex consists of six cells with labels `A`, 
+figure with two sample Lefschetz complexes, which shows a disk divided
+into two halves by a vertical edge. This complex consists of six cells
+with labels `A`, 
 `B`, `a`, `b`, `c`, and `alpha`, and we initialize the vector of
 labels, the cell index dictionary, and the cell dimensions via
 the commands
@@ -279,7 +281,8 @@ lcL = LefschetzComplex(labelsL, cdimsL, bndsparseL)
 
 Lefschetz complexes do not always have to contain cells of
 all dimensions. For example, the Lefschetz complex shown on the
-right side of the figure has no vertices, and it can be created
+right side of the figure with the two sample Lefschetz complexes, a
+square without its vertices, has no vertices, and it can be created
 using the commands
 
 ```julia
@@ -504,7 +507,8 @@ also provides a few special simplicial complexes for illustration purposes:
   well as ``H_1(K) \cong {\mathbb Z}_n`` and ``H_2(K) \cong 0``. In
   other words, this simplicial complex has nontrivial torsion in
   dimension 1. For ``n = 3`` and ``n = 4`` these triangulations are
-  shown in the following figure. Notice that points with the same label
+  shown in the figure of the simplicial torsion spaces. Notice that
+  points with the same label
   have to be identified. This vertex naming scheme is the same as is
   used in the function.
 
@@ -742,8 +746,8 @@ fname3 = "lefschetzex6.pdf"
 plot_planar_cubical(cc3,coords3,fname3,hfac=1.7,vfac=1.2,cubefac=75)
 ```
 
-The resulting Lefschetz complex is visualized in the last figure
-of this section.
+The resulting Lefschetz complex is visualized in the figure which shows
+a cubical rectangle with randomly perturbed vertices.
 
 ![A randomly perturbed cubical complex](img/lefschetzex6.png)
 
@@ -805,7 +809,8 @@ With this seed the result is a complex with ``8`` rectangles, ``25`` edges,
 and ``18`` vertices (``51`` cells in total).  The Euler characteristic is
 ``1`` and the homology is ``(1, 0, 0)``, confirming that the complex is
 contractible, as expected. The Lefschetz complex is shown in the left panel
-of the figure.
+of the figure with two rectangles subdivided by the golden ratio function,
+whose vertices are drawn as dots.
 
 ![Lefschetz complexes via the golden ratio function](img/goldenratio1.png)
 
@@ -819,8 +824,9 @@ ec2 = create_golden_ratio_rectangle([0.0,0.0],[1.0,1.0]; sdmin=4, sigma=0.8)
 lefschetz_information(ec2)
 ```
 
-The resulting Lefschetz complex is shown in the right panel of the above
-figure. Note that this time the aspect ratios of the generated rectangles
+The resulting Lefschetz complex is shown in the right panel of the same
+figure, i.e., the one with the vertices drawn as dots. Note that this time
+the aspect ratios of the generated rectangles
 can become very extreme. Thus, changing the subdivision value `sigma` should
 only be done in exceptional circumstances.
 
@@ -838,7 +844,8 @@ lefschetz_information(ec3)
 This produces a complex with ``85`` rectangles, ``230`` edges, and
 ``146`` vertices (``461`` cells in total), again with Euler characteristic
 ``1`` and trivial higher homology. The resulting complex is shown in the
-left panel of the next figure.
+left panel of the figure on mesh refinement, whose right panel contains
+a green line and a red circle.
 
 ![Mesh refinement via the golden ratio](img/goldenratio2.png)
 
@@ -848,7 +855,7 @@ rectangles with center within a circle of radius ``0.3`` and center
 ``(0.7, 0.3)`` have maximum edge length at most ``0.07``, and rectangles
 whose ``x``-coordinate are at most ``0.2`` have maximum edge length at
 most ``0.05``. The resulting Lefschetz complex is shown in the right
-panel of the figure.
+panel of the figure on mesh refinement.
 
 ```julia
 function sdfpt(bmin, bmax)
@@ -871,7 +878,7 @@ lefschetz_information(ec4)
 The figure in the right panel shows the line ``x = 0.2`` in green, and the
 circle of radius ``0.3`` and center ``(0.7, 0.3)`` in red. Moreover, we 
 visualized only the edges and rectangles of this Lefschetz complex. The
-above figure was created using the following commands:
+figure on mesh refinement was created using the following commands:
 
 ```julia
 using Plots

@@ -148,7 +148,7 @@ complexes.
 
 As a first example, the following commands are used to create the
 simplicial complex and associated Forman vector field shown in the
-left panel of the image:
+left panel of the figure with the sample Forman vector field plots:
 
 ```julia
 using Plots
@@ -160,7 +160,7 @@ display(sp)
 ```
 
 For the cubical case, the proceeding is similar. In order to generate
-the right panel of the image, we used the commands
+the right panel of this figure, we used the commands
 
 ```julia
 using Plots
@@ -177,7 +177,8 @@ cp = plot_cubical(cc, mvf=cmvf)
 display(cp)
 ```
 
-Note that the above image contains both figures side-by-side. This
+Note that the figure with the sample Forman vector field plots
+contains both plots side-by-side. This
 was achieved directly using the
 [Plots.jl](https://github.com/JuliaPlots/Plots.jl) framework.
 One can combine both plots in a single one, change the resolution to
@@ -203,7 +204,8 @@ p = plot_cubical(create_cubical_rectangle(4, 3, euclidean=true),
 display(p)
 ```
 
-Both of the above figures were created using `pdim = [true,true,true]`,
+Both plots in the figure with the sample Forman vector field plots were
+created using `pdim = [true,true,true]`,
 which is also the default if the argument is not specified.
 
 ### Plotting Morse Sets for Planar Dynamics
@@ -263,7 +265,8 @@ field to these choices. Finally, the connection matrix is computed, which
 gives the Morse sets in `scm.morse`. Note that the plot command only
 colors the Morse sets, but in randomly chosen colors. We would like to 
 point out that all vertices, edges, and faces of the Morse sets are
-emphasized, see the left panel of the image. Moreover, the vertices and
+emphasized, see the left panel of the figure with the sample Morse
+plots. Moreover, the vertices and
 edges of the underlying simplicial complex are highlighted as well.
 
 ![Sample Morse plots using `Plots.jl`](img/plots_morse.png)
@@ -280,11 +283,13 @@ plc = plot_cubical_morse(cc, ccm.morse, ci=true, pdim=[false,false,true]);
 display(plc)
 ```
 
-The resulting image is shown in the right panel above. Note that due to
+The resulting plot is shown in the right panel of the figure with the
+sample Morse plots. Note that due to
 the optional argument `pdim`, only the faces of the simplicial complex
 and the Morse sets are highlighted. In addition, this command passes
 the argument `ci = true`, which forces that the Morse set colors correspond
-to the Conley index of the respective Morse set as explained in the figure.
+to the Conley index of the respective Morse set as explained in the
+figure of the color palette for Conley indices.
 
 ![Color palette for Conley indices](img/cicolortable.png)
 
@@ -342,8 +347,9 @@ savefig(pcombined12, "plots_mvf_vectors.png")
 
 ![Multivector field visualizations](img/plots_mvf_vectors.png)
 
-The image in the left panel of the figure shows the multivectors
-from the logo example in the above-described form. In the default
+The left panel of the figure of the multivector field visualizations
+shows the multivectors from the logo example in the above-described
+form. In the default
 call, all multivectors are plotted in the same color and with 
 high opacity. It is possible to change these choices, as the 
 second panel demonstrates. The optional argument `mvfalpha` allows
@@ -374,7 +380,8 @@ savefig(pcombined34, "plots_mvf_morsesets.png")
 
 In this example, the Morse decomposition consists of two critical
 cells, as well as one large locally closed invariant set, which is
-shown in purple in the right panel of the figure. Note that the
+shown in purple in the right panel of the figure of the multivector
+field Morse set visualizations. Note that the
 `tubefac` parameter controls the inflation radius as a fraction
 of the average edge length (default `0.05`). As mentioned before,
 the `mvfalpha` parameter sets the fill opacity (default `0.3`), 
@@ -569,7 +576,8 @@ ec  = tetgen_to_simplicial(tetgen_mesh(tetgen_domain_box([-1.5,-1,-1], [1.5,1,1]
 fig = plot_simplicial3d(ec)
 ```
 
-The result is shown in the left panel of the following figure. The
+The result is shown in the left panel of the figure with three plots
+of a tetrahedral mesh. The
 appearance can be changed with a number of optional arguments:
 
 * `pdim::Vector{Bool}`: which cell dimensions are drawn. The four
@@ -604,7 +612,7 @@ determine the figure:
   uses equal scales on all three axes.
 * `size`: the size of the figure in pixels, by default `(800,600)`.
 
-The middle and right panels of the next figure illustrate some of these
+The middle and right panels of the same figure illustrate some of these
 options:
 
 ```julia
@@ -640,7 +648,7 @@ subcomplex, and its boundary surface is drawn as usual. For example,
 * `clip=([0,1,0], 0.0)` keeps the half `y <= 0` of the complex,
 * `clip=([0,0,-1], -0.5)` keeps the part with `z >= 0.5`, and
 * `clip=([1,1,1], 0.0)` cuts the complex diagonally, as in the middle
-  panel of the above figure.
+  panel of the figure with three plots of a tetrahedral mesh.
 
 Since whole tetrahedra are removed, the cut surface is jagged rather
 than planar, and it shows the actual tetrahedra at the cut. The `clip`
@@ -654,8 +662,8 @@ to each of them.
 The variants with an exclamation mark draw into an existing axis, which
 is passed as the first argument. This makes it possible to arrange
 several plots in one figure, as in all the figures of this section, or
-to overlay several plots in one axis. The figure above was created with
-the following commands:
+to overlay several plots in one axis. The figure with three plots of a
+tetrahedral mesh was created with the following commands:
 
 ```julia
 using CairoMakie
@@ -748,7 +756,8 @@ plot_cells3d!(ax2, ecs, ecs.labels[1:3]; color=:black)
 The cell subsets are selected geometrically, using the vertex
 coordinates which every [`EuclideanComplex`](@ref) stores in its field
 `coords`. For each cell, `ecs.coords[k]` is the vector of the
-coordinates of its vertices.
+coordinates of its vertices. The two panels are shown in the figure of
+the torus surface with highlighted cell subsets.
 
 ![A torus surface with highlighted cell subsets](img/makie3d_cells.png)
 
@@ -783,8 +792,9 @@ fig3 = plot_simplicial3d_morse(ec, ms; colors=[:purple, :gold, :seagreen],
                                pdim=[false,false,false,true])
 ```
 
-The three plots are shown in the next figure. On this coarse mesh, each
-Morse set consists of a single tetrahedron and its faces.
+The three plots are shown in the figure of the Morse sets of a vector
+field on a tetrahedral mesh. On this coarse mesh, each Morse set
+consists of a single tetrahedron and its faces.
 
 ![Morse sets of a vector field on a tetrahedral mesh](img/makie3d_morse.png)
 
@@ -839,6 +849,9 @@ fig2 = plot_simplicial3d_mvf(ec, mvf; clip=([0,0,1], 0.0))
 fig3 = plot_simplicial3d_mvf(ec, mvf; ci=true, clip=([0,0,1], 0.0))
 ```
 
+The three plots are shown in the figure of the multivector and the
+multivector field on a tetrahedral mesh.
+
 ![A multivector and a multivector field on a tetrahedral mesh](img/makie3d_mvf.png)
 
 The optional arguments of the multivector field plots are the same as
@@ -849,7 +862,8 @@ With `ci=true`, every multivector is colored by its Conley index. Since
 most multivectors of a typical multivector field are regular, i.e., have
 trivial Conley index, such a plot is dominated by one color, and the few
 critical multivectors stand out, as the small yellow multivector in the
-right panel shows. With `addcritical=true`, the singleton multivectors
+right panel of the figure of the multivector and the multivector field
+on a tetrahedral mesh shows. With `addcritical=true`, the singleton multivectors
 and all cells that are not covered by the multivector field are drawn as
 well.
 
@@ -905,8 +919,9 @@ fig3 = plot_cubical3d_morse(eca, msa; ci=true)
 The Morse decomposition consists of seven Morse sets: two attracting
 equilibria, two equilibria each with one- and two-dimensional unstable
 manifolds, and the trivial equilibrium, whose unstable manifold is
-three-dimensional. The three plots are shown in the next figure. In the
-right panel, the colors of the Conley indices immediately identify the
+three-dimensional. The three plots are shown in the figure of the
+cubical complexes in three dimensions. In the right panel, the colors of
+the Conley indices immediately identify the
 index of each equilibrium: the attractors are dark blue, the Morse sets
 with index `[0,1,0,0]` are sand-colored, the ones with index `[0,0,1,0]`
 are green, and the trivial equilibrium is purple. Note that one of the

@@ -20,7 +20,7 @@ first task:
   constraint surfaces and curves, holes, and regions with different mesh
   sizes. It is the three-dimensional analogue of the
   `DelaunayTriangulation.jl` extension described in the
-  [Extensions](@ref) chapter.
+  [Two-Dimensional Meshes](@ref) chapter.
 * The `Gmsh.jl` extension, which is the tool of choice for curved CAD
   geometry and, above all, for constraint surfaces which intersect each
   other.
@@ -54,6 +54,80 @@ visualization of three-dimensional complexes, see the section
 with the functions described there, and the script which creates them
 can be found in the file `docs/imgsrc/meshing3d.jl` of the package
 repository.
+
+## [Loading the Required Packages](@id meshing3d_loading)
+
+The core geometry functions in the next section only require
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
+itself, which is loaded as usual with `using ConleyDynamics`.
+
+`TetGen.jl` and `Gmsh.jl`, on the other hand, are *weak dependencies*:
+They are not installed together with
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl),
+and the functions which need them only become available once they have
+been loaded. Each of them has to be installed once in the active Julia
+environment, using
+
+```julia
+import Pkg
+Pkg.add("TetGen")      # for tetgen_mesh and create_simplicial_delaunay3d
+Pkg.add("Gmsh")        # for gmsh_to_simplicial, gmsh_file_to_simplicial,
+                       # and gmsh_marker_cells
+```
+
+Versions `3.x` of `TetGen.jl` and `0.3.x` of `Gmsh.jl` are supported.
+Note that `Gmsh.jl` downloads large binary dependencies during the
+installation, about 150 MB including the OpenCASCADE CAD kernel, while
+`TetGen.jl` is small. Only the package which is actually used needs to
+be installed. In every Julia session, the meshing package and
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
+then have to be loaded. For `TetGen.jl`, this is done with
+
+```julia
+using TetGen
+using ConleyDynamics
+```
+
+and for `Gmsh.jl` with
+
+```julia
+using Gmsh: gmsh
+using ConleyDynamics
+```
+
+The second form makes the module `gmsh` available, which contains the
+complete `Gmsh` API, such as `gmsh.initialize()` or
+`gmsh.model.occ.addBox`. The command `using Gmsh` has the same effect.
+Both meshing packages can of course be loaded in the same session. The
+order of the commands does not matter, and `import` can be used instead
+of `using`. As soon as a meshing package and
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
+are both loaded, Julia automatically loads the corresponding extension
+module, `ConleyDynamicsTetGenExt` or `ConleyDynamicsGmshExt`. Whether
+this has happened can be checked with
+
+```julia
+Base.get_extension(ConleyDynamics, :ConleyDynamicsTetGenExt) !== nothing
+```
+
+If one of the extension functions is called without loading the
+corresponding package, Julia reports that no matching method exists:
+
+```julia
+using ConleyDynamics
+dom = tetgen_domain_box([0,0,0], [1,1,1])
+tetgen_mesh(dom)
+# ERROR: MethodError: no method matching tetgen_mesh(::TetDomain)
+```
+
+In that case, it suffices to load the package and to repeat the call.
+Note that the domain builders `tetgen_domain_*`, as well as
+[`tetgen_to_simplicial`](@ref), [`tetgen_marker_cells`](@ref), and
+[`tetgen_region_cells`](@ref), are part of the core package, so that
+only the mesh generation itself requires `TetGen.jl`. For the figures,
+a Makie backend such as `CairoMakie` or `GLMakie` has to be installed
+and loaded in the same way, see
+[Three-Dimensional Plotting with Makie](@ref).
 
 ## Core Geometry Functions
 
@@ -207,7 +281,8 @@ vertex coordinates and `T` is a vector of triangles, each given by three
 indices into `V`. All surfaces are consistently oriented, closed surfaces
 have outward normals, and vertices are never duplicated, even along the
 seams of a parametrization. These properties are required by the mesh
-generators. The following figure shows one example for each function.
+generators. The figure of the six triangulated surface generators shows one
+example for each function.
 
 ![The six triangulated surface generators](img/meshing3d_surfaces.png)
 
@@ -232,7 +307,7 @@ cylinder of radius `r` around the segment from `p0` to `p1`, which can
 have any direction. The lateral surface is divided into `ntheta` parts
 around the axis and `nz` parts along it. By default, both ends are closed
 by triangle fans, which gives a closed surface. With `capped=false`, the
-result is an open tube, as in the figure:
+result is an open tube, as in the figure of the six surface generators:
 
 ```julia
 V, T = trisurface_cylinder([0,0,-1], [0,0,1], 0.5, 24, 6)                 # closed
@@ -244,8 +319,8 @@ major radius `R` (the distance from the center to the center of the
 tube), the minor radius `r` (the radius of the tube), and the numbers of
 subdivisions `nu` around the axis and `nv` around the tube. The axis of
 rotational symmetry is the `z`-axis by default, but it can be changed
-with the optional argument `axis`. The torus in the figure was created
-with a tilted axis:
+with the optional argument `axis`. The torus in the figure of the six
+surface generators was created with a tilted axis:
 
 ```julia
 V, T = trisurface_torus([0,0,0], 2.0, 0.6, 32, 12; axis=[1,0,1])
@@ -256,8 +331,8 @@ the parallelogram of all points `origin + s*u + t*v` with `s` and `t` in
 the unit interval, subdivided into `nu` times `nv` small parallelograms,
 each of which is split into two triangles. Its normal vector points in
 the direction of the cross product of `u` and `v`. The following command
-creates the patch in the figure, which is not parallel to any
-coordinate plane:
+creates the patch in the figure of the six surface generators, which
+is not parallel to any coordinate plane:
 
 ```julia
 V, T = trisurface_plane_patch([-1,-1,0], [2,0,0], [0.5,2,0.5], 8, 8)
@@ -291,7 +366,8 @@ oriented by the cross product of the partial derivatives of `f` with
 respect to `u` and `v`, so the range `(pi,0)` for `v`, which runs from
 the south pole to the north pole, gives outward normals. Merging close
 vertices also handles orientation-reversing gluings. The Möbius strip
-in the figure was created with the commands
+in the figure of the six surface generators was created with the
+commands
 
 ```julia
 fmoebius(u,v) = [(1+v/2*cos(u/2))*cos(u), (1+v/2*cos(u/2))*sin(u), v/2*sin(u/2)]
@@ -346,7 +422,8 @@ the final mesh. The outer facets bound the domain, and facets inside the
 domain are constraints. In addition, holes and regions can be specified
 by points inside them. This data model maps directly onto the
 `DelaunayTriangulation.jl` workflow in the plane described in the
-[Extensions](@ref) chapter, and the extension follows the same pattern:
+[Two-Dimensional Meshes](@ref) chapter, and the extension follows the same
+pattern:
 
 1. Describe the domain by a [`TetDomain`](@ref). Such a domain is usually
    created with [`tetgen_domain_box`](@ref) or with
@@ -358,17 +435,11 @@ by points inside them. This data model maps directly onto the
    cells on constraint surfaces and curves, or in regions, with
    [`tetgen_marker_cells`](@ref) and [`tetgen_region_cells`](@ref).
 
-`TetGen.jl` is a weak dependency. Only [`tetgen_mesh`](@ref) and
-[`create_simplicial_delaunay3d`](@ref) require it, and they become
-available once both packages are loaded:
-
-```julia
-using TetGen
-using ConleyDynamics
-```
-
-Note that `TetGen` is distributed under the GNU Affero General Public
-License, see [Licences of the Meshing Backends](@ref) below.
+Only [`tetgen_mesh`](@ref) and [`create_simplicial_delaunay3d`](@ref)
+require `TetGen.jl`, which has to be installed and loaded as described
+in [Loading the Required Packages](@ref meshing3d_loading). Note that
+`TetGen` is distributed under the GNU Affero General Public License, see
+[Licences of the Meshing Backends](@ref) below.
 
 ### Describing a Domain
 
@@ -440,8 +511,8 @@ The function [`tetgen_to_simplicial`](@ref) converts the mesh into an
 [`EuclideanComplex`](@ref), using the labeling scheme of
 [`tetmesh_to_euclidean`](@ref). As usual, the optional argument `p`
 selects the coefficient field. The resulting mesh is shown in the
-following figure, both as a whole and clipped at the plane `y = 0`, which
-reveals the tetrahedra in the interior.
+figure of the tetrahedral mesh of a box, both as a whole and clipped at
+the plane `y = 0`, which reveals the tetrahedra in the interior.
 
 ![A tetrahedral mesh of a box](img/meshing3d_box.png)
 
@@ -630,8 +701,9 @@ homology(lefschetz_subcomplex(ec2, square_cells))      # [1, 1]
 homology(lefschetz_subcomplex(ec2, spoke_cells))       # [1, 0]
 ```
 
-The mesh and the constraint cells are shown in the next figure. The left
-panel shows the mesh clipped at the plane `x = 0`, together with the part
+The mesh and the constraint cells are shown in the figure of the sphere
+and the two curves embedded as constraints. The left panel shows the mesh
+clipped at the plane `x = 0`, together with the part
 of the sphere in the remaining half. The right panel shows only the
 constraint cells. Note that `TetGen` subdivided the long edges of the
 square, but the sphere triangles and the short segment remained intact,
@@ -707,7 +779,7 @@ This requires a closed and consistently oriented surface, as created by
 the `trisurface_*` functions, and both outward and inward normals are
 fine. The point is stored in the field `holes` of the domain. Holes of
 any topology are possible, such as the toroidal hole in the right panel
-of the next figure:
+of the figure of the domains with holes:
 
 ```julia
 Vh, Th = trisurface_torus([0,0,0], 1.2, 0.4, 32, 12)
@@ -741,7 +813,7 @@ In such cases, the hole point should be given explicitly with
 [`tetgen_domain_add_hole`](@ref). The following commands remove the
 spherical shell between the two spheres. The result consists of two
 components, namely the inner ball and the box with a spherical cavity, as
-the middle panel of the figure shows:
+the middle panel of the figure of the domains with holes shows:
 
 ```julia
 dom4 = tetgen_domain_box([-2,-2,-2], [2,2,2])
@@ -832,8 +904,8 @@ homology(lefschetz_subcomplex(ec6, outer))            # [1, 0, 1, 0]
 ```
 
 As before, `closure=false` returns only the tetrahedra. The left panel of
-the next figure shows the refined mesh, and the right panel shows the two
-regions in different colors.
+the figure of the refined region inside a sphere shows the refined mesh,
+and the right panel shows the two regions in different colors.
 
 ![A refined region inside a sphere](img/meshing3d_regions.png)
 
@@ -919,8 +991,9 @@ random sample does not fill the box, and the tetrahedra close to its
 boundary are often very flat. The optional argument `box_corners=true`
 adds the eight corners of the box to the sample, so that the convex hull
 is the whole box, which explains the `308 = 300 + 8` vertices in the
-second example. Both complexes are shown in the next figure, clipped at
-the plane `y = 0.5`. The optional arguments `p` and `rng` have the same
+second example. Both complexes are shown in the figure of the Delaunay
+triangulations of random points, clipped at the plane `y = 0.5`. The
+optional arguments `p` and `rng` have the same
 meaning as before. If the minimum distance `pdist` is so large that the
 sample contains fewer than four points, an `ArgumentError` is raised.
 
@@ -1034,14 +1107,15 @@ matrix computation finds three Morse sets. Two of them have the Conley
 index of an attracting equilibrium, and the third one has the Conley
 index of a hyperbolic equilibrium with a one-dimensional unstable
 manifold. The connection matrix shows the two connecting orbits from
-this saddle to the attractors. The Morse sets
-are shown in the left panel of the following figure, colored by their
-Conley indices. The right panel shows the mesh clipped at the plane
+this saddle to the attractors. The Morse sets are shown in the left
+panel of the figure of the Morse sets on a locally refined TetGen mesh,
+colored by their Conley indices. The right panel shows the mesh clipped at
+the plane
 `y = 0`, which reveals the three refined balls.
 
 ![Morse sets of a vector field on a locally refined TetGen mesh](img/meshing3d_conley.png)
 
-The figure was created with the following commands, using the plotting
+This figure was created with the following commands, using the plotting
 functions described in [Three-Dimensional Plotting with Makie](@ref):
 
 ```julia
@@ -1088,18 +1162,11 @@ of physical groups and entities, and [`gmsh_file_to_simplicial`](@ref)
 reads mesh and geometry files. Everything else, i.e., the construction
 of the geometry and the meshing itself, is done with the `Gmsh` API. Its
 documentation can be found on the [Gmsh](https://gmsh.info) web page,
-and the examples below cover the most important commands. As before,
-`Gmsh.jl` is a weak dependency:
-
-```julia
-using Gmsh: gmsh
-using ConleyDynamics
-```
-
-The `Gmsh` API lives in the module `gmsh`, which is exported by
-`Gmsh.jl`. Note that `Gmsh` comes with large binary dependencies,
-including the OpenCASCADE CAD kernel, and that it is distributed under
-the GNU General Public License, see
+and the examples below cover the most important commands. All of them
+assume that `Gmsh.jl` has been installed and loaded with
+`using Gmsh: gmsh` and `using ConleyDynamics`, as described in
+[Loading the Required Packages](@ref meshing3d_loading). Note that
+`Gmsh` is distributed under the GNU General Public License, see
 [Licences of the Meshing Backends](@ref) below.
 
 ### Basic Usage
@@ -1287,7 +1354,7 @@ fragment operation. The plane and the sphere are
 both subcomplexes, and their intersection is a circle made of edges of
 the mesh. This is exactly the kind of mesh that `TetGen` cannot create.
 The plane, the sphere, and the circle are shown in the left panel of the
-next figure.
+figure of the plane and the sphere intersecting in a circle.
 
 !!! warning "Touching or intersecting entities have to be fragmented"
     If entities which touch or intersect are meshed without a fragment
@@ -1339,8 +1406,8 @@ The optional argument `physical=(pdim, ptag)` of
 [`gmsh_to_simplicial`](@ref) converts only the elements of a physical
 group. Its dimension has to agree with `dim`. Continuing the example
 above, the following commands extract the mesh of the upper part of the
-box, which is shown in the right panel of the figure, and the sphere as
-a surface complex:
+box, which is shown in the right panel of the figure of the plane and
+the sphere intersecting in a circle, and the sphere as a surface complex:
 
 ```julia
 ecu = gmsh_to_simplicial(physical=(3, pg_upper))
@@ -1500,8 +1567,9 @@ Conley index of an equilibrium with a two-dimensional unstable manifold.
 The connection matrix, whose rows and columns are indexed by the
 nonzero entries of the Conley indices, records the connection from the
 equilibrium to the periodic orbit. The computation takes a few seconds.
-The Morse sets are shown in the next figure. The clipped view in the
-right panel reveals the small Morse set of the equilibrium inside the
+The Morse sets are shown in the figure of the Morse sets of the vector
+field with a periodic orbit in a ball. The clipped view in the right
+panel reveals the small Morse set of the equilibrium inside the
 much larger isolating neighborhood of the periodic orbit. With a coarser
 mesh size of `0.3`, the multivector field is not fine enough to separate
 the two invariant sets, and one obtains a single Morse set with the

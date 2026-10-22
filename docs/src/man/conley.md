@@ -272,7 +272,8 @@ therefore a regular multivector corresponds to motion which goes
 from the multivector to its mouth.
 
 The multivector field from the package logo, which is shown in the
-accompanying image, consists of three critical cells, two Forman
+figure of the two triangles `ABC` and `BCD` with their multivectors,
+consists of three critical cells, two Forman
 arrows, as well as one multivector which consists of four cells.
 Beyond the constant essenetial solutions in each of the three
 critical cells, another essential solution is the *periodic
@@ -582,8 +583,10 @@ in the index poset. Then
 ```
 
 is always an isolated invariant set. Nevertheless, not every
-isolated invariant set is of this form. For example, the figure
-contains the multivector field which was discussed in
+isolated invariant set is of this form. For example, the figure of
+the Morse decomposition of the planar flow, which shows a simplicial
+complex next to a Conley-Morse graph, contains the multivector field
+which was discussed in
 [batko:etal:20a; Figure 3](@cite). While the underlying simplicial
 complex and the Forman vector field are depicted in the left panel,
 the associated Conley-Morse graph is shown on the right. For this
@@ -796,10 +799,12 @@ ConleyMorseCM
 ```
 
 To illustrate these fields further, we briefly illustrate them
-for the example associated with the last figure, see again
-[A Planar Forman Vector Field](@ref). For reference, the 
-underlying simplicial complex and Forman vector field are
-shown in the next figure.
+for the example associated with the figure of the Morse decomposition
+of the planar flow, see again [A Planar Forman Vector Field](@ref).
+For reference, the underlying simplicial complex and Forman vector
+field are shown in the figure of the planar simplicial complex flow,
+which shows the triangulated region with its arrows and critical
+cells.
 
 ![A planar simplicial complex flow](img/examplebkmw3a.png)
 
