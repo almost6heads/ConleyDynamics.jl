@@ -12,7 +12,8 @@ The function reads the mesh elements of dimension `dim` from the current
 model, which has to be meshed already, for example by calling
 `gmsh.model.mesh.generate(3)`. For `dim=3`, these are the tetrahedra, and
 the result is a tetrahedral mesh. For `dim=2`, the triangles are used,
-which gives a surface complex embedded in three dimensions. All faces of
+which gives a surface complex embedded in three dimensions, and for
+`dim=1`, the edges are used, which gives a graph. All faces of
 these elements are added automatically. If `physical=(pdim, ptag)` is
 given, only the elements of the physical group with dimension `pdim` and
 tag `ptag` are used, and `pdim` has to equal `dim`.
@@ -22,6 +23,11 @@ of dimension `dim`, such as hexahedra, prisms, or second order
 tetrahedra, an `ArgumentError` is raised. Nodes which do not belong to
 any of the used elements are dropped. Vertex labels are zero-padded
 decimal strings as in `tetmesh_to_euclidean`.
+
+If two distinct nodes of the used elements have the same coordinates,
+a warning is printed. This usually means that touching or intersecting
+entities were meshed separately, without a `gmsh.model.occ.fragment`
+operation, so that the complex is not connected across them.
 
 The function only reads the current model. It neither initializes nor
 finalizes `Gmsh`, so the model can be used afterwards, for example to
@@ -62,7 +68,8 @@ the mesh options specified in the file. The mesh is then converted with
 
 If `Gmsh` is not initialized, the function initializes it and finalizes
 it at the end. Otherwise, the file is opened in the running `Gmsh`
-session, which replaces the current model.
+session. This creates a new model, which becomes the current model,
+while the previous models remain available.
 
 This function requires `Gmsh.jl` to be loaded.
 """

@@ -64,6 +64,9 @@ function tetmesh_to_euclidean(points::AbstractVector, cells::AbstractVector;
         throw(ArgumentError("tetmesh_to_euclidean: all points need to have " *
                             "the same number of coordinates"))
     end
+    if !all(all(isfinite, c) for c in coords)
+        throw(ArgumentError("tetmesh_to_euclidean: all coordinates need to be finite"))
+    end
 
     # Check the cells
 

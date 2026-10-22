@@ -77,21 +77,18 @@ function _draw_colored_geometry!(ax, tris, tricolors, segs, segcolors, pts, ptco
     return nothing
 end
 
-function _cell_indices(ec::EuclideanComplex, cells)
+function _cell_indices(ec::EuclideanComplex, cells, fname::String)
     #
     # Convert a cell list given by labels or indices into indices
     #
-    if eltype(cells) <: AbstractString
-        return [ec.indices[c] for c in cells]
-    end
-    return Vector{Int}(cells)
+    return CD._cells3d_indices(ec, cells, fname)
 end
 
-function _cellsubset_indices(ec::EuclideanComplex, subsets)
+function _cellsubset_indices(ec::EuclideanComplex, subsets, fname::String)
     #
     # Convert cell subsets given by labels or indices into indices
     #
-    return [_cell_indices(ec, s) for s in subsets]
+    return [_cell_indices(ec, s, fname) for s in subsets]
 end
 
 function _add_singletons(ec::EuclideanComplex, subsets::Vector{Vector{Int}})

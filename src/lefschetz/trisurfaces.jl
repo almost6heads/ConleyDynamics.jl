@@ -261,7 +261,9 @@ the same point, and the two seams are glued together. The keyword
 `vperiodic` does the same in the `v` direction. In addition, vertices
 which are closer than `tol` are merged, and triangles which then become
 degenerate are removed. This takes care of collapsed edges, such as the
-poles of a sphere in spherical coordinates.
+poles of a sphere in spherical coordinates. The tolerance `tol` has to
+be positive, and since it is an absolute distance, it has to be scaled
+with the size of the surface.
 
 # Example
 
@@ -287,6 +289,9 @@ function trisurface_parametric(f, urange, vrange, nu::Int, nv::Int;
     if (nu < 1) || (nv < 1) || (uperiodic && nu < 3) || (vperiodic && nv < 3)
         throw(ArgumentError("trisurface_parametric: need nu, nv >= 1, " *
                             "and at least 3 intervals in periodic directions"))
+    end
+    if !(tol > 0)
+        throw(ArgumentError("trisurface_parametric: tol needs to be positive"))
     end
 
     g(u, v) = Float64.(collect(f(u, v)))
@@ -340,13 +345,16 @@ function _merge_close_vertices(V::Vector{Vector{Float64}},
     # and remove vertices which are no longer used
     #
 
+    # The bucket keys are floating point numbers, so that large
+    # coordinates cannot overflow. Adding 0.0 turns -0.0 into 0.0.
+
     d = length(V[1])
-    buckets = Dict{Vector{Int},Vector{Int}}()
+    buckets = Dict{Vector{Float64},Vector{Int}}()
     rep = zeros(Int, length(V))
-    offsets = [collect(o) for o in Iterators.product(ntuple(_ -> -1:1, d)...)]
+    offsets = [Float64.(collect(o)) for o in Iterators.product(ntuple(_ -> -1:1, d)...)]
 
     for k in 1:length(V)
-        key = Int.(floor.(V[k] ./ tol))
+        key = floor.(V[k] ./ tol) .+ 0.0
         for o in offsets
             for m in get(buckets, key .+ o, Int[])
                 if sum(abs2, V[m] .- V[k]) <= tol*tol
@@ -428,12 +436,14 @@ function _trisurface_volume(V::AbstractVector, T::AbstractVector)
     return vol
 end
 
-function _trisurface_interior_point(V::AbstractVector, T::AbstractVector)
+function _trisurface_interior_point(V::AbstractVector, T::AbstractVector,
+                                    Tall::AbstractVector=T)
     #
-    # Find a point strictly inside a closed, oriented triangulated surface.
-    # Start at the centroid of the largest triangle, follow the inward
-    # normal to the next intersection with the surface, and return the
-    # midpoint of this segment.
+    # Find a point strictly inside a closed, consistently oriented
+    # triangulated surface T. Start at the centroid of the largest
+    # triangle, follow the inward normal to the next intersection with
+    # the triangles in Tall (which contains T, and possibly further
+    # components), and return the midpoint of this segment.
     #
 
     Vf = [Float64.(collect(v)) for v in V]
@@ -450,8 +460,9 @@ function _trisurface_interior_point(V::AbstractVector, T::AbstractVector)
     # Moller-Trumbore ray-triangle intersection
 
     tmin = Inf
-    for (k, t) in enumerate(T)
-        k == k0 && continue
+    t0 = T[k0]
+    for t in Tall
+        t === t0 && continue
         p0, p1, p2 = Vf[t[1]], Vf[t[2]], Vf[t[3]]
         e1 = p1 .- p0
         e2 = p2 .- p0
@@ -476,4 +487,35 @@ function _trisurface_interior_point(V::AbstractVector, T::AbstractVector)
     end
 
     return center .+ (tmin / 2.0) .* dir
+end
+
+function _trisurface_components(T::AbstractVector{<:AbstractVector{<:Integer}})
+    #
+    # Split a triangulated surface into its connected components, where
+    # triangles are connected if they share a vertex. Returns vectors of
+    # triangle indices.
+    #
+    parent = Dict{Int,Int}()
+    function root(v)
+        while parent[v] != v
+            parent[v] = parent[parent[v]]
+            v = parent[v]
+        end
+        return v
+    end
+    for t in T, v in t
+        haskey(parent, v) || (parent[v] = v)
+    end
+    for t in T
+        r1 = root(t[1])
+        for v in t[2:end]
+            r2 = root(v)
+            r1 != r2 && (parent[r2] = r1)
+        end
+    end
+    comps = Dict{Int,Vector{Int}}()
+    for (k, t) in enumerate(T)
+        push!(get!(comps, root(t[1]), Int[]), k)
+    end
+    return sort(collect(values(comps)); by=first)
 end

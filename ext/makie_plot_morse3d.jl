@@ -11,6 +11,7 @@ function _plot_subsets3d!(ax, ec::EuclideanComplex, subsets::Vector{Vector{Int}}
     #
 
     CD._check_coords3d(ec, fname)
+    CD._check_pdim3d(pdim, fname)
     cof   = CD._coface_lists(ec)
     keep  = CD._clip_mask(ec, clip, cof)
     msize = isnothing(markersize) ? 0.12 * CD._length_scale(ec) : markersize
@@ -62,7 +63,7 @@ for (fname, fname!) in ((:plot_simplicial3d_morse, :plot_simplicial3d_morse!),
         function ConleyDynamics.$fname!(ax, ec::EuclideanComplex, morsesets;
                                         ci::Bool=false, addcritical::Bool=false,
                                         colors=nothing, kwargs...)
-            ms = _cellsubset_indices(ec, morsesets)
+            ms = _cellsubset_indices(ec, morsesets, $(string(fname!)))
             addcritical && (ms = _add_singletons(ec, ms))
             cols = _morse_colors(ec, ms, ci, colors)
             return _plot_subsets3d!(ax, ec, ms, cols, $(string(fname!)); kwargs...)
@@ -81,7 +82,7 @@ for (fname, fname!) in ((:plot_simplicial3d_mv, :plot_simplicial3d_mv!),
     @eval begin
         function ConleyDynamics.$fname!(ax, ec::EuclideanComplex, mv;
                                         color=colorant"darkorange", kwargs...)
-            return _plot_subsets3d!(ax, ec, [_cell_indices(ec, mv)], [color],
+            return _plot_subsets3d!(ax, ec, [_cell_indices(ec, mv, $(string(fname!)))], [color],
                                     $(string(fname!)); kwargs...)
         end
         function ConleyDynamics.$fname(ec::EuclideanComplex, mv;

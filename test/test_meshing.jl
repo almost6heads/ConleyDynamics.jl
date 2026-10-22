@@ -224,3 +224,62 @@ end
     @test_throws ArgumentError tetgen_domain_add_nodes(dom, [[0.5,0.5]])
     @test_throws ArgumentError TetDomain([(0.0,0.0,0.0)], [[1,2]], [0])
 end
+
+@testset "Meshing input validation" begin
+    # Non-finite coordinates and invalid parameters
+
+    @test_throws ArgumentError tetmesh_to_euclidean([[NaN,0,0], [1,0,0], [0,1,0], [0,0,1]],
+                                                    [[1,2,3,4]])
+    @test_throws ArgumentError tetgen_domain_add_nodes(tetgen_domain_box([0,0,0], [1,1,1]),
+                                                       [[Inf,0.5,0.5]])
+    @test_throws ArgumentError poisson_points_box([0,0], [1,1], 0.1; attempts=0)
+
+    # The merge tolerance of parametric surfaces has to be positive, and
+    # large coordinates must not overflow the merge buckets
+
+    fsph(u,v) = [cos(u)*sin(v), sin(u)*sin(v), cos(v)]
+    @test_throws ArgumentError trisurface_parametric(fsph, (0,2*pi), (pi,0), 8, 4;
+                                                     uperiodic=true, tol=0)
+    @test_throws ArgumentError trisurface_parametric(fsph, (0,2*pi), (pi,0), 8, 4;
+                                                     uperiodic=true, tol=-1)
+    V1, T1 = trisurface_parametric(fsph, (0,2*pi), (pi,0), 24, 12; uperiodic=true)
+    fbig(u,v) = 1e10 .* fsph(u,v)
+    @test trisurface_parametric(fbig, (0,2*pi), (pi,0), 24, 12; uperiodic=true) isa Tuple
+    V2, T2 = trisurface_parametric(fbig, (0,2*pi), (pi,0), 24, 12; uperiodic=true, tol=1.0)
+    @test length(V2) == length(V1) == 266
+    @test T2 == T1
+
+    # Holes and regions in surfaces with several components
+
+    Va, Ta = trisurface_sphere([ 1.0,0,0], 0.4, 1)
+    Vb, Tb = trisurface_sphere([-1.0,0,0], 0.4, 1)
+    VV = vcat(Va, Vb)
+    TT = vcat(Ta, [t .+ length(Va) for t in Tb])
+    @test length(ConleyDynamics._trisurface_components(TT)) == 2
+    box = tetgen_domain_box([-2,-2,-2], [2,2,2])
+    dom = tetgen_domain_add_surface(box, VV, TT; hole=true)
+    @test length(dom.holes) == 2
+    @test sort([round(Int, h[1]) for h in dom.holes]) == [-1, 1]
+    @test all(sqrt(sum(abs2, collect(h) .- [round(h[1]),0,0])) < 0.4 for h in dom.holes)
+    dom = tetgen_domain_add_surface(box, VV, TT; region=(3, 0.01))
+    @test length(dom.regions) == 2
+    @test all(r[2] == 3 for r in dom.regions)
+
+    # Holes require consistently oriented surfaces, with either orientation
+
+    V, T = trisurface_sphere([0,0,0], 1.0, 2)
+    Tbad = deepcopy(T)
+    Tbad[1] = reverse(Tbad[1])
+    @test_throws ArgumentError tetgen_domain_add_surface(box, V, Tbad; hole=true)
+    dom = tetgen_domain_add_surface(box, V, [reverse(t) for t in T]; hole=true)
+    @test sqrt(sum(abs2, collect(dom.holes[1]))) < 1.0
+
+    # Degenerate and repeated curve segments
+
+    dom = tetgen_domain_add_curve(box, [[0,0,0], [1,0,0], [0,0,0]])
+    @test length(dom.facets) == 7
+    dom = tetgen_domain_add_curve(box, [[0,0,0], [0,0,0], [1,0,0], [1,0,0], [1,1,0]])
+    @test length(dom.facets) == 8
+    @test all(allunique(f) for f in dom.facets)
+    @test_throws ArgumentError tetgen_domain_add_curve(box, [[0,0,0], [0,0,0]])
+end

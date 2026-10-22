@@ -91,3 +91,17 @@ end
     @test tri_signed_volume(tris) ≈ 5.0
     @test isempty(segs) && isempty(pts)
 end
+
+@testset "3D plot geometry: input validation" begin
+    ec = tetmesh_to_euclidean([[0,0,0], [1,0,0], [0,1,0], [0,0,1]], [[1,2,3,4]])
+    @test isnothing(CDG._check_pdim3d([true,true,true,true], "f"))
+    @test_throws ArgumentError CDG._check_pdim3d([true,true,true], "f")
+    @test CDG._cells3d_indices(ec, [1, 15], "f") == [1, 15]
+    @test CDG._cells3d_indices(ec, ["1", "1234"], "f") == [1, ec.indices["1234"]]
+    @test CDG._cells3d_indices(ec, Any["2", 3], "f") == [2, 3]
+    @test CDG._cells3d_indices(ec, Int[], "f") == Int[]
+    @test_throws ArgumentError CDG._cells3d_indices(ec, ["nolabel"], "f")
+    @test_throws ArgumentError CDG._cells3d_indices(ec, [0], "f")
+    @test_throws ArgumentError CDG._cells3d_indices(ec, [ec.ncells+1], "f")
+    @test_throws ArgumentError CDG._cells3d_indices(ec, [1.0], "f")
+end

@@ -138,3 +138,34 @@ end
     @test homology(gmsh_file_to_simplicial(geofile; dim=2)) == [1,0,1]
     @test_throws ArgumentError gmsh_file_to_simplicial(joinpath(dir, "missing.msh"))
 end
+
+@testset "Gmsh extension: non-conforming meshes" begin
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+    gmsh.option.setNumber("Mesh.MeshSizeMax", 0.4)
+
+    # Two touching boxes without fragment have duplicate nodes
+
+    gmsh.model.add("touching")
+    gmsh.model.occ.addBox(0, 0, 0, 1, 1, 1)
+    gmsh.model.occ.addBox(1, 0, 0, 1, 1, 1)
+    gmsh.model.occ.synchronize()
+    gmsh.model.mesh.generate(3)
+    ec = @test_logs (:warn, r"identical coordinates") gmsh_to_simplicial()
+    @test homology(ec) == [2,0,0,0]
+    gmsh.model.remove()
+
+    # With fragment, the mesh is conforming
+
+    gmsh.model.add("fragmented")
+    b1 = gmsh.model.occ.addBox(0, 0, 0, 1, 1, 1)
+    b2 = gmsh.model.occ.addBox(1, 0, 0, 1, 1, 1)
+    gmsh.model.occ.fragment([(3, b1)], [(3, b2)])
+    gmsh.model.occ.synchronize()
+    gmsh.model.mesh.generate(3)
+    ec = @test_logs gmsh_to_simplicial()
+    @test homology(ec) == [1,0,0,0]
+    @test homology(gmsh_to_simplicial(dim=1)) == [1,9]
+
+    gmsh.finalize()
+end

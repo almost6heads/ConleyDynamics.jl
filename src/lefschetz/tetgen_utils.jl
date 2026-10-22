@@ -61,10 +61,14 @@ arguments control the mesh quality and size:
 * `minratio`: Maximum ratio of circumradius to shortest edge length of
   the tetrahedra. Smaller values give better shaped tetrahedra, but
   more of them. The default `1.414` is the standard value of `TetGen`.
-  If both `minratio` and `mindihedral` are `nothing`, no quality
+  Values below `1` are rejected, since `TetGen` does not terminate for
+  them. If both `minratio` and `mindihedral` are `nothing`, no quality
   refinement is performed.
-* `mindihedral`: Minimum dihedral angle of the tetrahedra, in degrees.
-  If `nothing`, only `minratio` is used.
+* `mindihedral`: Minimum dihedral angle of the tetrahedra, in degrees,
+  strictly between `0` and `90`. If `nothing`, only `minratio` is used.
+  If `minratio` is `nothing`, but `mindihedral` is given, the ratio
+  bound `2.0` is used. Note that `TetGen` does not guarantee this
+  bound, and that large values can make `TetGen` fail.
 * `steiner_on_boundary`: If `false`, no additional points are added on
   the boundary and constraint facets. Note that this also severely
   limits the refinement close to these facets.
@@ -78,9 +82,12 @@ arguments control the mesh quality and size:
 Quality refinement is switched on by default, since flat tetrahedra
 can make the construction of multivector fields fragile.
 
-If the facets of the domain intersect, `TetGen` fails, and an
-`ArgumentError` is raised. In that case, check the constraint surfaces
-and curves, or use `Gmsh.jl` for intersecting geometry. An
+If the facets of the domain intersect, or if the quality bounds are
+too strict, `TetGen` fails, and an `ArgumentError` is raised. In that
+case, check the constraint surfaces and curves, relax the quality
+bounds, or use `Gmsh.jl` for intersecting geometry. The debugging files
+`tetgen-tmpfile*` which `TetGen` writes into the current directory in
+such cases are removed. An
 `ArgumentError` is also raised if the mesh does not contain any
 tetrahedra, which happens if the outer boundary is not closed, or if
 a hole point does not lie inside a closed constraint surface.
@@ -211,29 +218,8 @@ function tetgen_marker_cells(res::TetGenResult, ec::EuclideanComplex, marker::In
     # Edges on curve segments. The mesh generator splits every segment
     # into a chain of edges, whose vertices lie on the segment.
 
-    segments = [(collect(a), collect(b)) for (a, b, m) in res.curvesegments if m == marker]
-    if !isempty(segments)
-        vertices = findall(==(0), ec.dimensions)
-        for (a, b) in segments
-            d = b .- a
-            len2 = sum(abs2, d)
-            onseg = Vector{Tuple{Float64,Int}}()
-            for v in vertices
-                x = ec.coords[v][1]
-                t = sum((x .- a) .* d) / len2
-                if (-1e-9 <= t <= 1 + 1e-9) &&
-                   (sum(abs2, x .- a .- t .* d) <= 1e-18 * len2)
-                    push!(onseg, (t, v))
-                end
-            end
-            sort!(onseg)
-            for k in 1:length(onseg)-1
-                v1, v2 = onseg[k][2], onseg[k+1][2]
-                k1 = get(ec.indices, join(sort([ec.labels[v1], ec.labels[v2]])), 0)
-                k1 > 0 && push!(cells, k1)
-            end
-        end
-    end
+    segments = [(a, b) for (a, b, m) in res.curvesegments if m == marker]
+    isempty(segments) || append!(cells, _tetgen_curve_edges(ec, segments))
 
     return closure ? lefschetz_closure(ec, cells) : sort(unique(cells))
 end
@@ -298,4 +284,100 @@ function _tetgen_point_labels(res::TetGenResult)
     newindex = cumsum(used)
     vlabels  = _vertex_labels(newindex[end])
     return [used[k] ? vlabels[newindex[k]] : "" for k in 1:length(res.points)]
+end
+
+function _tetgen_segment_param(x, a, d, len2)
+    #
+    # Parameter t of the projection of x onto the line a + t*d, and
+    # whether x lies on the segment with t in [0,1]
+    #
+    t = sum((x .- a) .* d) / len2
+    on = (-1e-9 <= t <= 1 + 1e-9) && (sum(abs2, x .- a .- t .* d) <= 1e-18 * len2)
+    return t, on
+end
+
+function _tetgen_curve_edges(ec::EuclideanComplex,
+                             segments::Vector{Tuple{NTuple{3,Float64},NTuple{3,Float64}}})
+    #
+    # Find the edges of ec on the given segments. Every segment is
+    # followed from its first to its second endpoint along edges of ec
+    # whose vertices lie on the segment, which costs time proportional
+    # to the number of edges on the segment. Segments whose endpoints
+    # are not vertices of ec are handled by _tetgen_curve_edges_bruteforce.
+    #
+
+    vindex = Dict{NTuple{3,Float64},Int}()
+    nbrs   = [Tuple{Int,Int}[] for _ in 1:ec.ncells]
+    for k in 1:ec.ncells
+        if ec.dimensions[k] == 0
+            c = ec.coords[k][1]
+            vindex[(c[1], c[2], c[3])] = k
+        elseif ec.dimensions[k] == 1
+            v1, v2 = ec.boundary.columns[k]
+            push!(nbrs[v1], (v2, k))
+            push!(nbrs[v2], (v1, k))
+        end
+    end
+
+    edges = Vector{Int}()
+    for (a, b) in segments
+        av, bv = collect(a), collect(b)
+        d    = bv .- av
+        len2 = sum(abs2, d)
+        va   = get(vindex, a, 0)
+        vb   = get(vindex, b, 0)
+        chain = Int[]
+        found = false
+        if (va > 0) && (vb > 0) && (len2 > 0)
+            v, tcur = va, 0.0
+            for _ in 1:ec.ncells
+                if v == vb
+                    found = true
+                    break
+                end
+                best, beste, bestt = 0, 0, Inf
+                for (w, e) in nbrs[v]
+                    t, on = _tetgen_segment_param(ec.coords[w][1], av, d, len2)
+                    if on && (t > tcur + 1e-12) && (t < bestt)
+                        best, beste, bestt = w, e, t
+                    end
+                end
+                best == 0 && break
+                push!(chain, beste)
+                v, tcur = best, bestt
+            end
+        end
+        if found
+            append!(edges, chain)
+        else
+            append!(edges, _tetgen_curve_edges_bruteforce(ec, av, bv))
+        end
+    end
+
+    return edges
+end
+
+function _tetgen_curve_edges_bruteforce(ec::EuclideanComplex, a::Vector{Float64},
+                                        b::Vector{Float64})
+    #
+    # Find the edges of ec on the segment from a to b by testing all
+    # vertices, which costs time proportional to the size of ec
+    #
+    d = b .- a
+    len2 = sum(abs2, d)
+    len2 > 0 || return Int[]
+    onseg = Vector{Tuple{Float64,Int}}()
+    for v in 1:ec.ncells
+        ec.dimensions[v] == 0 || continue
+        t, on = _tetgen_segment_param(ec.coords[v][1], a, d, len2)
+        on && push!(onseg, (t, v))
+    end
+    sort!(onseg)
+    edges = Vector{Int}()
+    for k in 1:length(onseg)-1
+        v1, v2 = onseg[k][2], onseg[k+1][2]
+        e = get(ec.indices, join(sort([ec.labels[v1], ec.labels[v2]])), 0)
+        e > 0 && push!(edges, e)
+    end
+    return edges
 end

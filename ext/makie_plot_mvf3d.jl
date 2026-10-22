@@ -41,9 +41,9 @@ for (fname, fname!) in ((:plot_simplicial3d_mvf, :plot_simplicial3d_mvf!),
                                         colors=nothing, ci::Bool=false,
                                         addcritical::Bool=false, alpha::Real=0.8,
                                         kwargs...)
-            mvs = filter(mv -> length(mv) > 1, _cellsubset_indices(ec, mvf))
+            mvs = filter(mv -> length(mv) > 1, _cellsubset_indices(ec, mvf, $(string(fname!))))
             if addcritical
-                mvs = _add_singletons(ec, _cellsubset_indices(ec, mvf))
+                mvs = _add_singletons(ec, _cellsubset_indices(ec, mvf, $(string(fname!))))
             end
             if ci
                 cols = [_ci_color3d(conley_index(ec, mv)) for mv in mvs]

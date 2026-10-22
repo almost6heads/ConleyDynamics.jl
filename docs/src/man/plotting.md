@@ -505,8 +505,10 @@ Makie itself only describes plots. To display or save them, one of its
 * [GLMakie](https://docs.makie.org/stable/explanations/backends/glmakie)
   opens interactive windows, in which plots can be rotated with the
   mouse (left button), moved (right button), and zoomed (scroll wheel).
-  It uses OpenGL, and it renders transparent surfaces correctly. This is
-  the recommended backend for exploring three-dimensional complexes.
+  It uses OpenGL, and it handles overlapping transparent surfaces much
+  better than CairoMakie, since it blends them independently of the
+  drawing order. This is the recommended backend for exploring
+  three-dimensional complexes.
 * [CairoMakie](https://docs.makie.org/stable/explanations/backends/cairomakie)
   creates static, publication-quality images in the PNG, PDF, and SVG
   formats. It does not need a graphics card, so it also works on remote
@@ -539,11 +541,15 @@ saved image shows the current view, after any interactive rotation. Both
 GLMakie and CairoMakie can be loaded in the same session, and
 `CairoMakie.activate!()` and `GLMakie.activate!()` switch between them.
 
-Makie's three-dimensional rendering is designed for meshes with up to a
-few hundred thousand triangles, which covers the boundary surfaces of
-tetrahedral meshes with millions of cells. CairoMakie is considerably
-slower than GLMakie for large plots, and the resulting PDF and SVG files
-can become very large, so PNG files are recommended for large complexes.
+Since only the boundary surface of the tetrahedra is drawn by default,
+even large tetrahedral meshes can be plotted quickly. For example, a
+TetGen mesh of a box with about 950,000 cells has 13,500 boundary
+triangles, and plotting it and saving the result as a PNG file with
+CairoMakie takes about half a second. Plots which draw many more
+triangles, such as those with `hull_only=false` or multivector field
+plots of large complexes, are much slower, in particular with
+CairoMakie, and the resulting PDF and SVG files can become very large.
+PNG files are therefore recommended for large complexes.
 
 ### Plotting a Complex
 
@@ -570,7 +576,9 @@ appearance can be changed with a number of optional arguments:
   entries correspond to vertices, edges, two-dimensional cells which are
   not faces of tetrahedra, and the faces of tetrahedra. The default
   `[false,true,true,true]` omits the vertices, which are drawn as small
-  spheres if the first entry is `true`.
+  spheres if the first entry is `true`. Note that, unlike for the planar
+  plotting functions, `pdim` has four entries, and a vector of a
+  different length raises an `ArgumentError`.
 * `hull_only::Bool`: if `true` (default), only the boundary surface of
   the tetrahedra is drawn. If `false`, all faces and edges are drawn,
   including the ones in the interior of the mesh.
@@ -919,8 +927,9 @@ in this manual:
   multivector field plot are therefore combined into one plot object,
   which is rendered correctly. When several plots are overlaid with
   [`plot_cells3d!`](@ref), draw the inner objects first, and use opaque
-  colors for objects which should hide others. GLMakie renders
-  transparency correctly in all cases.
+  colors for objects which should hide others. GLMakie uses
+  order-independent transparency, which handles such overlays much
+  better, although it is also only an approximation.
 * **Lines and surfaces.** Edges and curves remain clearly visible
   through semi-transparent surfaces, and with CairoMakie, lines which
   are drawn after a surface even appear in front of opaque parts of it.

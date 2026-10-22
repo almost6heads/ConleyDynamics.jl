@@ -17,7 +17,9 @@ specifies how many candidate points are tried around each accepted point
 before giving up on it. The standard value is 20, and larger values tend
 to fill holes better, but at the expense of runtime. The function uses
 Bridson's algorithm, and its runtime is proportional to the number of
-generated points.
+generated points. Every candidate point is compared with the points in
+`(2*ceil(sqrt(d))+1)^d` neighboring grid cells, so the function is only
+practical in low dimensions, up to about `d = 5`.
 
 The random number generator can be specified via `rng`. Passing a seeded
 generator, such as `Random.Xoshiro(1234)`, makes the result reproducible.
@@ -54,7 +56,7 @@ function poisson_points_box(bmin::AbstractVector{<:Real}, bmax::AbstractVector{<
         throw(ArgumentError("poisson_points_box: pdist needs to be positive"))
     end
     if attempts < 1
-        attempts = 20
+        throw(ArgumentError("poisson_points_box: attempts needs to be positive"))
     end
 
     lo = Float64.(collect(bmin))

@@ -71,6 +71,20 @@ function ConleyDynamics.gmsh_to_simplicial(; dim::Int=3, p::Int=2,
     end
     cells = [[tag2index[t] for t in el] for el in elements]
 
+    # Distinct nodes at the same position indicate a non-conforming mesh
+
+    used = falses(length(points))
+    for c in cells
+        used[c] .= true
+    end
+    usedpoints = points[used]
+    if length(Set(usedpoints)) < length(usedpoints)
+        @warn "gmsh_to_simplicial: the mesh contains distinct nodes with " *
+              "identical coordinates, so the complex is not connected across " *
+              "them. This usually happens if touching or intersecting entities " *
+              "were not fragmented; use gmsh.model.occ.fragment before meshing."
+    end
+
     return tetmesh_to_euclidean(points, cells; p=p, droporphans=true)
 end
 

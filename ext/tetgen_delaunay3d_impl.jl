@@ -48,9 +48,20 @@ function _delaunay3d_from_points(points::Vector{Vector{Float64}}, bmin, bmax,
         points = vcat([Float64.(c) for c in vec(corners)], points)
     end
 
+    if length(points) < 4
+        throw(ArgumentError("create_simplicial_delaunay3d: at least 4 points are needed, " *
+                            "but the sample contains $(length(points)). " *
+                            "Decrease pdist, or use box_corners=true."))
+    end
+
     io = RawTetGenIO{Cdouble}()
     io.pointlist = reduce(hcat, points)
-    out = tetrahedralize(io, "Q")
+    out = _tetgen_run(io, "Q", "create_simplicial_delaunay3d",
+                      "Are all sample points coplanar?")
+    if size(out.tetrahedronlist, 2) == 0
+        throw(ArgumentError("create_simplicial_delaunay3d: the triangulation " *
+                            "contains no tetrahedra. Are all sample points coplanar?"))
+    end
 
     opoints = [Vector{Float64}(out.pointlist[:,k]) for k in 1:size(out.pointlist,2)]
     tets    = [Vector{Int}(out.tetrahedronlist[1:4,k]) for k in 1:size(out.tetrahedronlist,2)]

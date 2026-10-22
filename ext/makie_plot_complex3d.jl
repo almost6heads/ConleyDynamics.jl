@@ -12,6 +12,7 @@ function _plot_complex3d!(ax, ec::EuclideanComplex, fname::String;
     # Draw the visible part of a complex
     #
     CD._check_coords3d(ec, fname)
+    CD._check_pdim3d(pdim, fname)
     cof  = CD._coface_lists(ec)
     keep = CD._clip_mask(ec, clip, cof)
     tris, segs, pts = CD._background3d_geometry(ec, keep, cof;
@@ -33,7 +34,9 @@ function _plot_cells3d!(ax, ec::EuclideanComplex, cells, keep::BitVector;
     #
     # Draw a cell subset with a precomputed clipping mask
     #
-    tris, segs, pts = CD._cells3d_geometry(ec, _cell_indices(ec, cells), keep;
+    CD._check_pdim3d(pdim, "plot_cells3d!")
+    indices = _cell_indices(ec, cells, "plot_cells3d!")
+    tris, segs, pts = CD._cells3d_geometry(ec, indices, keep;
                                            hull_only=hull_only, pdim=pdim)
     _draw_geometry!(ax, tris, segs, pts; color=color, alpha=alpha,
                     linewidth=linewidth, markersize=markersize)

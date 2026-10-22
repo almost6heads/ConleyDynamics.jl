@@ -21,6 +21,41 @@ function _check_coords3d(ec::EuclideanComplex, fname::String)
     end
 end
 
+function _check_pdim3d(pdim::AbstractVector, fname::String)
+    #
+    # Check that pdim has one entry for each cell dimension 0 to 3
+    #
+    if length(pdim) != 4
+        throw(ArgumentError("$fname: pdim needs four entries, for vertices, " *
+                            "edges, two-dimensional cells, and three-dimensional " *
+                            "cells"))
+    end
+end
+
+function _cells3d_indices(ec::EuclideanComplex, cells, fname::String)
+    #
+    # Convert a cell list given by labels or indices into indices
+    #
+    indices = Vector{Int}()
+    for c in cells
+        if c isa AbstractString
+            k = get(ec.indices, c, 0)
+            if k == 0
+                throw(ArgumentError("$fname: the complex has no cell with label \"$c\""))
+            end
+        elseif c isa Integer
+            if !(1 <= c <= ec.ncells)
+                throw(ArgumentError("$fname: cell index $c outside of 1:$(ec.ncells)"))
+            end
+            k = Int(c)
+        else
+            throw(ArgumentError("$fname: cells need to be given by labels or indices"))
+        end
+        push!(indices, k)
+    end
+    return indices
+end
+
 function _cell_centroid(ec::EuclideanComplex, k::Int)
     #
     # Centroid of the vertices of a cell

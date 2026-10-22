@@ -12,6 +12,13 @@ function ConleyDynamics.tetgen_mesh(dom::TetDomain;
     if isempty(dom.facets)
         throw(ArgumentError("tetgen_mesh: the domain has no facets"))
     end
+    if !isnothing(minratio) && (minratio < 1)
+        throw(ArgumentError("tetgen_mesh: minratio needs to be at least 1, since " *
+                            "TetGen does not terminate for smaller values"))
+    end
+    if !isnothing(mindihedral) && !(0 < mindihedral < 90)
+        throw(ArgumentError("tetgen_mesh: mindihedral needs to be between 0 and 90"))
+    end
 
     # Fill the TetGen input structure. Indices are 1-based on the
     # Julia side.
@@ -62,18 +69,12 @@ function ConleyDynamics.tetgen_mesh(dom::TetDomain;
 
     # Call TetGen and translate its errors
 
-    out = try
-        tetrahedralize(io, sw)
-    catch e
-        if e isa TetGen.TetGenError
-            throw(ArgumentError("tetgen_mesh: TetGen failed (" *
-                                strip(sprint(showerror, e)) * "). " *
-                                "Do the constraint surfaces or curves intersect " *
-                                "each other or the boundary? For intersecting " *
-                                "geometry, use Gmsh.jl instead."))
-        end
-        rethrow()
-    end
+    out = _tetgen_run(io, sw, "tetgen_mesh",
+                      "Possible causes are constraint surfaces or curves which " *
+                      "intersect each other or the boundary (for intersecting " *
+                      "geometry, use Gmsh.jl instead), or quality bounds which " *
+                      "are too strict, such as minratio close to 1 or a large " *
+                      "mindihedral.")
 
     ntet = size(out.tetrahedronlist, 2)
     if ntet == 0
@@ -97,4 +98,33 @@ function ConleyDynamics.tetgen_mesh(dom::TetDomain;
                 for (f, m) in zip(dom.facets, dom.markers) if length(f) == 2]
 
     return TetGenResult(points, tetrahedra, trifaces, trimarkers, tetattrs, segments)
+end
+
+function _tetgen_tmpfiles()
+    #
+    # Debugging files which TetGen writes into the current directory
+    # when it detects intersecting facets
+    #
+    return Set(f for f in readdir(pwd()) if startswith(f, "tetgen-tmpfile"))
+end
+
+function _tetgen_run(io::RawTetGenIO, switches::String, fname::String, hint::String)
+    #
+    # Call TetGen, turn its errors into an ArgumentError, and remove
+    # the debugging files it created in the current directory
+    #
+    before = _tetgen_tmpfiles()
+    try
+        return tetrahedralize(io, switches)
+    catch e
+        if e isa TetGen.TetGenError
+            throw(ArgumentError("$fname: TetGen failed (" *
+                                strip(sprint(showerror, e)) * "). " * hint))
+        end
+        rethrow()
+    finally
+        for f in setdiff(_tetgen_tmpfiles(), before)
+            rm(joinpath(pwd(), f); force=true)
+        end
+    end
 end

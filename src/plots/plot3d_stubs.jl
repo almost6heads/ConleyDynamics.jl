@@ -46,8 +46,8 @@ The first form also accepts the following keyword arguments:
 - `size=(800,600)`: the figure size.
 
 Requires `Makie.jl`, which is loaded by `GLMakie`, `CairoMakie`, or
-`WGLMakie`. For interactive rotation and correct transparency, use
-`GLMakie`. For figures in files, use `CairoMakie`.
+`WGLMakie`. For interactive rotation and the best handling of
+transparency, use `GLMakie`. For figures in files, use `CairoMakie`.
 """
 function plot_simplicial3d end
 

@@ -174,9 +174,15 @@ For closed surfaces, two additional options are available:
   `maxvol` (use a nonpositive value for no volume constraint). The
   tetrahedra in this region can be found with `tetgen_region_cells`.
 
-In both cases, a point inside the surface is determined automatically.
-If this fails, use `tetgen_domain_add_hole` or `tetgen_domain_add_region`
-with an explicit point instead.
+In both cases, the surface has to be closed and consistently oriented,
+and a point inside the surface is determined automatically. If the
+surface consists of several connected components, such as two disjoint
+spheres, one point is determined for every component, so that all of
+them become holes or regions. Note that for nested components, such as
+two concentric spheres, both the inner ball and the shell between the
+spheres are removed or marked. If this is not intended, add the
+surfaces separately and use `tetgen_domain_add_hole` or
+`tetgen_domain_add_region` with explicit points.
 
 Vertices of the surface which coincide exactly with existing points of
 the domain are identified with them. Apart from such shared vertices
@@ -194,10 +200,14 @@ function tetgen_domain_add_surface(dom::TetDomain, V::AbstractVector, T::Abstrac
     #
 
     if hole || !isnothing(region)
-        closed, _ = _trisurface_check(T)
+        closed, oriented = _trisurface_check(T)
         if !closed
             throw(ArgumentError("tetgen_domain_add_surface: holes and regions " *
                                 "require a closed surface"))
+        end
+        if !oriented
+            throw(ArgumentError("tetgen_domain_add_surface: holes and regions " *
+                                "require a consistently oriented surface"))
         end
     end
 
@@ -208,11 +218,15 @@ function tetgen_domain_add_surface(dom::TetDomain, V::AbstractVector, T::Abstrac
     holes   = copy(dom.holes)
     regions = copy(dom.regions)
 
+    # One hole or region point inside every connected component
+
     if hole || !isnothing(region)
-        q = _point3(_trisurface_interior_point(V, T))
-        hole && push!(holes, q)
-        if !isnothing(region)
-            push!(regions, (q, region[1], Float64(region[2])))
+        for comp in _trisurface_components(T)
+            q = _point3(_trisurface_interior_point(V, T[comp], T))
+            hole && push!(holes, q)
+            if !isnothing(region)
+                push!(regions, (q, region[1], Float64(region[2])))
+            end
         end
     end
 
@@ -229,7 +243,8 @@ The vector `curve` contains the consecutive points of the curve, as
 vectors or tuples of length three. If the first and the last point
 agree up to a tolerance of `1e-9`, the curve is closed. Every segment
 of the curve becomes a facet of the domain, so the final mesh will
-contain the curve as a union of edges. The facets get the marker
+contain the curve as a union of edges. Repeated consecutive points and
+segments which occur more than once are ignored. The facets get the marker
 `marker`, and if no marker is given, the next free marker is used as in
 `tetgen_domain_add_surface`.
 
@@ -258,9 +273,26 @@ function tetgen_domain_add_curve(dom::TetDomain, curve::AbstractVector;
     cmarker = isnothing(marker) ? _next_marker(dom) : marker
     points, newindex = _merge_points(dom.points, cpoints)
     nc = length(cpoints)
-    segments = [[newindex[k], newindex[k+1]] for k in 1:nc-1]
+    allsegs = [(newindex[k], newindex[k+1]) for k in 1:nc-1]
     if closed
-        push!(segments, [newindex[nc], newindex[1]])
+        push!(allsegs, (newindex[nc], newindex[1]))
+    end
+
+    # Remove degenerate segments (repeated consecutive points) and
+    # segments which occur more than once
+
+    segments = Vector{Vector{Int}}()
+    seen = Set{Tuple{Int,Int}}()
+    for (i, j) in allsegs
+        key = (min(i,j), max(i,j))
+        if (i != j) && !(key in seen)
+            push!(seen, key)
+            push!(segments, [i, j])
+        end
+    end
+    if isempty(segments)
+        throw(ArgumentError("tetgen_domain_add_curve: the curve needs at least " *
+                            "two distinct points"))
     end
 
     facets  = vcat(deepcopy(dom.facets), segments)
@@ -322,6 +354,9 @@ function _point3(v)
     #
     if length(v) != 3
         throw(ArgumentError("Points need to have three coordinates, got $v"))
+    end
+    if !all(isfinite, v)
+        throw(ArgumentError("Point coordinates need to be finite, got $v"))
     end
     return (Float64(v[1]), Float64(v[2]), Float64(v[3]))
 end

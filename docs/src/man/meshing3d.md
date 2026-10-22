@@ -271,7 +271,12 @@ of which is split into two triangles. Periodic parametrizations are
 handled with the optional arguments `uperiodic` and `vperiodic`, which
 glue the corresponding edges of the parameter rectangle together. In
 addition, all vertices which are closer than `tol` (default `1e-10`) are
-merged, and triangles which become degenerate are removed. As an example,
+merged, and triangles which become degenerate are removed. The value of
+`tol` has to be positive, and since it is an absolute distance, it has
+to be scaled with the size of the surface. For a surface of diameter
+`1e10`, for example, rounding errors in the coordinates are of the order
+`1e-6`, and the seams are only glued with a correspondingly larger
+`tol`. As an example,
 the following commands create a unit sphere in spherical coordinates:
 
 ```julia
@@ -466,10 +471,16 @@ following optional arguments:
   tetrahedron to its shortest edge. This *radius-edge ratio* is the
   standard quality measure of `TetGen`, and well-shaped tetrahedra have
   small ratios. The default value `1.414` is the standard value of
-  `TetGen`. Smaller values lead to more refinement, but `TetGen` may
-  fail to terminate if the bound is close to `1` or below.
+  `TetGen`. Smaller values lead to more refinement. Values below `1`
+  are rejected with an `ArgumentError`, since `TetGen` does not
+  terminate for them (with `minratio=0.8`, it was still running after
+  two minutes in our tests), and values close to `1` lead to very fine
+  meshes.
 * `mindihedral`: a lower bound for the dihedral angles of the
-  tetrahedra, in degrees. It is used in addition to `minratio`.
+  tetrahedra, in degrees, strictly between `0` and `90`. It is used in
+  addition to `minratio`. If `minratio=nothing`, the ratio bound `2.0`
+  is used together with it. Large values can make `TetGen` fail: on the
+  box, `mindihedral=30` works, but `mindihedral=50` leads to an error.
 * `steiner_on_boundary`: whether `TetGen` may insert additional points,
   so-called Steiner points, on the boundary and on constraint facets.
   This is `true` by default.
@@ -593,7 +604,9 @@ lefschetz_cell_count(ec2)                      # [950, 5616, 8865, 4198]
 ```
 
 A curve is closed if its first and last points agree, up to a tolerance
-of `1e-9`. In that case, the last point is not added a second time. The
+of `1e-9`. In that case, the last point is not added a second time.
+Repeated consecutive points and segments which occur more than once are
+ignored. The
 sphere and the square automatically received the markers `1` and `2`,
 while the segment was given the marker `7` explicitly with the optional
 argument `marker`. Explicit markers are useful if several surfaces or
@@ -676,10 +689,14 @@ homology(ec3)                  # [1, 0, 1, 0]
 `TetGen` identifies holes by a point inside them, which it then uses to
 remove all tetrahedra that can be reached from this point without
 crossing a facet. With `hole=true`, such a point is determined
-automatically by casting rays from a candidate point inside the surface.
-It is stored in the field `holes` of the domain. Holes of any topology
-are possible, such as the toroidal hole in the right panel of the next
-figure:
+automatically: Starting at the center of the largest triangle of the
+surface, a ray is followed in the direction of the inward normal until
+it hits the surface again, and the midpoint of this segment is used.
+This requires a closed and consistently oriented surface, as created by
+the `trisurface_*` functions, and both outward and inward normals are
+fine. The point is stored in the field `holes` of the domain. Holes of
+any topology are possible, such as the toroidal hole in the right panel
+of the next figure:
 
 ```julia
 Vh, Th = trisurface_torus([0,0,0], 1.2, 0.4, 32, 12)
@@ -728,15 +745,45 @@ homology(ec4)                  # [2, 0, 1, 0]
 
 A hole point must lie in a region which is completely enclosed by facets.
 Otherwise, `TetGen` removes everything that can be reached from it, which
-is usually the whole domain. Holes and regions also require closed
-surfaces, which is checked when the surface is added:
+is usually the whole domain. Holes and regions also require closed and
+consistently oriented surfaces, which is checked when the surface is
+added:
 
 ```julia
 Vp, Tp = trisurface_plane_patch([-1,-1,0], [2,0,0], [0,2,0], 4, 4)
 tetgen_domain_add_surface(dom3, Vp, Tp; hole=true)
 # ERROR: ArgumentError: tetgen_domain_add_surface: holes and regions
 #        require a closed surface
+
+Tflip = deepcopy(T)
+Tflip[1] = reverse(Tflip[1])          # one triangle with the wrong orientation
+tetgen_domain_add_surface(dom3, V, Tflip; hole=true)
+# ERROR: ArgumentError: tetgen_domain_add_surface: holes and regions
+#        require a consistently oriented surface
 ```
+
+A surface may consist of several connected components. In that case, a
+hole point is determined for every component, so that all of them
+become holes. For example, two disjoint spheres combined into a single
+surface give two cavities:
+
+```julia
+Va, Ta = trisurface_sphere([ 1.0,0,0], 0.5, 2)
+Vb, Tb = trisurface_sphere([-1.0,0,0], 0.5, 2)
+VV = vcat(Va, Vb)
+TT = vcat(Ta, [t .+ length(Va) for t in Tb])
+dom8 = tetgen_domain_add_surface(tetgen_domain_box([-2,-2,-2], [2,2,2]),
+                                 VV, TT; hole=true)
+# TetDomain with 332 points, 646 facets, markers [0, 1], 2 holes, 0 regions
+homology(tetgen_to_simplicial(tetgen_mesh(dom8; maxvolume=0.05)))
+# [1, 0, 2, 0]
+```
+
+The same applies to regions. For nested components within one surface,
+such as two concentric spheres, both the inner ball and the shell
+between the spheres become holes. To remove only the shell, add the
+spheres separately and specify the hole point explicitly, as shown
+above.
 
 ### Regions and Local Refinement
 
@@ -863,7 +910,8 @@ adds the eight corners of the box to the sample, so that the convex hull
 is the whole box, which explains the `308 = 300 + 8` vertices in the
 second example. Both complexes are shown in the next figure, clipped at
 the plane `y = 0.5`. The optional arguments `p` and `rng` have the same
-meaning as before.
+meaning as before. If the minimum distance `pdist` is so large that the
+sample contains fewer than four points, an `ArgumentError` is raised.
 
 ![Delaunay triangulations of random points](img/meshing3d_delaunay.png)
 
@@ -888,15 +936,23 @@ dombad = tetgen_domain_add_surface(dombad, V, T)
 dombad = tetgen_domain_add_surface(dombad, Vp, Tp)
 tetgen_mesh(dombad)
 # ERROR: ArgumentError: tetgen_mesh: TetGen failed (TetGen error 3: a
-#   self-intersection was detected. ...). Do the constraint surfaces or
-#   curves intersect each other or the boundary? For intersecting
-#   geometry, use Gmsh.jl instead.
+#   self-intersection was detected. ...). Possible causes are constraint
+#   surfaces or curves which intersect each other or the boundary (for
+#   intersecting geometry, use Gmsh.jl instead), or quality bounds which
+#   are too strict, such as minratio close to 1 or a large mindihedral.
 ```
 
 Without the sphere, the same plane patch is a valid constraint, since it
 lies completely inside the box. Depending on the configuration, `TetGen`
 can also report an internal error (error code 2) for intersecting
-constraints. The second typical failure is a mesh without any
+constraints, and the same internal error occurs for quality bounds which
+`TetGen` cannot achieve, such as `mindihedral=50`. When `TetGen` detects
+intersecting facets, it writes the debugging files
+`tetgen-tmpfile_skipped.node` and `tetgen-tmpfile_skipped.face` into the
+current directory. Since they are of no use without the `TetGen` command
+line tools, [`tetgen_mesh`](@ref) removes them again; files with these
+names which existed before the call are not touched. The second typical
+failure is a mesh without any
 tetrahedra, which happens if the outer boundary is not closed, or if a
 hole point does not lie in an enclosed region:
 
@@ -1069,7 +1125,8 @@ reads the current model. It neither initializes nor finalizes `Gmsh`, so
 that the model is still available afterwards. By default, it converts the
 tetrahedra. With the optional argument `dim=2`, it converts the
 triangles instead, which gives the boundary surface of the box as a
-two-dimensional complex:
+two-dimensional complex (and `dim=1` converts the edges on the curves of
+the model, which gives a graph):
 
 ```julia
 ecs = gmsh_to_simplicial(dim=2)
@@ -1214,11 +1271,24 @@ homology(lefschetz_subcomplex(ec, circle_cells))     # [1, 1]
 
 Even though the four volumes are separate entities in `Gmsh`, their
 meshes match along the common surfaces, and the complex is a single
-contractible tetrahedral mesh of the box. The plane and the sphere are
+contractible tetrahedral mesh of the box. This is a consequence of the
+fragment operation. The plane and the sphere are
 both subcomplexes, and their intersection is a circle made of edges of
 the mesh. This is exactly the kind of mesh that `TetGen` cannot create.
 The plane, the sphere, and the circle are shown in the left panel of the
 next figure.
+
+!!! warning "Touching or intersecting entities have to be fragmented"
+    If entities which touch or intersect are meshed without a fragment
+    operation, `Gmsh` meshes them independently. The resulting mesh
+    contains distinct nodes at the same positions, and the complex falls
+    apart along them. For example, two boxes `[0,1]^3` and `[1,2] x [0,1]
+    x [0,1]` created with `addBox` and meshed directly give a complex with
+    homology `[2, 0, 0, 0]`, i.e., two separate cubes, and cells on the
+    common face are not found reliably by [`gmsh_marker_cells`](@ref). In
+    such cases, [`gmsh_to_simplicial`](@ref) prints a warning. Calling
+    `gmsh.model.occ.fragment([(3, b1)], [(3, b2)])` before meshing gives
+    one connected mesh with homology `[1, 0, 0, 0]`.
 
 ![A plane and a sphere intersecting in a circle, meshed with Gmsh](img/meshing3d_gmsh.png)
 
@@ -1308,10 +1378,11 @@ homology(gmsh_file_to_simplicial("ball.geo"; dim=2))     # [1, 0, 1]
 creates a tetrahedral mesh of the ball, and a triangulation of its
 boundary sphere. If `Gmsh` is not running, the function initializes it
 and finalizes it at the end, so no other `Gmsh` commands are needed. If
-`Gmsh` is already running, the file is opened in the current session,
-where it replaces the current model. In that case, the model remains
-available afterwards, including the physical groups stored in a mesh
-file. This allows the use of [`gmsh_marker_cells`](@ref) after reading a
+`Gmsh` is already running, the file is opened in the running session.
+This creates a new model, which becomes the current model, while the
+previous models remain available, see `gmsh.model.list()` and
+`gmsh.model.setCurrent`. In that case, the new model remains available
+afterwards, including the physical groups stored in a mesh file. This allows the use of [`gmsh_marker_cells`](@ref) after reading a
 file. A mesh created in Julia can be saved with `gmsh.write`:
 
 ```julia

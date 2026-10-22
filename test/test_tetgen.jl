@@ -164,3 +164,58 @@ end
     @test sort(cm.conley) == [[0,1,0,0], [1,0,0,0], [1,0,0,0]]
     @test sum(full_from_sparse(cm.matrix)) == 2
 end
+
+@testset "TetGen extension: robustness" begin
+    box = tetgen_domain_box([-2,-2,-2], [2,2,2])
+
+    # Two spheres given as one surface give two holes
+
+    Va, Ta = trisurface_sphere([ 1.0,0,0], 0.4, 1)
+    Vb, Tb = trisurface_sphere([-1.0,0,0], 0.4, 1)
+    dom = tetgen_domain_add_surface(box, vcat(Va, Vb),
+                                    vcat(Ta, [t .+ length(Va) for t in Tb]); hole=true)
+    @test homology(tetgen_to_simplicial(tetgen_mesh(dom; maxvolume=0.1))) == [1,0,2,0]
+
+    # Quality bounds which would make TetGen hang or fail
+
+    @test_throws ArgumentError tetgen_mesh(box; minratio=0.8)
+    @test_throws ArgumentError tetgen_mesh(box; mindihedral=0)
+    @test_throws ArgumentError tetgen_mesh(box; mindihedral=95)
+    err = try tetgen_mesh(box; maxvolume=0.01, mindihedral=50); nothing catch e; e end
+    @test err isa ArgumentError
+    @test occursin("quality bounds", err.msg)
+
+    # Failures leave no TetGen debugging files in the current directory
+
+    V, T = trisurface_sphere([0,0,0], 1.0, 1)
+    P = trisurface_plane_patch([-1.5,-1.5,0.2], [3,0,0], [0,3,0], 2, 2)
+    bad = tetgen_domain_add_surface(tetgen_domain_add_surface(box, V, T), P...)
+    mktempdir() do dir
+        cd(dir) do
+            touch("tetgen-tmpfile_mine.txt")
+            err = try tetgen_mesh(bad); nothing catch e; e end
+            @test err isa ArgumentError
+            @test occursin("intersect", err.msg)
+            @test readdir(dir) == ["tetgen-tmpfile_mine.txt"]
+        end
+    end
+
+    # Too few sample points for a Delaunay triangulation
+
+    @test_throws ArgumentError create_simplicial_delaunay3d([0,0,0], [1,1,1], 5.0, 20)
+    ec = create_simplicial_delaunay3d([0,0,0], [1,1,1], 5.0, 20; box_corners=true)
+    @test count(==(0), ec.dimensions) == 9
+
+    # The edge walk along constraint curves agrees with the full search
+
+    circ = [[1.5*cos(s), 1.5*sin(s), 0.1] for s in range(0, 2*pi, length=41)]
+    res = tetgen_mesh(tetgen_domain_add_curve(box, circ); maxvolume=0.02)
+    ec  = tetgen_to_simplicial(res)
+    for (a, b, m) in res.curvesegments
+        walk  = ConleyDynamics._tetgen_curve_edges(ec, [(a, b)])
+        brute = ConleyDynamics._tetgen_curve_edges_bruteforce(ec, collect(a), collect(b))
+        @test sort(walk) == sort(brute)
+        @test !isempty(walk)
+    end
+    @test homology(lefschetz_subcomplex(ec, tetgen_marker_cells(res, ec, 1))) == [1,1]
+end
