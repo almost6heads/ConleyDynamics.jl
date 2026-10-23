@@ -901,7 +901,7 @@ commands
 ```julia
 using GLMakie
 
-fig1 = plot_simplicial3d(ec; clip=([0,1,0], 0.0), alpha=0.6)
+fig1 = plot_simplicial3d(ec; clip=([0,-1,0], 0.0), alpha=0.6)
 fig2 = plot_simplicial3d_morse(ec, cm.morse; ci=true)
 ```
 

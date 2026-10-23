@@ -616,7 +616,7 @@ The middle and right panels of the same figure illustrate some of these
 options:
 
 ```julia
-fig2 = plot_simplicial3d(ec; clip=([1,1,1], 0.0), pdim=[true,true,true,true],
+fig2 = plot_simplicial3d(ec; clip=([-1,-1,-1], 0.0), pdim=[true,true,true,true],
                          alpha=0.6)
 fig3 = plot_simplicial3d(ec; hull_only=false, alpha=0.05,
                          facecolor=:gold, edgecolor=:gray40, linewidth=0.5)
@@ -649,13 +649,18 @@ of a triangulated surface. All other cells are kept if and only if they
 are faces of a kept cell, so that the visible part is again a closed
 subcomplex, and its boundary surface is drawn as usual. For example,
 
-* `clip=([0,1,0], 0.0)` keeps the half `y <= 0` of the complex,
-* `clip=([0,0,-1], -0.5)` keeps the part with `z >= 0.5`, and
-* `clip=([1,1,1], 0.0)` cuts the complex diagonally, as in the middle
+* `clip=([0,-1,0], 0.0)` keeps the half `y >= 0` of the complex,
+* `clip=([0,0,1], 0.5)` keeps the part with `z <= 0.5`, and
+* `clip=([-1,-1,-1], 0.0)` cuts the complex diagonally, as in the middle
   panel of the figure with three plots of a tetrahedral mesh.
 
 Since whole tetrahedra are removed, the cut surface is jagged rather
-than planar, and it shows the actual tetrahedra at the cut. The `clip`
+than planar, and it shows the actual tetrahedra at the cut. The cut
+surface faces the viewer if the normal `n` points towards the viewer.
+The default view of Makie looks at the complex slightly from above and
+from the side of negative `x` and `y`. Therefore, the normals
+`[0,-1,0]`, `[-1,0,0]`, `[0,0,1]`, and `[-1,-1,-1]` show the cut
+surface, while `[0,1,0]` turns it away from the viewer. The `clip`
 argument is accepted by all plotting functions, and it applies to the
 background complex as well as to the highlighted cell subsets. To show
 the same section in several overlaid plots, pass the same `clip` value
@@ -678,7 +683,7 @@ ax1 = Axis3(fig[1,1]; aspect=:data, title="Default")
 plot_simplicial3d!(ax1, ec)
 
 ax2 = Axis3(fig[1,2]; aspect=:data, title="Clipped, with vertices")
-plot_simplicial3d!(ax2, ec; clip=([1,1,1], 0.0), pdim=[true,true,true,true],
+plot_simplicial3d!(ax2, ec; clip=([-1,-1,-1], 0.0), pdim=[true,true,true,true],
                    alpha=0.6)
 
 ax3 = Axis3(fig[1,3]; aspect=:data, title="All faces, custom colors")

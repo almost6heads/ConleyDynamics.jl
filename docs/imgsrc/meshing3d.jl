@@ -72,7 +72,7 @@ fig = Figure(size=(1200,500))
 ax1 = panel(fig, (1,1), "Boundary surface")
 plot_simplicial3d!(ax1, ecbox)
 ax2 = panel(fig, (1,2), "Clipped at y = 0")
-plot_simplicial3d!(ax2, ecbox; clip=([0,1,0], 0.0), alpha=0.6)
+plot_simplicial3d!(ax2, ecbox; clip=([0,-1,0], 0.0), alpha=0.6)
 savefig3d("meshing3d_box.png", fig)
 
 ##############################################################################
@@ -98,8 +98,8 @@ spoke_cells  = tetgen_marker_cells(res2, ec2, 7)
 
 fig = Figure(size=(1200,550))
 ax1 = panel(fig, (1,1), "Mesh clipped at x = 0")
-plot_simplicial3d!(ax1, ec2; clip=([1,0,0], 0.0), alpha=0.25)
-plot_cells3d!(ax1, ec2, sphere_cells; clip=([1,0,0], 0.0), color=:darkorange)
+plot_simplicial3d!(ax1, ec2; clip=([-1,0,0], 0.0), alpha=0.25)
+plot_cells3d!(ax1, ec2, sphere_cells; clip=([-1,0,0], 0.0), color=:darkorange)
 ax2 = panel(fig, (1,2), "Constraint cells")
 plot_simplicial3d!(ax2, ec2; alpha=0.05, linealpha=0.1)
 plot_cells3d!(ax2, ec2, sphere_cells; color=:darkorange, alpha=0.8)
@@ -135,7 +135,7 @@ for (k, (ec, title)) in enumerate([(ec3, "Spherical hole"),
                                    (ec4, "Spherical shell removed"),
                                    (ec5, "Toroidal hole")])
     ax = panel(fig, (1,k), title)
-    plot_simplicial3d!(ax, ec; clip=([0,1,0], 0.0), alpha=0.6)
+    plot_simplicial3d!(ax, ec; clip=([0,-1,0], 0.0), alpha=0.6)
 end
 savefig3d("meshing3d_holes.png", fig)
 
@@ -154,10 +154,10 @@ outer = tetgen_region_cells(res6, ec6, 2)
 
 fig = Figure(size=(1200,550))
 ax1 = panel(fig, (1,1), "Refined region, clipped at y = 0")
-plot_simplicial3d!(ax1, ec6; clip=([0,1,0], 0.0), alpha=0.6)
+plot_simplicial3d!(ax1, ec6; clip=([0,-1,0], 0.0), alpha=0.6)
 ax2 = panel(fig, (1,2), "tetgen_region_cells")
-plot_cells3d!(ax2, ec6, inner; clip=([0,1,0], 0.0), color=:darkorange)
-plot_cells3d!(ax2, ec6, outer; clip=([0,1,0], 0.0), color=:steelblue, alpha=0.3)
+plot_cells3d!(ax2, ec6, inner; clip=([0,-1,0], 0.0), color=:darkorange)
+plot_cells3d!(ax2, ec6, outer; clip=([0,-1,0], 0.0), color=:steelblue, alpha=0.3)
 savefig3d("meshing3d_regions.png", fig)
 
 Vt, Tt = trisurface_torus([0,0,0], 2.0, 0.8, 48, 16)
@@ -172,9 +172,9 @@ ece  = tetgen_to_simplicial(tetgen_mesh(dome; maxvolume=0.01))
 
 fig = Figure(size=(1200,500))
 ax1 = panel(fig, (1,1), "Solid torus, clipped at y = 0")
-plot_simplicial3d!(ax1, ect; clip=([0,1,0], 0.0), alpha=0.6)
+plot_simplicial3d!(ax1, ect; clip=([0,-1,0], 0.0), alpha=0.6)
 ax2 = panel(fig, (1,2), "Ellipsoid with two holes, clipped at y = 0")
-plot_simplicial3d!(ax2, ece; clip=([0,1,0], 0.0), alpha=0.6)
+plot_simplicial3d!(ax2, ece; clip=([0,-1,0], 0.0), alpha=0.6)
 savefig3d("meshing3d_fromsurface.png", fig)
 
 ##############################################################################
@@ -189,9 +189,9 @@ ecd2 = create_simplicial_delaunay3d([0,0,0], [2,1,1], 300; box_corners=true,
 
 fig = Figure(size=(1200,450))
 ax1 = panel(fig, (1,1), "Poisson-disk sample, clipped at y = 0.5")
-plot_simplicial3d!(ax1, ecd1; clip=([0,1,0], 0.5), pdim=[true,true,true,true])
+plot_simplicial3d!(ax1, ecd1; clip=([0,-1,0], -0.5), pdim=[true,true,true,true])
 ax2 = panel(fig, (1,2), "Uniform sample with box corners, clipped at y = 0.5")
-plot_simplicial3d!(ax2, ecd2; clip=([0,1,0], 0.5), pdim=[true,true,true,true])
+plot_simplicial3d!(ax2, ecd2; clip=([0,-1,0], -0.5), pdim=[true,true,true,true])
 savefig3d("meshing3d_delaunay.png", fig)
 
 ##############################################################################
@@ -220,7 +220,7 @@ fig = Figure(size=(1200,550))
 ax1 = panel(fig, (1,1), "Morse sets")
 plot_simplicial3d_morse!(ax1, ecc, cmc.morse; ci=true)
 ax2 = panel(fig, (1,2), "Refined mesh, clipped at y = 0")
-plot_simplicial3d!(ax2, ecc; clip=([0,1,0], 0.0), alpha=0.6)
+plot_simplicial3d!(ax2, ecc; clip=([0,-1,0], 0.0), alpha=0.6)
 savefig3d("meshing3d_conley.png", fig)
 
 ##############################################################################
@@ -263,7 +263,7 @@ plot_cells3d!(ax1, ecg, sphere_cells; color=:darkorange, alpha=0.8)
 plot_cells3d!(ax1, ecg, [k for k in circle_cells if ecg.dimensions[k] == 1];
               color=:red)
 ax2 = panel(fig, (1,2), "Upper volume, clipped at y = 0")
-plot_simplicial3d!(ax2, ecu; clip=([0,1,0], 0.0), alpha=0.6)
+plot_simplicial3d!(ax2, ecu; clip=([0,-1,0], 0.0), alpha=0.6)
 savefig3d("meshing3d_gmsh.png", fig)
 
 ##############################################################################
@@ -319,9 +319,9 @@ plot_cells3d!(ax1, ec2, [k for k in intersect(cl, cr) if ec2.dimensions[k] == 1]
 plot_cells3d!(ax1, ec2, [k for k in ca if ec2.dimensions[k] == 1]; color=:black, linewidth=3)
 plot_cells3d!(ax1, ec2, crossings; color=:black, markersize=0.07)
 ax2 = panel(fig, (1,2), "Ball region and plane, clipped at y = 0")
-plot_simplicial3d!(ax2, ec3; clip=([0,1,0], 0.0), alpha=0.04, linealpha=0.1)
-plot_cells3d!(ax2, ec3, ball_cells; clip=([0,1,0], 0.0), color=:darkorange, alpha=0.9)
-plot_cells3d!(ax2, ec3, plane_cells; clip=([0,1,0], 0.0), color=:steelblue, alpha=0.5)
+plot_simplicial3d!(ax2, ec3; clip=([0,-1,0], 0.0), alpha=0.04, linealpha=0.1)
+plot_cells3d!(ax2, ec3, ball_cells; clip=([0,-1,0], 0.0), color=:darkorange, alpha=0.9)
+plot_cells3d!(ax2, ec3, plane_cells; clip=([0,-1,0], 0.0), color=:steelblue, alpha=0.5)
 savefig3d("meshing3d_refinement.png", fig)
 
 ##############################################################################
@@ -369,7 +369,7 @@ fig = Figure(size=(1500,500))
 ax1 = panel(fig, (1,1), "Default")
 plot_simplicial3d!(ax1, ecp)
 ax2 = panel(fig, (1,2), "Clipped, with vertices")
-plot_simplicial3d!(ax2, ecp; clip=([1,1,1], 0.0), pdim=[true,true,true,true],
+plot_simplicial3d!(ax2, ecp; clip=([-1,-1,-1], 0.0), pdim=[true,true,true,true],
                    alpha=0.6)
 ax3 = panel(fig, (1,3), "All faces, custom colors")
 plot_simplicial3d!(ax3, ecp; hull_only=false, alpha=0.05,
@@ -485,7 +485,7 @@ cmt  = connection_matrix(ect, mvft)
 
 fig = Figure(size=(1200,500))
 ax1 = panel(fig, (1,1), "Tetrahedral mesh, clipped at y = 0")
-plot_simplicial3d!(ax1, ect; clip=([0,1,0], 0.0), alpha=0.6)
+plot_simplicial3d!(ax1, ect; clip=([0,-1,0], 0.0), alpha=0.6)
 ax2 = panel(fig, (1,2), "Morse sets")
 plot_simplicial3d_morse!(ax2, ect, cmt.morse; ci=true)
 savefig3d("tutorialspatial.png", fig)
