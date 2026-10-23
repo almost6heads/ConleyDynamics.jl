@@ -147,8 +147,12 @@ Add nodes to a `TetDomain`.
 The vector `newpoints` contains the coordinates of the new nodes, as
 vectors or tuples of length three. Each of these nodes inside the domain
 becomes a vertex of the final mesh. Nodes outside of the domain or in
-holes are ignored by the mesh generator. The function returns a new
-`TetDomain`, and the original domain is not changed.
+holes are ignored by the mesh generator, and nodes which coincide with
+points of the domain are merged with them. Nodes must not lie on a
+facet or a constraint curve without being one of its vertices, since
+`TetGen` reports such nodes as self-intersections and fails. The
+function returns a new `TetDomain`, and the original domain is not
+changed.
 """
 function tetgen_domain_add_nodes(dom::TetDomain, newpoints::AbstractVector)
     #
@@ -275,8 +279,8 @@ Add a polygonal constraint curve to a `TetDomain`.
 
 The vector `curve` contains the consecutive points of the curve, as
 vectors or tuples of length three. If the first and the last point
-agree up to a tolerance of `1e-9`, the curve is closed. Every segment
-of the curve becomes a facet of the domain, so the final mesh will
+agree up to `1e-9` times the size of the curve, the curve is closed.
+Every segment of the curve becomes a facet of the domain, so the final mesh will
 contain the curve as a union of edges. Repeated consecutive points and
 segments which occur more than once are ignored. The facets get the marker
 `marker`, and if no marker is given, the next free marker is used as in
@@ -300,9 +304,15 @@ function tetgen_domain_add_curve(dom::TetDomain, curve::AbstractVector;
         throw(ArgumentError("tetgen_domain_add_curve: the curve needs at least two points"))
     end
 
+    # The curve is closed if its endpoints agree up to a tolerance
+    # relative to its size, so that rounding errors in the coordinates
+    # of large curves do not matter
+
     cpoints = [_point3(v) for v in curve]
+    csize   = maximum(maximum(p[k] for p in cpoints) - minimum(p[k] for p in cpoints)
+                      for k in 1:3)
     closed  = (length(cpoints) > 2) &&
-              (sqrt(sum(abs2, cpoints[1] .- cpoints[end])) < 1e-9)
+              (sqrt(sum(abs2, cpoints[1] .- cpoints[end])) <= 1e-9 * csize)
     if closed
         pop!(cpoints)
     end

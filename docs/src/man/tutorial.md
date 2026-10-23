@@ -846,7 +846,10 @@ is a trapping region for the flow. Such meshes can be created with the
 mesh generator [TetGen](https://wias-berlin.de/software/tetgen/), which
 becomes available in
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
-as soon as the package `TetGen.jl` is loaded:
+as soon as the package `TetGen.jl` is loaded. This package is not
+installed automatically, and it has to be added once with
+`import Pkg; Pkg.add("TetGen")`, see
+[Loading the Required Packages](@ref meshing3d_loading) for details:
 
 ```julia
 using TetGen

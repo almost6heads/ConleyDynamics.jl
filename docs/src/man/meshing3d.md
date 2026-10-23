@@ -21,8 +21,8 @@ first task:
   sizes. It is the three-dimensional analogue of the
   `DelaunayTriangulation.jl` extension described in the
   [Two-Dimensional Meshes](@ref) chapter.
-* The `Gmsh.jl` extension, which is the tool of choice for curved CAD
-  geometry and, above all, for constraint surfaces which intersect each
+* The `Gmsh.jl` extension, which is the tool of choice for curved
+  geometry described by computer-aided design (CAD) and, above all, for constraint surfaces which intersect each
   other.
 
 The table below lists all functions involved. The column *Pkg* shows
@@ -128,6 +128,88 @@ only the mesh generation itself requires `TetGen.jl`. For the figures,
 a Makie backend such as `CairoMakie` or `GLMakie` has to be installed
 and loaded in the same way, see
 [Three-Dimensional Plotting with Makie](@ref).
+
+## [Basic Notions](@id meshing3d_notions)
+
+This section collects the few notions from geometry and topology which
+are used throughout the chapter. Readers who are familiar with meshes
+and homology can skip it.
+
+**Simplices and meshes.** The building blocks of all meshes in this
+chapter are *simplices*: vertices (dimension `0`), edges (dimension
+`1`), triangles (dimension `2`), and tetrahedra (dimension `3`). The
+*faces* of a simplex are the simplices spanned by subsets of its
+vertices. For example, a tetrahedron has four triangles, six edges,
+and four vertices as faces. A *tetrahedral mesh* of a domain is a
+collection of tetrahedra which fill the domain and which only meet in
+common faces, i.e., two tetrahedra share either nothing, a vertex, an
+edge, or a whole triangle. Since all faces are determined by the
+tetrahedra, a mesh is described completely by the vertex coordinates
+and the list of its *maximal simplices*, i.e., those which are not
+faces of larger ones. This is exactly the input of
+[`tetmesh_to_euclidean`](@ref). The resulting
+[`EuclideanComplex`](@ref) contains all simplices of the mesh as its
+*cells*, together with their coordinates, see the section
+[Euclidean Complexes](@ref) in the chapter on Lefschetz complexes.
+
+**Subcomplexes.** A set of cells is *closed* if it contains all faces
+of its cells. Closed sets of cells are again simplicial complexes, the
+*subcomplexes*, which can be created with
+[`lefschetz_subcomplex`](@ref). The *closure* of a set of cells, which
+is computed by [`lefschetz_closure`](@ref), is the smallest closed set
+containing it. Many functions in this chapter return closed sets of
+cells, for example all cells on a constraint surface, so that their
+homology can be computed directly.
+
+**Reading homology.** The function [`homology`](@ref) returns the Betti
+numbers `[b0, b1, b2, b3]` of a complex, which were introduced in the
+[Tutorial](@ref). In three dimensions, they have an intuitive meaning:
+`b0` counts the connected components, `b1` the independent closed
+loops which cannot be contracted, such as the loop around the hole of
+a donut, and `b2` the enclosed cavities. For a complex in
+three-dimensional space, `b3` is always zero. The following table lists
+the homology of the spaces that occur most often in this chapter. Note
+that the result depends on whether a solid or only its surface is
+meshed:
+
+| Space | Homology |
+|:------|:---------|
+| Solid ball or box | `[1, 0, 0, 0]` |
+| Sphere (the surface of a ball) | `[1, 0, 1]` |
+| Solid torus (a donut) | `[1, 1, 0, 0]` |
+| Torus surface | `[1, 2, 1]` |
+| Box with one spherical cavity | `[1, 0, 1, 0]` |
+| Circle | `[1, 1]` |
+| Open tube, annulus, or Möbius strip | `[1, 1, 0]` |
+
+Computing the homology of a mesh is therefore a quick way to check that
+it has the expected shape, and this check is used in almost every
+example below.
+
+**Delaunay tetrahedralizations.** For a given set of points, there are
+many ways to connect them into tetrahedra. A tetrahedralization is
+called *Delaunay* if no point lies inside the sphere through the four
+vertices of any tetrahedron, the so-called *circumsphere*. Among all
+tetrahedralizations, Delaunay tetrahedralizations tend to avoid long
+and thin tetrahedra, and they are the basis of most mesh generators.
+If certain triangles and edges are prescribed, for example because
+they describe a surface which has to be contained in the mesh, the
+Delaunay condition cannot always be satisfied. One then uses a
+*constrained Delaunay tetrahedralization*, which contains the
+prescribed triangles and edges, and which is as close to Delaunay as
+possible otherwise.
+
+**Mesh quality.** For the construction of multivector fields, the
+tetrahedra should be well-shaped, i.e., not too flat or too thin. Two
+standard measures of the shape of a tetrahedron are used below. The
+*radius-edge ratio* is the radius of the circumsphere divided by the
+length of the shortest edge. A regular tetrahedron, whose six edges
+all have the same length, has the smallest possible ratio
+`sqrt(6)/4 ≈ 0.61`, and the ratio becomes large for tetrahedra with a
+very short edge. The *dihedral angles* of a tetrahedron are the six
+angles between pairs of its faces, measured along their common edge.
+For a regular tetrahedron, all of them equal `arccos(1/3) ≈ 70.5°`,
+while a flat tetrahedron has dihedral angles close to `0°` or `180°`.
 
 ## Core Geometry Functions
 
@@ -417,7 +499,8 @@ homology(tetmesh_to_euclidean(trisurface_parametric(fmoebius, (0,2*pi),
 The [TetGen.jl](https://github.com/JuliaGeometry/TetGen.jl) package is a
 Julia interface to Hang Si's mesh generator
 [TetGen](https://wias-berlin.de/software/tetgen/). It creates
-constrained Delaunay tetrahedralizations and quality tetrahedral meshes
+constrained Delaunay tetrahedralizations, see
+[Basic Notions](@ref meshing3d_notions), and quality tetrahedral meshes
 of three-dimensional domains. A domain is described as a *piecewise
 linear complex*: A collection of points, together with planar polygons,
 segments, and single points (the *facets*) which have to be contained in
@@ -541,23 +624,28 @@ software.
 Besides `maxvolume`, the function [`tetgen_mesh`](@ref) accepts the
 following optional arguments:
 
-* `minratio`: an upper bound for the ratio of the circumradius of a
-  tetrahedron to its shortest edge. This *radius-edge ratio* is the
-  standard quality measure of `TetGen`, and well-shaped tetrahedra have
-  small ratios. The default value `1.414` is the standard value of
-  `TetGen`. Smaller values lead to more refinement. Values below `1`
-  are rejected with an `ArgumentError`, since `TetGen` does not
-  terminate for them (with `minratio=0.8`, it was still running after
-  two minutes in our tests), and values close to `1` lead to very fine
-  meshes.
+* `minratio`: an upper bound for the radius-edge ratio of the
+  tetrahedra, see [Basic Notions](@ref meshing3d_notions). This ratio is
+  the standard quality measure of `TetGen`, and well-shaped tetrahedra
+  have small ratios. The default value `1.414` (approximately `sqrt(2)`)
+  is the standard value of `TetGen`. Smaller values lead to more
+  refinement. Even though a regular tetrahedron has the ratio `0.61`,
+  the refinement algorithm of `TetGen` is only guaranteed to terminate
+  for bounds which are not too small. Values below `1` are therefore
+  rejected with an `ArgumentError` (with `minratio=0.8`, `TetGen` was
+  still running after two minutes in our tests), and values close to
+  `1` lead to very fine meshes.
 * `mindihedral`: a lower bound for the dihedral angles of the
-  tetrahedra, in degrees, strictly between `0` and `90`. It is used in
+  tetrahedra, in degrees, strictly between `0` and `90`, see
+  [Basic Notions](@ref meshing3d_notions). It is used in
   addition to `minratio`. If `minratio=nothing`, the ratio bound `2.0`
   is used together with it. Large values can make `TetGen` fail: on the
   box, `mindihedral=30` works, but `mindihedral=50` leads to an error.
-* `steiner_on_boundary`: whether `TetGen` may insert additional points,
-  so-called Steiner points, on the boundary and on constraint facets.
-  This is `true` by default.
+* `steiner_on_boundary`: whether `TetGen` may insert additional points
+  on the boundary and on constraint facets. Points which are added by
+  the mesh generator, rather than given by the user, are called
+  *Steiner points*. They are needed both to satisfy the quality bounds
+  and to split long boundary edges. This is `true` by default.
 * `quiet`: whether the output of `TetGen` is suppressed. Passing
   `quiet=false` prints the statistics of the mesh generation.
 * `switches`: a complete `TetGen` command line switch string, which
@@ -634,7 +722,10 @@ bound, `TetGen` adds further points, mostly close to the boundary, where
 the sample is less regular. Note that the sample was taken in a slightly
 smaller box, so that no node lies too close to the boundary. Nodes
 outside of the domain or inside holes are ignored, and nodes which
-coincide with existing vertices are merged with them. Combined with
+coincide with existing vertices are merged with them. However, a node
+must not lie exactly on a face or an edge of the boundary or of a
+constraint, unless it is one of the vertices there, since `TetGen` then
+reports a self-intersection and fails. Combined with
 `steiner_on_boundary=false`, interior nodes do allow refinement, while
 the boundary stays as coarse as it is:
 
@@ -677,8 +768,8 @@ ec2  = tetgen_to_simplicial(res2)
 lefschetz_cell_count(ec2)                      # [950, 5616, 8865, 4198]
 ```
 
-A curve is closed if its first and last points agree, up to a tolerance
-of `1e-9`. In that case, the last point is not added a second time.
+A curve is closed if its first and last points agree, up to `1e-9`
+times the size of the curve. In that case, the last point is not added a second time.
 Repeated consecutive points and segments which occur more than once are
 ignored. The
 sphere and the square automatically received the markers `1` and `2`,
@@ -724,10 +815,15 @@ length(sphere_tris), unique(ec2.dimensions[sphere_tris])   # (320, [2])
 ```
 
 The marker `0` gives the outer boundary of the domain. This makes it easy
-to work with exit sets or relative homology. For example, for the box
-mesh from the beginning of this section, the boundary is a sphere, and
-the homology of the box relative to its boundary is the homology of a
-three-dimensional sphere (with the zeroth homology removed):
+to work with exit sets or relative homology. Recall from the section
+[Relative Homology](@ref) that the relative homology of a complex with
+respect to a closed subcomplex measures the shape of the complex if the
+subcomplex is collapsed to a single point. For the box mesh from the
+beginning of this section, the boundary is a sphere, and collapsing the
+boundary of a solid box to a point gives a three-dimensional sphere.
+Accordingly, the relative homology has a single nonzero entry in
+dimension three. The second argument of [`homology`](@ref) restricts
+the computation to the given closed subcomplex:
 
 ```julia
 resbox = tetgen_mesh(tetgen_domain_box([-1.5,-1,-1], [1.5,1,1]); maxvolume=0.01)
@@ -1070,7 +1166,9 @@ connection matrix computation. The vector field
 has three equilibria at `(-1,0,0)`, `(0,0,0)`, and `(1,0,0)`. The outer
 two are stable, and the one at the origin has a one-dimensional unstable
 manifold, which connects it to the two stable equilibria. The box
-`[-1.5,1.5] x [-1,1] x [-1,1]` is a trapping region. Since the
+`[-1.5,1.5] x [-1,1] x [-1,1]` is a *trapping region*, i.e., the
+vector field points into the box everywhere on its boundary, so that no
+solution leaves the box in forward time. Since the
 interesting dynamics is concentrated close to the equilibria, we refine
 the mesh in small balls around them, and keep the mesh coarse
 everywhere else:
@@ -1110,11 +1208,18 @@ full_from_sparse(cmc.matrix)
 
 The `global` keyword is only needed when this loop is run in the REPL or
 in a script, since `domc` is reassigned inside the loop. The connection
-matrix computation finds three Morse sets. Two of them have the Conley
-index of an attracting equilibrium, and the third one has the Conley
-index of a hyperbolic equilibrium with a one-dimensional unstable
-manifold. The connection matrix shows the two connecting orbits from
-this saddle to the attractors. The Morse sets are shown in the left
+matrix computation finds three Morse sets. Their Conley indices are
+given as vectors of Betti numbers, just like homology. For a hyperbolic
+equilibrium with a `k`-dimensional unstable manifold, the Conley index
+has a single nonzero entry `1` in dimension `k`, i.e., at position
+`k+1` of the vector. Two of the Morse sets therefore have the Conley
+index `[1, 0, 0, 0]` of an attracting equilibrium (`k = 0`), and the
+third one has the Conley index `[0, 1, 0, 0]` of a saddle with a
+one-dimensional unstable manifold (`k = 1`). The rows and columns of
+the connection matrix correspond to the nonzero entries of the Conley
+indices, in the order of the Morse sets. Its nonzero entries in the
+third column show the two connecting orbits from the saddle to the
+two attractors. The Morse sets are shown in the left
 panel of the figure of the Morse sets on a locally refined TetGen mesh,
 colored by their Conley indices. The right panel shows the mesh clipped at
 the plane
@@ -1182,8 +1287,11 @@ A `Gmsh` session is started with `gmsh.initialize()` and ended with
 `gmsh.finalize()`. In between, one or more *models* can be created. A
 model consists of geometric *entities* of dimensions 0 to 3 (points,
 curves, surfaces, and volumes), each identified by its dimension and an
-integer tag. The following commands create a box with the OpenCASCADE
-kernel `occ`, mesh it with a maximal element size of `0.2`, and convert
+integer tag. `Gmsh` contains two geometry engines, its own built-in
+one and the CAD library OpenCASCADE, whose functions are collected in
+the module `gmsh.model.occ`. We always use OpenCASCADE, since only it
+supports boolean operations. The following commands create a box with
+`gmsh.model.occ.addBox`, mesh it with a maximal element size of `0.2`, and convert
 the mesh into a complex:
 
 ```julia
@@ -1569,11 +1677,14 @@ full_from_sparse(cmb.matrix)
 ```
 
 The Morse decomposition consists of two Morse sets. The first one has
-the Conley index of an attracting periodic orbit, and the second one the
-Conley index of an equilibrium with a two-dimensional unstable manifold.
-The connection matrix, whose rows and columns are indexed by the
-nonzero entries of the Conley indices, records the connection from the
-equilibrium to the periodic orbit. The computation takes a few seconds.
+the Conley index `[1, 1, 0, 0]` of an attracting periodic orbit, which
+agrees with the homology of a circle, and the second one has the
+Conley index `[0, 0, 1, 0]` of an equilibrium with a two-dimensional
+unstable manifold. The connection matrix has three rows and columns,
+one for each nonzero entry of the two Conley indices. Its nonzero entry
+in row `2` and column `3` connects the two-dimensional entry of the
+equilibrium with the one-dimensional entry of the periodic orbit, and
+records the connection from the equilibrium to the periodic orbit. The computation takes a few seconds.
 The Morse sets are shown in the figure of the Morse sets of the vector
 field with a periodic orbit in a ball. The clipped view in the right
 panel reveals the small Morse set of the equilibrium inside the

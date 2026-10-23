@@ -639,9 +639,11 @@ torus in [Highlighting Cell Subsets](@ref) below.
 
 Most interesting features of a tetrahedral mesh, such as Morse sets or
 refined regions, are hidden in its interior. The optional argument
-`clip=(n, offset)` removes all tetrahedra whose centroid `c` lies on the
-far side of the plane `n⋅c = offset`, i.e., which satisfy
-`n⋅c > offset`. Lower-dimensional cells are kept if and only if they are
+`clip=(n, offset)` removes all tetrahedra whose centroid `c`, i.e., the
+average of the coordinates of their four vertices, lies on the far side
+of the plane `n⋅c = offset`, which means that `n⋅c > offset`. Here `n`
+is a normal vector of the plane, which points towards the removed part,
+and `n⋅c` denotes the dot product. Lower-dimensional cells are kept if and only if they are
 faces of a kept cell, so that the visible part is again a closed
 subcomplex, and its boundary surface is drawn as usual. For example,
 
@@ -688,7 +690,11 @@ end
 save("makie3d_basic.png", fig; px_per_unit=1.5)
 ```
 
-The argument `aspect=:data` gives all three axes the same scale, which
+In Makie, a `Figure` is the window or image, which contains a grid of
+axes. The expression `fig[1,2]` refers to the cell in the first row and
+the second column of this grid, and `Axis3(fig[1,2])` places a
+three-dimensional axis there. The argument `title` sets the title of an
+axis. The argument `aspect=:data` gives all three axes the same scale, which
 is essential for judging the shape of tetrahedra, and `hidedecorations!`
 and `hidespines!` remove ticks, labels, and the bounding box. Instead of
 an `Axis3`, one can also use `LScene(fig[1,1]; show_axis=false)`, which
@@ -863,7 +869,7 @@ consists of twelve light colors. The default opacity is `alpha=0.8`.
 With `ci=true`, every multivector is colored by its Conley index. Since
 most multivectors of a typical multivector field are regular, i.e., have
 trivial Conley index, such a plot is dominated by one color, and the few
-critical multivectors stand out, as the small yellow multivector in the
+critical multivectors stand out, as the small sand-colored multivector in the
 right panel of the figure of the multivector and the multivector field
 on a tetrahedral mesh shows. With `addcritical=true`, the singleton multivectors
 and all cells that are not covered by the multivector field are drawn as

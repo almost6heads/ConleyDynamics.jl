@@ -457,8 +457,13 @@ function _trisurface_interior_point(V::AbstractVector, T::AbstractVector,
     nrm = _cross3(b .- a, c .- a)
     dir = (-sgn / sqrt(sum(abs2, nrm))) .* nrm
 
-    # Moller-Trumbore ray-triangle intersection
+    # Moller-Trumbore ray-triangle intersection. The tolerances are
+    # relative to the size of the surfaces, so that the result does not
+    # depend on the scale of the coordinates.
 
+    allv  = unique(v for t in Tall for v in t)
+    scale = maximum(maximum(Vf[v][k] for v in allv) - minimum(Vf[v][k] for v in allv)
+                    for k in 1:3)
     tmin = Inf
     t0 = T[k0]
     for t in Tall
@@ -468,7 +473,7 @@ function _trisurface_interior_point(V::AbstractVector, T::AbstractVector,
         e2 = p2 .- p0
         pv = _cross3(dir, e2)
         det = sum(e1 .* pv)
-        abs(det) < 1e-14 && continue
+        abs(det) < 1e-14 * scale^2 && continue
         tv = center .- p0
         u = sum(tv .* pv) / det
         (u < 0 || u > 1) && continue
@@ -476,7 +481,7 @@ function _trisurface_interior_point(V::AbstractVector, T::AbstractVector,
         v = sum(dir .* qv) / det
         (v < 0 || u + v > 1) && continue
         s = sum(e2 .* qv) / det
-        if (s > 1e-12) && (s < tmin)
+        if (s > 1e-12 * scale) && (s < tmin)
             tmin = s
         end
     end

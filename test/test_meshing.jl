@@ -322,3 +322,25 @@ end
     @test length(p) >= 5
     @test mindist(p) >= 0.1
 end
+
+@testset "Meshing at extreme scales" begin
+    #
+    # Interior points and closed curves do not depend on the scale
+    #
+    for s in (1e-12, 1e-8, 1.0, 1e8, 1e12)
+        V, T = trisurface_sphere([s,0,0], s, 1)
+        x = ConleyDynamics._trisurface_interior_point(V, T)
+        @test sqrt(sum(abs2, x .- [s,0,0])) < 0.9 * s
+        dom = tetgen_domain_box(-2s .* [1,1,1], 2s .* [1,1,1])
+        dom = tetgen_domain_add_surface(dom, V, T; hole=true)
+        @test length(dom.holes) == 1
+        circ = [[1.5s*cos(t), 1.5s*sin(t), 0.0] for t in range(0, 2*pi, length=30)]
+        dom = tetgen_domain_add_curve(tetgen_domain_box(-2s .* [1,1,1], 2s .* [1,1,1]), circ)
+        @test count(f -> length(f) == 2, dom.facets) == 29
+        @test length(dom.points) == 8 + 29
+    end
+    # Endpoints of a tiny open curve are not identified
+    dom = tetgen_domain_add_curve(tetgen_domain_box([0,0,0], [1,1,1]),
+                                  [[0.5,0.5,0.5], [0.5,0.5+1e-10,0.5], [0.5+1e-10,0.5,0.5]])
+    @test count(f -> length(f) == 2, dom.facets) == 2
+end

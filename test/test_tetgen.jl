@@ -191,6 +191,19 @@ end
     dom = tetgen_domain_add_surface(tetgen_domain_add_surface(box, Vi, Ti), Vo, To; hole=true)
     @test homology(tetgen_to_simplicial(tetgen_mesh(dom; maxvolume=0.1))) == [2,0,1,0]
 
+    # Closed curves and holes in very large and very small domains
+
+    for s in (1e-9, 1e8)
+        V, T = trisurface_sphere([0,0,0], s, 1)
+        bx = tetgen_domain_box(-2s .* [1,1,1], 2s .* [1,1,1])
+        circ = [[1.5s*cos(t), 1.5s*sin(t), 0.0] for t in range(0, 2*pi, length=30)]
+        dom = tetgen_domain_add_curve(tetgen_domain_add_surface(bx, V, T; hole=true), circ)
+        res = tetgen_mesh(dom; maxvolume=0.1*s^3)
+        ec  = tetgen_to_simplicial(res)
+        @test homology(ec) == [1,0,1,0]
+        @test homology(lefschetz_subcomplex(ec, tetgen_marker_cells(res, ec, 2))) == [1,1]
+    end
+
     # Triangles need three vertices, and -0.0 is identified with 0.0
 
     @test_throws ArgumentError tetgen_domain_from_surface(Vi, [[t; t[1]] for t in Ti])

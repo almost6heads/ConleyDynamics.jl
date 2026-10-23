@@ -54,6 +54,7 @@ function _morse_colors(ec::EuclideanComplex, subsets::Vector{Vector{Int}},
     elseif isnothing(colors)
         return _default_colors(length(subsets))
     end
+    _check_palette(colors)
     return [colors[mod1(k, length(colors))] for k in 1:length(subsets)]
 end
 

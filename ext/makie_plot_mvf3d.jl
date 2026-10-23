@@ -48,7 +48,8 @@ for (fname, fname!) in ((:plot_simplicial3d_mvf, :plot_simplicial3d_mvf!),
             if ci
                 cols = [_ci_color3d(conley_index(ec, mv)) for mv in mvs]
             else
-                palette = isnothing(colors) ? _default_colors(12; light=true) : colors
+                palette = isnothing(colors) ? _default_colors(12; light=true) : collect(colors)
+                _check_palette(palette)
                 cols = palette[_greedy_coloring(ec, mvs, length(palette))]
             end
             return _plot_subsets3d!(ax, ec, mvs, cols, $(string(fname!));

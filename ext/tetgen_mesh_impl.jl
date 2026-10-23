@@ -72,7 +72,8 @@ function ConleyDynamics.tetgen_mesh(dom::TetDomain;
     out = _tetgen_run(io, sw, "tetgen_mesh",
                       "Possible causes are constraint surfaces or curves which " *
                       "intersect each other or the boundary (for intersecting " *
-                      "geometry, use Gmsh.jl instead), or quality bounds which " *
+                      "geometry, use Gmsh.jl instead), nodes which lie on a " *
+                      "facet or a curve, or quality bounds which " *
                       "are too strict, such as minratio close to 1 or a large " *
                       "mindihedral.")
 

@@ -134,3 +134,12 @@ function _default_colors(n::Int; light::Bool=false)
     end
     return distinguishable_colors(n, seed; dropseed=true)
 end
+
+function _check_palette(colors)
+    #
+    # Make sure that a user-supplied color palette is not empty
+    #
+    if isempty(colors)
+        throw(ArgumentError("The keyword colors needs to contain at least one color"))
+    end
+end
