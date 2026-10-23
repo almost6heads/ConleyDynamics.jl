@@ -28,7 +28,11 @@ decimal strings as in `tetmesh_to_euclidean`.
 If two distinct nodes of the used elements have the same coordinates,
 a warning is printed. This usually means that touching or intersecting
 entities were meshed separately, without a `gmsh.model.occ.fragment`
-operation, so that the complex is not connected across them.
+operation, so that the complex is not connected across them. A warning
+is also printed if some of the used entities of dimension `dim`, i.e.,
+surfaces for `dim=2` and volumes for `dim=3`, contain no mesh
+elements. This happens if the meshing failed for them, so that the
+complex has holes there.
 
 The function only reads the current model. It neither initializes nor
 finalizes `Gmsh`, so the model can be used afterwards, for example to

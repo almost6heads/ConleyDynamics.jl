@@ -277,6 +277,32 @@ end
     @test_throws ArgumentError create_simplicial_delaunay3d([0,0,0], [1,0,1], 10)
 end
 
+@testset "TetGen extension: box face markers and exit sets" begin
+    #
+    # Individual face markers, in the order xmin, xmax, ymin, ymax,
+    # zmin, zmax, and the exit set of a saddle
+    #
+    dom = tetgen_domain_box([-1,-1,-1], [1,1,1]; markers=1:6)
+    centers = [sum(collect.(dom.points[f])) ./ 4 for f in dom.facets]
+    expected = Dict(1 => [-1,0,0], 2 => [1,0,0], 3 => [0,-1,0],
+                    4 => [0,1,0], 5 => [0,0,-1], 6 => [0,0,1])
+    @test all(centers[k] == expected[m] for (k, m) in enumerate(dom.markers))
+    @test_throws ArgumentError tetgen_domain_box([0,0,0], [1,1,1]; markers=[1,2])
+    @test tetgen_domain_box([0,0,0], [1,1,1]).markers == zeros(Int, 6)
+
+    domx = tetgen_domain_box([-1,-1,-1], [1,1,1]; markers=[1,1,0,0,0,0])
+    @test ConleyDynamics._next_marker(domx) == 2
+    res = tetgen_mesh(domx; maxvolume=0.05)
+    ec  = tetgen_to_simplicial(res)
+    exitset = tetgen_marker_cells(res, ec, 1)
+    @test all(abs(abs(ec.coords[k][1][1]) - 1) < 1e-12 for k in exitset if ec.dimensions[k] == 0)
+    @test homology(lefschetz_subcomplex(ec, exitset)) == [2,0,0]
+    @test relative_homology(ec, exitset) == [0,1,0,0]
+    saddlevf(x) = [x[1], -x[2], -x[3]]
+    lcr, mvfr = remove_exit_set(ec, create_spatial_mvf(ec, saddlevf))
+    @test connection_matrix(lcr, mvfr).conley == [[0,1,0,0]]
+end
+
 @testset "TetGen extension: consistency checks" begin
     box = tetgen_domain_box([-2,-2,-2], [2,2,2])
     V, T = trisurface_sphere([0,0,0], 1.0, 1)

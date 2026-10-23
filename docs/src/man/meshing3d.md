@@ -22,8 +22,8 @@ first task:
   `DelaunayTriangulation.jl` extension described in the
   [Two-Dimensional Meshes](@ref) chapter.
 * The `Gmsh.jl` extension, which is the tool of choice for curved
-  geometry described by computer-aided design (CAD) and, above all, for constraint surfaces which intersect each
-  other.
+  geometry described by computer-aided design (CAD) and, above all, for
+  constraint surfaces which intersect each other.
 
 The table below lists all functions involved. The column *Pkg* shows
 the package that has to be loaded for them, where `core` means that the
@@ -58,7 +58,7 @@ repository.
 
 ## [Loading the Required Packages](@id meshing3d_loading)
 
-The core geometry functions in the next section only require
+The functions in the section [Core Geometry Functions](@ref) only require
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
 itself, which is loaded as usual with `using ConleyDynamics`.
 
@@ -73,7 +73,7 @@ environment, using
 import Pkg
 Pkg.add("TetGen")      # for tetgen_mesh and create_simplicial_delaunay3d
 Pkg.add("Gmsh")        # for gmsh_to_simplicial, gmsh_file_to_simplicial,
-                       # and gmsh_marker_cells
+                       # gmsh_marker_cells, and gmsh_common_refinement
 ```
 
 Versions `3.x` of `TetGen.jl` and `0.3.x` of `Gmsh.jl` are supported.
@@ -96,8 +96,8 @@ using Gmsh: gmsh
 using ConleyDynamics
 ```
 
-The second form makes the module `gmsh` available, which contains the
-complete `Gmsh` API, such as `gmsh.initialize()` or
+The command `using Gmsh: gmsh` makes the module `gmsh` available, which
+contains the complete `Gmsh` API, such as `gmsh.initialize()` or
 `gmsh.model.occ.addBox`. The command `using Gmsh` has the same effect.
 Both meshing packages can of course be loaded in the same session. The
 order of the commands does not matter, and `import` can be used instead
@@ -140,8 +140,8 @@ and homology can skip it.
 chapter are *simplices*: vertices (dimension `0`), edges (dimension
 `1`), triangles (dimension `2`), and tetrahedra (dimension `3`). The
 *faces* of a simplex are the simplices spanned by subsets of its
-vertices. For example, a tetrahedron has four triangles, six edges,
-and four vertices as faces. A *tetrahedral mesh* of a domain is a
+vertices, see also the [Tutorial](@ref). For example, a tetrahedron has
+four triangles, six edges, and four vertices as proper faces. A *tetrahedral mesh* of a domain is a
 collection of tetrahedra which fill the domain and which only meet in
 common faces, i.e., two tetrahedra share either nothing, a vertex, an
 edge, or a whole triangle. Since all faces are determined by the
@@ -366,8 +366,8 @@ a parametrization, so that neighboring triangles share their vertices,
 as required by the mesh generators. Moreover, all surfaces of
 orientable parametrizations are consistently oriented, and closed
 surfaces have outward normals. This is needed for surfaces which bound
-holes or regions of a mesh. The figure of the six triangulated surface generators shows one
-example for each function.
+holes or regions of a mesh. The figure of the six triangulated surface
+generators shows one example for each function.
 
 ![The six triangulated surface generators](img/meshing3d_surfaces.png)
 
@@ -436,8 +436,8 @@ merged, and triangles which become degenerate are removed. The value of
 to be scaled with the size of the surface. For a surface of diameter
 `1e10`, for example, rounding errors in the coordinates are of the order
 `1e-6`, and the seams are only glued with a correspondingly larger
-`tol`. As an example,
-the following commands create a unit sphere in spherical coordinates:
+`tol`. As an example, the following commands create a unit sphere in
+spherical coordinates:
 
 ```julia
 fsph(u,v) = [cos(u)*sin(v), sin(u)*sin(v), cos(v)]
@@ -505,7 +505,9 @@ constrained Delaunay tetrahedralizations, see
 of three-dimensional domains. A domain is described as a *piecewise
 linear complex*: A collection of points, together with planar polygons,
 segments, and single points (the *facets*) which have to be contained in
-the final mesh. The outer facets bound the domain, and facets inside the
+the final mesh. Note that the word *facet* is used here in the sense of
+`TetGen`, which differs from the facets of a simplex in the
+[Tutorial](@ref). The outer facets bound the domain, and facets inside the
 domain are constraints. In addition, holes and regions can be specified
 by points inside them. This data model maps directly onto the
 `DelaunayTriangulation.jl` workflow in the plane described in the
@@ -640,8 +642,11 @@ following optional arguments:
   tetrahedra, in degrees, strictly between `0` and `90`, see
   [Basic Notions](@ref meshing3d_notions). It is used in
   addition to `minratio`. If `minratio=nothing`, the ratio bound `2.0`
-  is used together with it. Large values can make `TetGen` fail: on the
-  box, `mindihedral=30` works, but `mindihedral=50` leads to an error.
+  is used together with it. `TetGen` treats this bound as a goal, but it
+  does not guarantee it: in the table below, the mesh created with
+  `mindihedral=15` still contains a dihedral angle of `2.33°`. Large
+  values can make `TetGen` fail: on the box, `mindihedral=30` works,
+  but `mindihedral=50` leads to an error.
 * `steiner_on_boundary`: whether `TetGen` may insert additional points
   on the boundary and on constraint facets. Points which are added by
   the mesh generator, rather than given by the user, are called
@@ -672,16 +677,17 @@ nearly coplanar vertices, whose radius-edge ratio can be small even
 though their dihedral angles are close to `0°` or `180°`. A few such
 tetrahedra are harmless for the construction of multivector fields.
 Second, disallowing Steiner points on the boundary is a strong
-restriction. Since no
-boundary triangle may be split, `TetGen` cannot insert any point whose
+restriction. Since no boundary triangle may be split, `TetGen` cannot insert any point whose
 neighborhood reaches the boundary. In a coarse box, every tetrahedron
 touches the boundary, and therefore *no* refinement takes place at all,
 and even the volume constraint is ignored. This option is only useful if
 the boundary is already fine, or together with interior nodes as in the
 next section.
 
-The switch string gives access to all options of `TetGen`. The default
-optional arguments correspond to the switches `pq1.414a0.01Q`, where `p`
+The switch string gives access to all options of `TetGen`. With
+`maxvolume=0.01` and default values for all other optional arguments,
+[`tetgen_mesh`](@ref) calls `TetGen` with the switches `pq1.414a0.01Q`,
+where `p`
 tells `TetGen` to respect the facets, `q` sets the quality bound, `a`
 the volume bound, and `Q` suppresses the output. The command
 
@@ -770,10 +776,9 @@ lefschetz_cell_count(ec2)                      # [950, 5616, 8865, 4198]
 ```
 
 A curve is closed if its first and last points agree, up to `1e-9`
-times the size of the curve. In that case, the last point is not added a second time.
-Repeated consecutive points and segments which occur more than once are
-ignored. The
-sphere and the square automatically received the markers `1` and `2`,
+times the size of the curve. In that case, the last point is not added
+a second time. Repeated consecutive points and segments which occur
+more than once are ignored. The sphere and the square automatically received the markers `1` and `2`,
 while the segment was given the marker `7` explicitly with the optional
 argument `marker`. Explicit markers are useful if several surfaces or
 curves form one geometric object: They can all be given the same marker,
@@ -820,7 +825,7 @@ to work with exit sets or relative homology. Recall from the section
 [Relative Homology](@ref) that the relative homology of a complex with
 respect to a closed subcomplex measures the shape of the complex if the
 subcomplex is collapsed to a single point. For the box mesh from the
-beginning of this section, the boundary is a sphere, and collapsing the
+section [Meshing a Box](@ref), the boundary is a sphere, and collapsing the
 boundary of a solid box to a point gives a three-dimensional sphere.
 Accordingly, the relative homology has a single nonzero entry in
 dimension three. The second argument of [`homology`](@ref) restricts
@@ -832,6 +837,36 @@ ecbox  = tetgen_to_simplicial(resbox)
 bnd    = tetgen_marker_cells(resbox, ecbox, 0)
 homology(ecbox, bnd)           # [1, 0, 1, 0], the homology of the boundary
 relative_homology(ecbox, bnd)  # [0, 0, 0, 1]
+```
+
+The faces of a box can also be given individual markers with the
+optional argument `markers` of [`tetgen_domain_box`](@ref), in the order
+`x = bmin[1]`, `x = bmax[1]`, `y = bmin[2]`, `y = bmax[2]`, `z = bmin[3]`,
+and `z = bmax[3]`. This is useful for exit sets. For example, the
+linear vector field `(x1, -x2, -x3)` has a saddle at the origin, and it
+leaves the cube `[-1,1]^3` exactly through the two faces `x1 = -1` and
+`x1 = 1`. These two faces form the exit set of the cube, and by Conley
+theory, the relative homology of the cube with respect to its exit set
+is the Conley index of the saddle:
+
+```julia
+domx = tetgen_domain_box([-1,-1,-1], [1,1,1]; markers=[1,1,0,0,0,0])
+# TetDomain with 8 points, 6 facets, markers [0, 1], 0 holes, 0 regions
+resx = tetgen_mesh(domx; maxvolume=0.02)
+ecx  = tetgen_to_simplicial(resx)
+exitset = tetgen_marker_cells(resx, ecx, 1)
+homology(lefschetz_subcomplex(ecx, exitset))   # [2, 0, 0], two squares
+relative_homology(ecx, exitset)                # [0, 1, 0, 0]
+```
+
+The same Conley index is obtained from the multivector field of the
+vector field, using [`remove_exit_set`](@ref), which determines the exit
+set automatically:
+
+```julia
+saddlevf(x) = [x[1], -x[2], -x[3]]
+lcr, mvfr = remove_exit_set(ecx, create_spatial_mvf(ecx, saddlevf))
+connection_matrix(lcr, mvfr).conley            # [[0, 1, 0, 0]]
 ```
 
 The complex passed to [`tetgen_marker_cells`](@ref) has to be the one
@@ -894,8 +929,7 @@ surface *at the time it is added*. The ray stops at all surfaces which
 are already part of the domain, so a hole surface around a previously
 added surface removes only the space between the two. If further
 surfaces are placed inside a hole surface later, however, the hole
-point might end up in the wrong region.
-Consider two concentric spheres. Adding the outer sphere with
+point might end up in the wrong region. Consider two concentric spheres. Adding the outer sphere with
 `hole=true` creates a hole point at the origin. After adding the inner
 sphere, this point lies inside the inner ball, and only the inner ball
 is removed:
@@ -916,9 +950,10 @@ In such cases, the inner surface should be added first, or the hole
 point should be given explicitly with
 [`tetgen_domain_add_hole`](@ref). The following commands remove the
 spherical shell between the two spheres, and adding `V2, T2` first and
-then `V1, T1` with `hole=true` gives the same result. The result consists of two
-components, namely the inner ball and the box with a spherical cavity, as
-the middle panel of the figure of the domains with holes shows:
+then `V1, T1` with `hole=true` gives the same result. The resulting mesh
+consists of two components, namely the inner ball and the box with a
+spherical cavity, as the middle panel of the figure of the domains with
+holes shows:
 
 ```julia
 dom4 = tetgen_domain_box([-2,-2,-2], [2,2,2])
@@ -991,7 +1026,8 @@ unique(res6.tetattributes)     # [1, 2]
 ```
 
 Inside the unit sphere, the tetrahedra have volume at most `0.002`, while
-the global bound `0.1` applies everywhere else. Note that the second
+the global bound `0.1` applies everywhere else, both up to the tolerance
+described in the note on volume constraints above. Note that the second
 attribute `2` was not specified by us. `TetGen` assigns new attributes,
 larger than all given ones, to all parts of the domain which do not
 contain a region point. Here, this is the part of the box outside of the
@@ -1074,9 +1110,9 @@ The function [`create_simplicial_delaunay3d`](@ref) computes the
 Delaunay tetrahedralization of a random point sample in a box, and it
 returns it directly as an [`EuclideanComplex`](@ref). It is the
 three-dimensional analogue of the planar function
-[`create_simplicial_delaunay`](@ref). There are two methods. The first one uses a Poisson-disk sample with minimum
-distance `pdist`, and the second one uses `npoints` uniformly distributed
-points:
+[`create_simplicial_delaunay`](@ref). There are two methods. The first
+one uses a Poisson-disk sample with minimum distance `pdist`, and the
+second one uses `npoints` uniformly distributed points:
 
 ```julia
 using Random
@@ -1126,8 +1162,9 @@ tetgen_mesh(dombad)
 # ERROR: ArgumentError: tetgen_mesh: TetGen failed (TetGen error 3: a
 #   self-intersection was detected. ...). Possible causes are constraint
 #   surfaces or curves which intersect each other or the boundary (for
-#   intersecting geometry, use Gmsh.jl instead), or quality bounds which
-#   are too strict, such as minratio close to 1 or a large mindihedral.
+#   intersecting geometry, use Gmsh.jl instead), nodes which lie on a
+#   facet or a curve, or quality bounds which are too strict, such as
+#   minratio close to 1 or a large mindihedral.
 ```
 
 Without the sphere, the same plane patch is a valid constraint, since it
@@ -1140,8 +1177,7 @@ intersecting facets, it writes the debugging files
 current directory. Since they are of no use without the `TetGen` command
 line tools, [`tetgen_mesh`](@ref) removes them again; files with these
 names which existed before the call are not touched. The second typical
-failure is a mesh without any
-tetrahedra, which happens if the outer boundary is not closed, or if a
+failure is a mesh without any tetrahedra, which happens if the outer boundary is not closed, or if a
 hole point does not lie in an enclosed region:
 
 ```julia
@@ -1207,8 +1243,9 @@ full_from_sparse(cmc.matrix)
 #  0  0  0
 ```
 
-The `global` keyword is only needed when this loop is run in the REPL or
-in a script, since `domc` is reassigned inside the loop. The connection
+The `global` keyword is needed when this loop is part of a script
+file, since `domc` is a global variable which is reassigned inside the
+loop. In the REPL and inside of functions, it can be omitted. The connection
 matrix computation finds three Morse sets. Their Conley indices are
 given as vectors of Betti numbers, just like homology. For a hyperbolic
 equilibrium with a `k`-dimensional unstable manifold, the Conley index
@@ -1220,11 +1257,10 @@ one-dimensional unstable manifold (`k = 1`). The rows and columns of
 the connection matrix correspond to the nonzero entries of the Conley
 indices, in the order of the Morse sets. Its nonzero entries in the
 third column show the two connecting orbits from the saddle to the
-two attractors. The Morse sets are shown in the left
-panel of the figure of the Morse sets on a locally refined TetGen mesh,
-colored by their Conley indices. The right panel shows the mesh clipped at
-the plane
-`y = 0`, which reveals the three refined balls.
+two attractors. The Morse sets are shown in the left panel of the
+figure of the Morse sets on a locally refined TetGen mesh, colored by
+their Conley indices. The right panel shows the mesh clipped at the
+plane `y = 0`, which reveals the three refined balls.
 
 ![Morse sets of a vector field on a locally refined TetGen mesh](img/meshing3d_conley.png)
 
@@ -1298,8 +1334,8 @@ integer tag. `Gmsh` contains two geometry engines, its own built-in
 one and the CAD library OpenCASCADE, whose functions are collected in
 the module `gmsh.model.occ`. We always use OpenCASCADE, since only it
 supports boolean operations. The following commands create a box with
-`gmsh.model.occ.addBox`, mesh it with a maximal element size of `0.2`, and convert
-the mesh into a complex:
+`gmsh.model.occ.addBox`, mesh it with a maximal element size of `0.2`,
+and convert the mesh into a complex:
 
 ```julia
 gmsh.initialize()
@@ -1336,8 +1372,10 @@ homology(ecs)                  # [1, 0, 1]
 
 The optional argument `p` selects the coefficient field as usual. The
 `Gmsh` node numbering can have gaps, and nodes which do not belong to the
-converted elements are dropped, so the vertex labels are always
-`"001"`, `"002"`, and so on. Only linear simplices are supported. If the
+converted elements are dropped. The vertices are then numbered
+consecutively, and they are labeled as in
+[`tetmesh_to_euclidean`](@ref), for example `"001"`, `"002"`, and so on
+for a mesh with between 100 and 999 vertices. Only linear simplices are supported. If the
 mesh contains hexahedra, prisms, or pyramids, for example because of
 recombination options, or second order elements created by
 `gmsh.model.mesh.setOrder(2)`, an `ArgumentError` is raised.
@@ -1420,9 +1458,10 @@ pg_box, pg_plane, pg_sphere = gmsh_common_refinement([(3, box), (2, plane), sphs
 ```
 
 The function `addSphere` creates a solid ball, whose boundary surface is
-returned by `getBoundary`. The two arguments `false` request the
-boundary surfaces themselves, without orientation signs and without
-recursion to lower dimensions. The function
+returned by `getBoundary`. Its two optional arguments `combined` and
+`oriented` are both set to `false`, so that the boundary of every given
+entity is returned separately, rather than the boundary of their union,
+and the tags come without orientation signs. The function
 [`gmsh_common_refinement`](@ref) expects a vector of *objects*, where
 every object is either a single entity `(dim, tag)`, such as the box and
 the plane, or a vector of entities of the same dimension, such as the
@@ -1468,7 +1507,7 @@ meshes match along the common surfaces, and the complex is a single
 contractible tetrahedral mesh of the box. The plane and the sphere are
 both subcomplexes, and since the mesh is a common refinement, their
 intersection is exactly the circle, made of edges of the mesh. This is
-exactly the kind of mesh that `TetGen` cannot create. The plane, the
+precisely the kind of mesh that `TetGen` cannot create. The plane, the
 sphere, and the circle are shown in the left panel of the figure of the
 plane and the sphere intersecting in a circle.
 
@@ -1508,16 +1547,16 @@ boundary of the caps as well. The intersection circle is the curve which
 the two caps have in common:
 
 ```julia
-capcurves(t) = Set(abs(c) for (d, c) in gmsh.model.getBoundary([(2, t)], false, false))
+capcurves(t) = Set(c for (d, c) in gmsh.model.getBoundary([(2, t)], false, false))
 circle_tags  = collect(intersect(capcurves(caps[1]), capcurves(caps[2])))
 circle2 = gmsh_marker_cells(ec, 1, circle_tags[1]; physical=false)
 sort(circle2) == sort(circle_cells)                  # true
 ```
 
-The `abs` is needed since `getBoundary` returns oriented curves, whose tag
-is negative if the orientation is reversed. In most cases, however, it is
-simpler to work with the cell lists of the physical groups and their
-intersections, as above.
+Since `oriented` is `false`, the curve tags are returned without
+orientation signs, so that the tags of the two caps can be compared
+directly. In most cases, however, it is simpler to work with the cell
+lists of the physical groups and their intersections, as above.
 
 **What happens behind the scenes.** The function
 [`gmsh_common_refinement`](@ref) is a thin wrapper around the
@@ -1527,8 +1566,8 @@ intersections. It returns two values: a vector `out` with all resulting
 entities, and a vector `outmap`, whose `k`-th entry contains the pieces
 of the `k`-th input entity, in the order objects first, then tools. The
 tags of the pieces depend on the internal bookkeeping of OpenCASCADE,
-and they should never be hard-coded. Instead of step 3 above, one could
-therefore also write
+and they should never be hard-coded. In a new model with the same
+steps 1 and 2, one could therefore replace step 3 by
 
 ```julia
 out, outmap = gmsh.model.occ.fragment([(3, box)], vcat([(2, plane)], sphsurf))
@@ -1544,7 +1583,8 @@ pg_sphere = gmsh.model.addPhysicalGroup(2, [t for m in outmap[3:end] for (d, t) 
                                             if d == 2])
 ```
 
-This gives the same mesh and the same physical groups. Here,
+This gives the same mesh and the same physical groups, except that
+the groups have no names. Here,
 `outmap[3:end]` collects the pieces of all boundary surfaces of the
 sphere, so that the code does not depend on the number of surfaces that
 form the sphere boundary. The wrapper performs exactly this bookkeeping
@@ -1807,6 +1847,24 @@ mesh with maximal edge length `h` has roughly `5/h^3` tetrahedra per
 unit volume, and about five times as many cells in total. This is useful
 for estimating the size of a complex before creating it.
 
+!!! warning "When Gmsh fails to mesh a model"
+    For complicated configurations, for example with many intersection
+    curves close to each other, the three-dimensional mesher of `Gmsh`
+    can fail with messages such as `PLC Error: Two facets intersect at
+    point`. The reason is usually a surface mesh which is too coarse for
+    the geometry, and a smaller value of `Mesh.MeshSizeMax` typically
+    resolves the problem. In our tests with random configurations of
+    spheres and planes in a box, about one in twenty-five configurations
+    failed with the mesh size `0.3`, and a failing configuration could
+    be meshed with `0.25`. After such a failure, the `Gmsh` session has to
+    be restarted with `gmsh.finalize()` and `gmsh.initialize()`, since
+    later calls of `gmsh.model.mesh.generate` in the same session do not
+    create any tetrahedra. Other choices of the three-dimensional meshing
+    algorithm, which is selected with the option `Mesh.Algorithm3D`, can
+    also fail silently and leave some volumes without tetrahedra. In
+    this case, [`gmsh_to_simplicial`](@ref) prints a warning, since the
+    complex then has holes which are not part of the geometry.
+
 ### Complete Example: A Periodic Orbit in a Ball
 
 As a final example, we analyze a vector field with an attracting periodic
@@ -1865,8 +1923,8 @@ unstable manifold. The connection matrix has three rows and columns,
 one for each nonzero entry of the two Conley indices. Its nonzero entry
 in row `2` and column `3` connects the two-dimensional entry of the
 equilibrium with the one-dimensional entry of the periodic orbit, and
-records the connection from the equilibrium to the periodic orbit. The computation takes a few seconds.
-The Morse sets are shown in the figure of the Morse sets of the vector
+records the connection from the equilibrium to the periodic orbit. The
+computation takes a few seconds. The Morse sets are shown in the figure of the Morse sets of the vector
 field with a periodic orbit in a ball. The clipped view in the right
 panel reveals the small Morse set of the equilibrium inside the
 much larger isolating neighborhood of the periodic orbit. With a coarser

@@ -67,7 +67,25 @@ function ConleyDynamics.gmsh_to_simplicial(; dim::Int=3, p::Int=2,
     elements = _gmsh_elements(dim, entities, "gmsh_to_simplicial")
     if isempty(elements)
         throw(ArgumentError("gmsh_to_simplicial: the model contains no mesh " *
-                            "elements of dimension $dim. Has the mesh been generated?"))
+                            "elements of dimension $dim. Has the mesh been generated? " *
+                            "Note that after a failed call of gmsh.model.mesh.generate, " *
+                            "Gmsh has to be restarted with gmsh.finalize() and " *
+                            "gmsh.initialize()."))
+    end
+
+    # Surfaces and volumes without elements indicate a partially failed
+    # meshing. Curves are not checked, since degenerate curves, such as
+    # the poles of a sphere, never contain elements.
+
+    if dim >= 2
+        ents  = entities == [-1] ? [t for (d, t) in gmsh.model.getEntities(dim)] : entities
+        empty = [Int(t) for t in ents if all(isempty, gmsh.model.mesh.getElements(dim, t)[2])]
+        if !isempty(empty)
+            @warn "gmsh_to_simplicial: the entities of dimension $dim with tags " *
+                  "$empty contain no mesh elements, so the complex has holes " *
+                  "there. Meshing these entities probably failed; try a smaller " *
+                  "mesh size or a different value of Mesh.Algorithm3D."
+        end
     end
     cells = [[tag2index[t] for t in el] for el in elements]
 

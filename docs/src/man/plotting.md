@@ -476,12 +476,12 @@ savefig(pcombined12, "plots_single_mv.png")
 ## Three-Dimensional Plotting with Makie
 
 Complexes embedded in three dimensions, such as the tetrahedral meshes
-described in the chapter [Three-Dimensional Meshes](@ref), cubical complexes created by
-[`create_cubical_box`](@ref), or triangulated surfaces, are visualized
-with the [Makie.jl](https://docs.makie.org) plotting ecosystem. Makie
-supports hardware-accelerated interactive three-dimensional graphics
-with correct depth ordering and transparency, which the planar backends
-above cannot provide. The table below lists the available functions:
+described in the chapter [Three-Dimensional Meshes](@ref), cubical
+complexes created by [`create_cubical_box`](@ref), or triangulated
+surfaces, are visualized with the [Makie.jl](https://docs.makie.org)
+plotting ecosystem. Makie supports interactive three-dimensional
+graphics with depth ordering and transparency, which the planar
+backends above cannot provide. The table below lists the available functions:
 
 | Function | Description |
 |:---------|:------------|
@@ -577,8 +577,8 @@ fig = plot_simplicial3d(ec)
 ```
 
 The result is shown in the left panel of the figure with three plots
-of a tetrahedral mesh. The
-appearance can be changed with a number of optional arguments:
+of a tetrahedral mesh. The appearance can be changed with a number of
+optional arguments:
 
 * `pdim::Vector{Bool}`: which cell dimensions are drawn. The four
   entries correspond to vertices, edges, two-dimensional cells which are
@@ -643,8 +643,10 @@ refined regions, are hidden in its interior. The optional argument
 average of the coordinates of their four vertices, lies on the far side
 of the plane `n⋅c = offset`, which means that `n⋅c > offset`. Here `n`
 is a normal vector of the plane, which points towards the removed part,
-and `n⋅c` denotes the dot product. Lower-dimensional cells are kept if and only if they are
-faces of a kept cell, so that the visible part is again a closed
+and `n⋅c` denotes the dot product. More generally, the same rule applies
+to all cells which are not faces of other cells, such as the triangles
+of a triangulated surface. All other cells are kept if and only if they
+are faces of a kept cell, so that the visible part is again a closed
 subcomplex, and its boundary surface is drawn as usual. For example,
 
 * `clip=([0,1,0], 0.0)` keeps the half `y <= 0` of the complex,
@@ -693,9 +695,9 @@ save("makie3d_basic.png", fig; px_per_unit=1.5)
 In Makie, a `Figure` is the window or image, which contains a grid of
 axes. The expression `fig[1,2]` refers to the cell in the first row and
 the second column of this grid, and `Axis3(fig[1,2])` places a
-three-dimensional axis there. The argument `title` sets the title of an
-axis. The argument `aspect=:data` gives all three axes the same scale, which
-is essential for judging the shape of tetrahedra, and `hidedecorations!`
+three-dimensional axis there. The argument `title` sets the title of
+an axis. The argument `aspect=:data` gives all three axes the same
+scale, which is essential for judging the shape of tetrahedra, and `hidedecorations!`
 and `hidespines!` remove ticks, labels, and the bounding box. Instead of
 an `Axis3`, one can also use `LScene(fig[1,1]; show_axis=false)`, which
 is what the plain variants do by default. An `LScene` can be rotated

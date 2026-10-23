@@ -167,6 +167,14 @@ end
     @test homology(ec) == [1,0,0,0]
     @test homology(gmsh_to_simplicial(dim=1)) == [1,9]
 
+    # A volume without elements, as after a partially failed meshing
+
+    gmsh.model.mesh.clear([(3, b2)])
+    ec = @test_logs (:warn, r"contain no mesh elements") gmsh_to_simplicial()
+    @test homology(ec) == [1,0,0,0]
+    tetvol(c) = abs(sum((c[2] .- c[1]) .* ConleyDynamics._cross3(c[3] .- c[1], c[4] .- c[1]))) / 6
+    @test sum(tetvol(c) for (c, d) in zip(ec.coords, ec.dimensions) if d == 3) ≈ 1.0
+
     gmsh.finalize()
 end
 

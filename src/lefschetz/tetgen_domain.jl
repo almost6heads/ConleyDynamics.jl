@@ -70,17 +70,23 @@ function Base.show(io::IO, dom::TetDomain)
 end
 
 """
-    tetgen_domain_box(bmin::AbstractVector{<:Real}, bmax::AbstractVector{<:Real})
-                      -> TetDomain
+    tetgen_domain_box(bmin::AbstractVector{<:Real}, bmax::AbstractVector{<:Real};
+                      markers::AbstractVector{<:Integer}=zeros(Int,6)) -> TetDomain
 
 Create a `TetDomain` for the box `[bmin[1],bmax[1]] x [bmin[2],bmax[2]] x
 [bmin[3],bmax[3]]`.
 
 The domain consists of the eight corners of the box and its six faces,
-which are quadrilateral facets with outward orientation and marker `0`.
-This is the three-dimensional analogue of `delaunay_points_bnd_rectangle`.
+which are quadrilateral facets with outward orientation. By default, all
+faces have marker `0`. The optional argument `markers` assigns individual
+markers to the faces, in the order `x = bmin[1]`, `x = bmax[1]`,
+`y = bmin[2]`, `y = bmax[2]`, `z = bmin[3]`, and `z = bmax[3]`. This
+makes it possible to find the cells on some of the faces with
+`tetgen_marker_cells`, for example to describe an exit set. This is the
+three-dimensional analogue of `delaunay_points_bnd_rectangle`.
 """
-function tetgen_domain_box(bmin::AbstractVector{<:Real}, bmax::AbstractVector{<:Real})
+function tetgen_domain_box(bmin::AbstractVector{<:Real}, bmax::AbstractVector{<:Real};
+                           markers::AbstractVector{<:Integer}=zeros(Int,6))
     #
     # Create the domain description of a box
     #
@@ -93,13 +99,23 @@ function tetgen_domain_box(bmin::AbstractVector{<:Real}, bmax::AbstractVector{<:
                             "bmin in every coordinate"))
     end
 
+    if length(markers) != 6
+        throw(ArgumentError("tetgen_domain_box: markers needs one entry for " *
+                            "each of the six faces"))
+    end
+
     x0, y0, z0 = Float64.(bmin)
     x1, y1, z1 = Float64.(bmax)
     points = [(x0,y0,z0), (x1,y0,z0), (x1,y1,z0), (x0,y1,z0),
               (x0,y0,z1), (x1,y0,z1), (x1,y1,z1), (x0,y1,z1)]
-    facets = [[1,4,3,2], [5,6,7,8], [1,2,6,5], [2,3,7,6], [3,4,8,7], [4,1,5,8]]
 
-    return TetDomain(points, facets, zeros(Int, 6))
+    # The facets are the faces z = z0, z = z1, y = y0, x = x1, y = y1,
+    # and x = x0, so that markers in the documented order are permuted
+
+    facets = [[1,4,3,2], [5,6,7,8], [1,2,6,5], [2,3,7,6], [3,4,8,7], [4,1,5,8]]
+    fmarkers = Int.(collect(markers))[[5, 6, 3, 2, 4, 1]]
+
+    return TetDomain(points, facets, fmarkers)
 end
 
 """

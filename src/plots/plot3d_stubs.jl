@@ -28,8 +28,10 @@ Optional keyword arguments:
 - `hull_only::Bool=true`: draw only the boundary surface of the
   tetrahedra and its edges, instead of all faces and edges.
 - `clip=nothing`: a pair `(n, offset)` with a normal vector `n` and a
-  number `offset`. Tetrahedra whose centroid `c` satisfies `n⋅c > offset`
-  are removed, which shows the interior of the complex.
+  number `offset`. Cells which are not faces of other cells, such as the
+  tetrahedra of a mesh, are removed if their centroid `c` satisfies
+  `n⋅c > offset`, together with all faces which do not belong to a
+  remaining cell. This shows the interior of the complex.
 - `alpha::Real=0.3`: opacity of the faces.
 - `facecolor`, `edgecolor`, `vertexcolor`: colors of the faces, edges,
   and vertices. The defaults are `colorant"steelblue1"`,
