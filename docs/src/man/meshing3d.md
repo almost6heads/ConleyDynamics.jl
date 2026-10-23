@@ -367,8 +367,10 @@ a parametrization, so that neighboring triangles share their vertices,
 as required by the mesh generators. Moreover, all surfaces of
 orientable parametrizations are consistently oriented, and closed
 surfaces have outward normals. This is needed for surfaces which bound
-holes or regions of a mesh. The figure of the six triangulated surface
-generators shows one example for each function.
+holes or regions of a mesh, as explained in the section on the
+[Orientation of Surfaces](@ref meshing3d_orientation) below. The
+figure of the six triangulated surface generators shows one example
+for each function.
 
 ![The six triangulated surface generators](img/meshing3d_surfaces.png)
 
@@ -496,6 +498,185 @@ homology(tetmesh_to_euclidean(trisurface_parametric(fmoebius, (0,2*pi),
                                                     (-1,1), 40, 4)...))
 # [1, 1, 0]
 ```
+
+### [Orientation of Surfaces](@id meshing3d_orientation)
+
+The triangles of a surface have an *orientation*, which is easy to get
+wrong for surfaces which are not created by the `trisurface_*`
+functions, for example surfaces read from a file or assembled by hand.
+The orientation is needed in exactly one situation, namely when a
+closed surface is added to a `TetGen` domain with
+[`tetgen_domain_add_surface`](@ref) and the option `hole=true` or
+`region=(attr, maxvol)`. In all other situations, it is ignored. This
+section explains what the orientation is, what it means for a surface
+to be consistently oriented, and why and when this matters.
+
+**The orientation of a triangle.** A triangle is given by the list of
+its three vertex indices, such as `[a, b, c]`. The order of this list
+determines a direction in which the boundary of the triangle is
+traversed, namely from `a` to `b`, from `b` to `c`, and from `c` back
+to `a`. This direction is the orientation of the triangle. Only the
+cyclic order of the vertices matters:
+
+* The lists `[a, b, c]`, `[b, c, a]`, and `[c, a, b]` describe the
+  same closed path with different starting points, and therefore have
+  the *same* orientation.
+* The list `[a, c, b] = reverse([a, b, c])` traverses the boundary in
+  the opposite direction, and therefore has the *opposite*
+  orientation. The same holds for any list which is obtained by
+  exchanging two vertices.
+
+Every triangle therefore has exactly two orientations, and `reverse`
+switches between them. This is the same notion as the orientation of
+a simplex in the chapter on [Lefschetz Complexes](@ref), where two
+orientations are equivalent if they differ by an even permutation of
+the vertices. For a triangle, the even permutations are exactly the
+cyclic shifts.
+
+**The normal vector.** The orientation of a triangle `[a, b, c]`
+determines a normal vector, namely the cross product
+
+```julia
+n = cross(b - a, c - a)
+```
+
+which is perpendicular to the triangle. Its direction is given by the
+*right-hand rule*: If the fingers of the right hand curl in the
+direction from `a` to `b` to `c`, then the thumb points in the
+direction of `n`. Equivalently, if the triangle is viewed from the
+side into which `n` points, then its vertices appear in
+counterclockwise order. For example, the triangle with the vertices
+`a = [0,0,0]`, `b = [1,0,0]`, and `c = [0,1,0]` has the normal vector
+`[0,0,1]`, and seen from above, the path from `a` to `b` to `c` is
+counterclockwise. Reversing the triangle to `[a, c, b]` gives the
+normal vector `[0,0,-1]`. Thus, choosing an orientation of a triangle
+is the same as choosing one of its two sides. The same rule applies to
+the planar polygons with more than three vertices which are used as
+facets in a [`TetDomain`](@ref). For example, the bottom face
+`[1, 4, 3, 2]` of the unit box created by
+[`tetgen_domain_box`](@ref) has the vertices `(0,0,0)`, `(0,1,0)`,
+`(1,1,0)`, and `(1,0,0)` in this order. Seen from above, this path is
+clockwise, so the normal vector points downward and out of the box.
+
+**Consistently oriented surfaces.** A triangulated surface is
+*consistently oriented* if any two triangles which share an edge
+traverse this edge in *opposite* directions. If one triangle contains
+the step from vertex `3` to vertex `5`, then its neighbor across this
+edge has to contain the step from `5` to `3`. Geometrically, this
+means that the normal vectors of neighboring triangles point to the
+same side of the surface, so that the normals of the whole surface
+point to one side of it. As an example, consider the boundary of the
+tetrahedron with the vertices `(0,0,0)`, `(1,0,0)`, `(0,1,0)`, and
+`(0,0,1)`:
+
+```julia
+using LinearAlgebra
+Vt = [[0,0,0], [1,0,0], [0,1,0], [0,0,1]]
+Tt = [[1,3,2], [1,4,3], [1,2,4], [2,3,4]]
+[cross(Vt[t[2]] - Vt[t[1]], Vt[t[3]] - Vt[t[1]]) for t in Tt]
+# [[0, 0, -1], [-1, 0, 0], [0, -1, 0], [1, 1, 1]]
+```
+
+Every edge occurs once in each direction. For example, the edge
+between the vertices `1` and `3` is traversed from `1` to `3` in the
+first triangle, and from `3` to `1` in the second one. All four normal
+vectors point out of the tetrahedron. If a single triangle is
+reversed, then two of its edges are traversed in the same direction
+as in the neighboring triangles, and the surface is no longer
+consistently oriented. A connected orientable surface has exactly two
+consistent orientations, which are obtained from each other by
+reversing all triangles. A non-orientable surface, such as the Möbius
+strip, has no consistent orientation at all.
+
+**Outward and inward normals.** For a closed and consistently oriented
+surface, the normal vectors either all point out of the enclosed
+volume, or they all point into it. The two cases can be distinguished
+by the *signed volume*
+
+```julia
+vol = sum(dot(V[t[1]], cross(V[t[2]], V[t[3]])) for t in T) / 6
+```
+
+whose absolute value is the volume enclosed by the surface. It is
+positive for outward normals and negative for inward normals. For the
+tetrahedron above, only the last triangle contributes, and its
+contribution `1/6` is the volume of the tetrahedron. All closed
+surfaces created by the `trisurface_*` functions have outward normals.
+
+**When the orientation is needed.** `TetGen` itself does not use the
+orientation of facets at all. For `TetGen`, a facet is a two-sided
+wall which tetrahedra cannot cross, and holes and regions are
+identified by points inside them, see [Describing a Domain](@ref)
+below. Such a point does not depend on any orientation. The orientation is only needed when the package has to
+find such a point by itself:
+
+* **Orientation matters:** [`tetgen_domain_add_surface`](@ref) with
+  `hole=true` or with `region=(attr, maxvol)`. In this case, a point
+  inside the surface is computed automatically. The function determines
+  the sign of the signed volume, starts at the center of the largest
+  triangle, and follows the normal vector of this triangle *into* the
+  enclosed volume until the next surface is hit. The midpoint of this
+  segment is used as the hole or region point. This only works if the
+  surface is closed and consistently oriented, which is therefore
+  checked, and an `ArgumentError` is raised otherwise, see the section
+  on [Holes](@ref). Since the sign of the signed volume is taken into
+  account, outward normals and inward normals work equally well. A
+  surface with *mixed* normals, on the other hand, has no well-defined
+  inside direction, and is rejected.
+* **Orientation does not matter:** Everything else. This includes
+  [`tetgen_domain_add_surface`](@ref) without `hole` and `region`,
+  where the surface is only a constraint,
+  [`tetgen_domain_from_surface`](@ref), which only requires a closed
+  surface, [`tetgen_domain_add_hole`](@ref) and
+  [`tetgen_domain_add_region`](@ref), where the point is given
+  explicitly, as well as [`tetmesh_to_euclidean`](@ref), which creates
+  the same complex for every orientation of the triangles, and the
+  plotting functions, which orient the drawn triangles themselves.
+
+In particular, a surface whose orientation is inconsistent can still
+bound a hole or a region, as long as a point inside it is known. It is
+then added without `hole` or `region`, and the point is given
+explicitly:
+
+```julia
+V, T = trisurface_sphere([0,0,0], 1.0, 2)
+Tflip = deepcopy(T)
+Tflip[1] = reverse(Tflip[1])          # one triangle with the wrong orientation
+
+dom = tetgen_domain_box([-2,-2,-2], [2,2,2])
+dom = tetgen_domain_add_surface(dom, V, Tflip)
+dom = tetgen_domain_add_hole(dom, [0,0,0])
+homology(tetgen_to_simplicial(tetgen_mesh(dom; maxvolume=0.05)))
+# [1, 0, 1, 0]
+```
+
+**Orientation of the generated surfaces.** The surface generators use
+the following conventions:
+
+* [`trisurface_sphere`](@ref), [`trisurface_ellipsoid`](@ref),
+  [`trisurface_torus`](@ref), and [`trisurface_cylinder`](@ref) with
+  the default `capped=true` create closed surfaces with outward
+  normals.
+* [`trisurface_plane_patch`](@ref) creates triangles whose normal
+  vectors point in the direction of `cross(u, v)`.
+* [`trisurface_parametric`](@ref) creates triangles whose normal
+  vectors point in the direction of the cross product of the partial
+  derivatives of `f` with respect to `u` and `v`. Reversing one of the
+  two parameter ranges reverses the orientation. This is why the
+  sphere in spherical coordinates above uses the range `(pi,0)` for
+  `v`: The range `(0,pi)` would give inward normals. Both versions can
+  bound a hole or a region.
+* [`tetgen_domain_box`](@ref) creates the six faces of the box with
+  outward normals.
+
+Reversing all triangles of a surface, as in `[reverse(t) for t in T]`,
+switches between outward and inward normals. For holes and regions,
+this is never necessary. If a surface is not consistently oriented,
+however, reversing all triangles does not help. In that case, the
+triangles have to be reoriented one by one, starting from one triangle
+and reversing each neighbor which traverses a shared edge in the same
+direction, or the hole or region point has to be given explicitly, as
+shown above.
 
 ## TetGen.jl: Tetrahedral Meshes
 
@@ -935,6 +1116,9 @@ ec3  = tetgen_to_simplicial(tetgen_mesh(dom3; maxvolume=0.05))
 homology(ec3)                  # [1, 0, 1, 0]
 ```
 
+For the above code segment, recall that `V` and `T` are the vertices
+and triangles of a spherical surface.
+
 `TetGen` identifies holes by a point inside them, which it then uses to
 remove all tetrahedra that can be reached from this point without
 crossing a facet. With `hole=true`, such a point is determined
@@ -943,9 +1127,10 @@ surface, a ray is followed in the direction of the inward normal until
 it hits the surface again, and the midpoint of this segment is used.
 This requires a closed and consistently oriented surface, as created by
 the `trisurface_*` functions, and both outward and inward normals are
-fine. The point is stored in the field `holes` of the domain. Holes of
-any topology are possible, such as the toroidal hole in the right panel
-of the figure of the domains with holes:
+fine, see [Orientation of Surfaces](@ref meshing3d_orientation). The
+point is stored in the field `holes` of the domain. Holes of any
+topology are possible, such as the toroidal hole in the right panel of
+the figure of the domains with holes:
 
 ```julia
 Vh, Th = trisurface_torus([0,0,0], 1.2, 0.4, 32, 12)
