@@ -256,6 +256,27 @@ end
     @test homology(lefschetz_subcomplex(ec, tetgen_marker_cells(res, ec, 1))) == [1,1]
 end
 
+@testset "TetGen extension: options and input validation" begin
+    #
+    # Switch strings, boundary refinement, and invalid arguments
+    #
+    box = tetgen_domain_box([-1.5,-1,-1], [1.5,1,1])
+    r1 = tetgen_mesh(box; maxvolume=0.01, minratio=1.2)
+    r2 = tetgen_mesh(box; switches="pq1.2a0.01Q")
+    @test r1.points == r2.points
+    @test r1.tetrahedra == r2.tetrahedra
+    r3 = tetgen_mesh(box; maxvolume=0.01, steiner_on_boundary=false)
+    @test length(r3.points) == 8
+    @test length(r3.trifaces) == 12
+    empty = TetDomain(NTuple{3,Float64}[], Vector{Int}[], Int[])
+    @test_throws ArgumentError tetgen_mesh(empty)
+    @test_throws ArgumentError TetDomain(box.points, box.facets, [0])
+    @test_throws ArgumentError tetgen_domain_add_curve(box, [[0,0,0]])
+    @test_throws ArgumentError create_simplicial_delaunay3d([0,0], [1,1], 10)
+    @test_throws ArgumentError create_simplicial_delaunay3d([0,0,0], [1,1,1], 3)
+    @test_throws ArgumentError create_simplicial_delaunay3d([0,0,0], [1,0,1], 10)
+end
+
 @testset "TetGen extension: consistency checks" begin
     box = tetgen_domain_box([-2,-2,-2], [2,2,2])
     V, T = trisurface_sphere([0,0,0], 1.0, 1)

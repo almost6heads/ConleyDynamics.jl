@@ -344,3 +344,23 @@ end
                                   [[0.5,0.5,0.5], [0.5,0.5+1e-10,0.5], [0.5+1e-10,0.5,0.5]])
     @test count(f -> length(f) == 2, dom.facets) == 2
 end
+
+@testset "Meshing inputs: invalid surface parameters" begin
+    #
+    # Every surface generator rejects invalid dimensions and counts
+    #
+    @test_throws ArgumentError trisurface_ellipsoid([0,0], [1,1,1], 1)
+    @test_throws ArgumentError trisurface_ellipsoid([0,0,0], [1,1,1], -1)
+    @test_throws ArgumentError trisurface_cylinder([0,0], [0,0,1], 1.0, 8, 2)
+    @test_throws ArgumentError trisurface_cylinder([0,0,0], [0,0,1], -1.0, 8, 2)
+    @test_throws ArgumentError trisurface_cylinder([0,0,0], [0,0,0], 1.0, 8, 2)
+    @test_throws ArgumentError trisurface_torus([0,0], 2.0, 1.0, 8, 8)
+    @test_throws ArgumentError trisurface_torus([0,0,0], 2.0, 1.0, 2, 8)
+    @test_throws ArgumentError trisurface_plane_patch([0,0], [1,0,0], [0,1,0], 2, 2)
+    @test_throws ArgumentError trisurface_plane_patch([0,0,0], [1,0,0], [0,1,0], 0, 2)
+    f(u, v) = [u, v, 0.0]
+    @test_throws ArgumentError trisurface_parametric(f, (0,1,2), (0,1), 2, 2)
+    @test_throws ArgumentError trisurface_parametric(f, (0,1), (0,1), 2, 2; uperiodic=true)
+    @test_throws ArgumentError tetmesh_to_euclidean(Vector{Float64}[], [[1]])
+    @test_throws ArgumentError tetmesh_to_euclidean([[0.0,0.0]], [Int[]])
+end

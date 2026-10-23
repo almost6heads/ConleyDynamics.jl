@@ -136,3 +136,21 @@ end
         @test_throws ArgumentError plot_planar_simplicial_morse(ec3, joinpath(dir, "a.pdf"), [[1]])
     end
 end
+
+@testset "3D plot geometry: free faces and invalid input" begin
+    #
+    # Free triangles of a cell subset are drawn, while triangles which
+    # are faces of tetrahedra in the subset are not
+    #
+    points = [[0.0,0.0,0.0], [1.0,0.0,0.0], [0.0,1.0,0.0], [0.0,0.0,1.0], [1.0,1.0,1.0]]
+    ec   = tetmesh_to_euclidean(points, [[1,2,3,4], [2,3,4,5]])
+    keep = trues(ec.ncells)
+    tris, segs, pts = CDG._cells3d_geometry(ec, [ec.indices["234"], ec.indices["235"]], keep)
+    @test length(tris) == 2 && isempty(segs) && isempty(pts)
+    tris, _, _ = CDG._cells3d_geometry(ec, [ec.indices["1234"], ec.indices["234"]], keep)
+    @test length(tris) == 4
+    tris, _, _ = CDG._cells3d_geometry(ec, [ec.indices["234"]], keep;
+                                       pdim=[true,true,false,true])
+    @test isempty(tris)
+    @test_throws ArgumentError CDG._clip_mask(ec, ([1,0], 0.0), CDG._coface_lists(ec))
+end
