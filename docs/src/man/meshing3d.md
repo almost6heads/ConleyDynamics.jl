@@ -1,15 +1,16 @@
 # Three-Dimensional Meshes
 
-This chapter is concerned with complexes in three dimensions. The
-analysis functions of
-[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
-do not depend on the dimension of the underlying space. In particular,
-[`create_spatial_mvf`](@ref) accepts tetrahedral meshes, and homology,
-Morse decompositions, and connection matrices can be computed for any
-[`EuclideanComplex`](@ref). What is needed in addition is a way to
-*create* tetrahedral meshes of interesting domains, and a way to *look*
-at them. The package provides three layers of functionality for the
-first task:
+This chapter is concerned with complexes in three dimensions. While 
+most of the analysis methods of
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl),
+such as for example the homology, Morse decomposition, and connection
+matrix functions, do not depend on the dimension of the underlying
+space and can be computed for any [`EuclideanComplex`](@ref), other 
+functionality is dimension dependent. This is the case for the function
+[`create_spatial_mvf`](@ref), which accepts tetrahedral meshes. What is 
+therefore needed in addition is a way to create tetrahedral meshes of 
+interesting domains, and a way to look at them. The package provides 
+three layers of functionality for the first task:
 
 * Core functions, which are available without loading any other package.
   They import meshes from arbitrary sources, create random point samples,
@@ -137,7 +138,7 @@ are used throughout the chapter. Readers who are familiar with meshes
 and homology can skip it.
 
 **Simplices and meshes.** The building blocks of all meshes in this
-chapter are *simplices*: vertices (dimension `0`), edges (dimension
+chapter are *simplices*: Vertices (dimension `0`), edges (dimension
 `1`), triangles (dimension `2`), and tetrahedra (dimension `3`). The
 *faces* of a simplex are the simplices spanned by subsets of its
 vertices, see also the [Tutorial](@ref). For example, a tetrahedron has
@@ -201,9 +202,9 @@ prescribed triangles and edges, and which is as close to Delaunay as
 possible otherwise.
 
 **Mesh quality.** For the construction of multivector fields, the
-tetrahedra should be well-shaped, i.e., not too flat or too thin. Two
-standard measures of the shape of a tetrahedron are used below. The
-*radius-edge ratio* is the radius of the circumsphere divided by the
+tetrahedra should generally be well-shaped, i.e., not too flat or too 
+thin. Two standard measures of the shape of a tetrahedron are used below. 
+The *radius-edge ratio* is the radius of the circumsphere divided by the
 length of the shortest edge. A regular tetrahedron, whose six edges
 all have the same length, has the smallest possible ratio
 `sqrt(6)/4 ≈ 0.61`, and the ratio becomes large for tetrahedra with a
@@ -220,7 +221,7 @@ available without loading any extension.
 ### Importing Meshes
 
 Every mesh generator describes a simplicial mesh in essentially the same
-way: by a list of vertex coordinates and a list of maximal simplices,
+way: By a list of vertex coordinates and a list of maximal simplices,
 each given by the indices of its vertices. The function
 [`tetmesh_to_euclidean`](@ref) turns such a description into an
 [`EuclideanComplex`](@ref), and it automatically adds all faces of the
@@ -535,15 +536,15 @@ in [Loading the Required Packages](@ref meshing3d_loading). Note that
 
 A [`TetDomain`](@ref) is a plain Julia struct with five fields:
 
-* `points`: the vertices of the domain description, as tuples of three
+* `points`: The vertices of the domain description, as tuples of three
   numbers,
-* `facets`: the facets, each given by a vector of indices into `points`.
+* `facets`: The facets, each given by a vector of indices into `points`.
   A facet with at least three vertices is a planar polygon, a facet with
   two vertices is a segment, and a facet with one vertex is a single
   point,
-* `markers`: an integer marker for every facet,
-* `holes`: one point inside every hole, and
-* `regions`: for every region, a point inside it, an integer attribute,
+* `markers`: An integer marker for every facet,
+* `holes`: One point inside every hole, and
+* `regions`: For every region, a point inside it, an integer attribute,
   and a maximal tetrahedron volume.
 
 The markers identify the different parts of the domain description after
@@ -571,6 +572,34 @@ dom.markers
 The one-line summary shown above is printed whenever a `TetDomain` is
 displayed in the REPL. It is a quick way to check that every added
 constraint received the intended marker.
+
+The numbers of holes and regions in this summary are easily
+misunderstood. Closed surfaces divide the domain into several parts,
+which we call *chambers*, since tetrahedra cannot cross facets. A box
+with a sphere inside, for example, has two chambers, namely the inside
+of the sphere and the box minus the ball. Without further instructions,
+`TetGen` meshes all chambers. The fields `holes` and `regions` attach
+instructions to individual chambers, each of which is identified by a
+point inside it:
+
+* A *hole* point means that the chamber containing it is removed.
+* A *region* point means that the chamber containing it is kept, its
+  tetrahedra receive an integer attribute, and they can optionally be
+  given their own maximal volume.
+
+A region in the sense of `TetGen` is therefore not a chamber, but a
+label which is attached to a chamber. The summary counts these
+instructions, i.e., it shows `length(dom.holes)` and
+`length(dom.regions)`, and not the number of chambers. A box with a
+spherical hole, as in the section on [Holes](@ref) below, has two
+chambers, but the summary reads `1 holes, 0 regions`:
+One chamber is removed, and the other one is meshed without a label.
+Labels are needed only for local refinement and for finding the
+tetrahedra of a chamber after meshing, as described in
+[Regions and Local Refinement](@ref). As soon as at least one region
+is specified, `TetGen` labels all chambers, and the chambers without a
+region point receive attributes which it chooses itself. Without any
+region points, no attributes are assigned at all.
 
 ### Meshing a Box
 
@@ -628,7 +657,7 @@ software.
 Besides `maxvolume`, the function [`tetgen_mesh`](@ref) accepts the
 following optional arguments:
 
-* `minratio`: an upper bound for the radius-edge ratio of the
+* `minratio`: An upper bound for the radius-edge ratio of the
   tetrahedra, see [Basic Notions](@ref meshing3d_notions). This ratio is
   the standard quality measure of `TetGen`, and well-shaped tetrahedra
   have small ratios. The default value `1.414` (approximately `sqrt(2)`)
@@ -639,23 +668,23 @@ following optional arguments:
   rejected with an `ArgumentError` (with `minratio=0.8`, `TetGen` was
   still running after two minutes in our tests), and values close to
   `1` lead to very fine meshes.
-* `mindihedral`: a lower bound for the dihedral angles of the
+* `mindihedral`: A lower bound for the dihedral angles of the
   tetrahedra, in degrees, strictly between `0` and `90`, see
   [Basic Notions](@ref meshing3d_notions). It is used in
   addition to `minratio`. If `minratio=nothing`, the ratio bound `2.0`
   is used together with it. `TetGen` treats this bound as a goal, but it
-  does not guarantee it: in the table below, the mesh created with
+  does not guarantee it. In the table below, the mesh created with
   `mindihedral=15` still contains a dihedral angle of `2.33°`. Large
-  values can make `TetGen` fail: on the box, `mindihedral=30` works,
+  values can make `TetGen` fail. On the box, `mindihedral=30` works,
   but `mindihedral=50` leads to an error.
-* `steiner_on_boundary`: whether `TetGen` may insert additional points
+* `steiner_on_boundary`: Whether `TetGen` may insert additional points
   on the boundary and on constraint facets. Points which are added by
   the mesh generator, rather than given by the user, are called
   *Steiner points*. They are needed both to satisfy the quality bounds
   and to split long boundary edges. This is `true` by default.
-* `quiet`: whether the output of `TetGen` is suppressed. Passing
+* `quiet`: Whether the output of `TetGen` is suppressed. Passing
   `quiet=false` prints the statistics of the mesh generation.
-* `switches`: a complete `TetGen` command line switch string, which
+* `switches`: A complete `TetGen` command line switch string, which
   overrides all other optional arguments.
 
 Passing `minratio=nothing` without `mindihedral` switches the quality
@@ -673,7 +702,7 @@ contains the smallest dihedral angle in the mesh:
 
 The table illustrates two points which are important in practice. First,
 the quality bounds of `TetGen` remove most badly shaped tetrahedra, but
-they do not guarantee the absence of *slivers*: Flat tetrahedra with
+they do not guarantee the absence of *slivers*. These are flat tetrahedra with
 four nearly coplanar vertices, whose radius-edge ratio can be small even
 though their dihedral angles are close to `0°` or `180°`. A few such
 tetrahedra are harmless for the construction of multivector fields.
@@ -926,7 +955,7 @@ ec5  = tetgen_to_simplicial(tetgen_mesh(dom5; maxvolume=0.05))
 homology(ec5)                  # [1, 1, 1, 0]
 ```
 
-The automatically chosen point refers to the region enclosed by the
+The automatically chosen point refers to the chamber enclosed by the
 surface *at the time it is added*. The ray stops at all surfaces which
 are already part of the domain, so a hole surface around a previously
 added surface removes only the space between the two. If further
@@ -968,7 +997,7 @@ homology(ec4)                  # [2, 0, 1, 0]
 
 ![Domains with holes, clipped at y = 0](img/meshing3d_holes.png)
 
-A hole point must lie in a region which is completely enclosed by facets.
+A hole point must lie in a chamber which is completely enclosed by facets.
 Otherwise, `TetGen` removes everything that can be reached from it, which
 is usually the whole domain. Holes and regions also require closed and
 consistently oriented surfaces, which is checked when the surface is
@@ -1455,7 +1484,7 @@ sphere = gmsh.model.occ.addSphere(0, 0, 0, 1.0)
 plane  = gmsh.model.occ.addRectangle(-2, -2, 0.3, 4, 4)
 gmsh.model.occ.synchronize()
 
-# 2. We only need the sphere as a surface: take its boundary surface
+# 2. We only need the sphere as a surface: Take its boundary surface
 #    and delete the volume itself.
 
 sphsurf = gmsh.model.getBoundary([(3, sphere)], false, false)
@@ -1552,7 +1581,7 @@ unique(ec.dimensions[toptri]), length(toptri)        # ([2], 206)
 ```
 
 Finding the intersection circle as an entity is slightly more involved,
-since the OpenCASCADE sphere has a *seam*: a meridian curve along which
+since the OpenCASCADE sphere has a *seam*: A meridian curve along which
 the parametrization of the sphere is glued. Its pieces belong to the
 boundary of the caps as well. The intersection circle is the curve which
 the two caps have in common:
@@ -1573,7 +1602,7 @@ lists of the physical groups and their intersections, as above.
 [`gmsh_common_refinement`](@ref) is a thin wrapper around the
 OpenCASCADE function `gmsh.model.occ.fragment`, which splits a list of
 *object* entities and a list of *tool* entities along all their
-intersections. It returns two values: a vector `out` with all resulting
+intersections. It returns two values: A vector `out` with all resulting
 entities, and a vector `outmap`, whose `k`-th entry contains the pieces
 of the `k`-th input entity, in the order objects first, then tools. The
 tags of the pieces depend on the internal bookkeeping of OpenCASCADE,
@@ -1691,7 +1720,7 @@ gmsh.finalize()
 ```
 
 The physical groups are numbered in the order in which they were
-created: the box, the plane, and the sphere by
+created: The box, the plane, and the sphere by
 [`gmsh_common_refinement`](@ref), and the upper part of the box
 afterwards. Their tags are therefore `1` to `4`, and each tag comes
 with the dimension of its group.
@@ -1711,7 +1740,7 @@ with the dimension of its group.
 ### Common Refinements of Several Objects
 
 The function [`gmsh_common_refinement`](@ref) accepts any number of
-objects of dimensions `0` to `3`: volumes, surfaces, curves, and single
+objects of dimensions `0` to `3`: Volumes, surfaces, curves, and single
 points. All of them are refined together, so that the mesh of every
 object is a subcomplex, and the intersection of any two objects is the
 intersection of their subcomplexes. As a second example, consider two

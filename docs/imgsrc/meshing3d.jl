@@ -54,6 +54,11 @@ for (k, (V, T, title)) in enumerate([(Vs, Ts, "trisurface_sphere"),
                                      (Vp, Tp, "trisurface_plane_patch"),
                                      (Vm, Tm, "trisurface_parametric")])
     ax = panel(fig, (div(k-1,3)+1, mod1(k,3)), title)
+    if title == "trisurface_torus"
+        # The default camera looks almost edge-on at the tilted torus
+        ax.azimuth = 1.6*pi
+        ax.elevation = 0.3*pi
+    end
     plot_simplicial3d!(ax, tetmesh_to_euclidean(V, T); alpha=0.6)
 end
 savefig3d("meshing3d_surfaces.png", fig)
