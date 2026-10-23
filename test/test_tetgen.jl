@@ -176,6 +176,29 @@ end
                                     vcat(Ta, [t .+ length(Va) for t in Tb]); hole=true)
     @test homology(tetgen_to_simplicial(tetgen_mesh(dom; maxvolume=0.1))) == [1,0,2,0]
 
+    # Automatic hole and region points avoid surfaces added before, so
+    # that a surface around an existing hole bounds the shell
+
+    Vi, Ti = trisurface_sphere([0,0,0], 0.5, 1)
+    Vo, To = trisurface_sphere([0,0,0], 1.0, 1)
+    dom = tetgen_domain_add_surface(box, Vi, Ti; hole=true)
+    dom = tetgen_domain_add_surface(dom, Vo, To; region=(5, -1.0))
+    @test 0.5 < sqrt(sum(abs2, dom.regions[1][1])) < 1.0
+    res = tetgen_mesh(dom; maxvolume=0.1)
+    @test sort(unique(res.tetattributes)) == [5,6]
+    ec = tetgen_to_simplicial(res)
+    @test homology(lefschetz_subcomplex(ec, tetgen_region_cells(res, ec, 5))) == [1,0,1,0]
+    dom = tetgen_domain_add_surface(tetgen_domain_add_surface(box, Vi, Ti), Vo, To; hole=true)
+    @test homology(tetgen_to_simplicial(tetgen_mesh(dom; maxvolume=0.1))) == [2,0,1,0]
+
+    # Triangles need three vertices, and -0.0 is identified with 0.0
+
+    @test_throws ArgumentError tetgen_domain_from_surface(Vi, [[t; t[1]] for t in Ti])
+    @test_throws ArgumentError tetgen_domain_add_surface(box, Vi, [t[1:2] for t in Ti])
+    dom = tetgen_domain_add_curve(box, [[-0.0,-2.0,-2.0], [0.0,0.0,0.0]])
+    dom = tetgen_domain_add_curve(dom, [[0.0,-2.0,-2.0], [1.0,1.0,1.0]])
+    @test length(dom.points) == 8 + 3
+
     # Quality bounds which would make TetGen hang or fail
 
     @test_throws ArgumentError tetgen_mesh(box; minratio=0.8)

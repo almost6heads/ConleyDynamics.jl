@@ -903,9 +903,11 @@ fig2 = plot_simplicial3d_morse(ec, cm.morse; ci=true)
 ```
 
 show the mesh, clipped at the plane ``y = 0`` to reveal its interior, and
-the Morse sets, colored by their Conley indices. With `GLMakie`, both
-plots are opened in interactive windows, in which they can be rotated
-with the mouse. Static versions of both plots are shown in the figure of the
+the Morse sets, colored by their Conley indices. With `GLMakie`, a
+displayed figure appears in an interactive window, in which it can be
+rotated with the mouse. By default, this window shows the most recently
+displayed figure, and `display(fig1)` brings back the first one. Static
+versions of both plots are shown in the figure of the
 clipped tetrahedral mesh and the three Morse sets.
 
 ![A tetrahedral mesh and the Morse sets of a spatial vector field](img/tutorialspatial.png)

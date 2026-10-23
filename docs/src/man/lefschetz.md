@@ -241,9 +241,9 @@ As mentioned above, note however that an object of type
 the field items in the order given in [`LefschetzComplex`](@ref).
 Consider for example the Lefschetz complex from Figure 2.4
 in [mrozek:wanner:25a](@cite), see also the left complex in the
-figure with two sample Lefschetz complexes, which shows a disk divided
-into two halves by a vertical edge. This complex consists of six cells
-with labels `A`, 
+figure with two sample Lefschetz complexes, which shows a circle
+with a vertical chord, where only the left half of the disk is filled.
+This complex consists of six cells with labels `A`,
 `B`, `a`, `b`, `c`, and `alpha`, and we initialize the vector of
 labels, the cell index dictionary, and the cell dimensions via
 the commands
@@ -282,7 +282,7 @@ lcL = LefschetzComplex(labelsL, cdimsL, bndsparseL)
 Lefschetz complexes do not always have to contain cells of
 all dimensions. For example, the Lefschetz complex shown on the
 right side of the figure with the two sample Lefschetz complexes, a
-square without its vertices, has no vertices, and it can be created
+square with only three of its edges, has no vertices, and it can be created
 using the commands
 
 ```julia
@@ -809,8 +809,8 @@ With this seed the result is a complex with ``8`` rectangles, ``25`` edges,
 and ``18`` vertices (``51`` cells in total).  The Euler characteristic is
 ``1`` and the homology is ``(1, 0, 0)``, confirming that the complex is
 contractible, as expected. The Lefschetz complex is shown in the left panel
-of the figure with two rectangles subdivided by the golden ratio function,
-whose vertices are drawn as dots.
+of the figure of the Lefschetz complexes created by the golden ratio
+function.
 
 ![Lefschetz complexes via the golden ratio function](img/goldenratio1.png)
 
@@ -825,8 +825,7 @@ lefschetz_information(ec2)
 ```
 
 The resulting Lefschetz complex is shown in the right panel of the same
-figure, i.e., the one with the vertices drawn as dots. Note that this time
-the aspect ratios of the generated rectangles
+figure. Note that this time the aspect ratios of the generated rectangles
 can become very extreme. Thus, changing the subdivision value `sigma` should
 only be done in exceptional circumstances.
 
@@ -844,8 +843,7 @@ lefschetz_information(ec3)
 This produces a complex with ``85`` rectangles, ``230`` edges, and
 ``146`` vertices (``461`` cells in total), again with Euler characteristic
 ``1`` and trivial higher homology. The resulting complex is shown in the
-left panel of the figure on mesh refinement, whose right panel contains
-a green line and a red circle.
+left panel of the figure on mesh refinement via the golden ratio.
 
 ![Mesh refinement via the golden ratio](img/goldenratio2.png)
 

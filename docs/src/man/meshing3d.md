@@ -278,10 +278,12 @@ surfaces, and the constraints inside a domain are surfaces and curves.
 The package therefore contains six functions which create triangulated
 surfaces. Each of them returns a pair `(V, T)`, where `V` is a vector of
 vertex coordinates and `T` is a vector of triangles, each given by three
-indices into `V`. All surfaces are consistently oriented, closed surfaces
-have outward normals, and vertices are never duplicated, even along the
-seams of a parametrization. These properties are required by the mesh
-generators. The figure of the six triangulated surface generators shows one
+indices into `V`. Vertices are never duplicated, even along the seams of
+a parametrization, so that neighboring triangles share their vertices,
+as required by the mesh generators. Moreover, all surfaces of
+orientable parametrizations are consistently oriented, and closed
+surfaces have outward normals. This is needed for surfaces which bound
+holes or regions of a mesh. The figure of the six triangulated surface generators shows one
 example for each function.
 
 ![The six triangulated surface generators](img/meshing3d_surfaces.png)
@@ -383,8 +385,9 @@ glued with a twist, even though `uperiodic` is not set.
     For example, the usual figure-eight immersion of the Klein bottle in
     three dimensions intersects itself along a circle, and the resulting
     complex is *not* a Klein bottle. Moreover, a non-orientable surface
-    such as the Möbius strip cannot be consistently oriented, so it
-    cannot be used as a constraint surface for the mesh generators.
+    such as the Möbius strip cannot be consistently oriented. It can be
+    used as a constraint surface for the mesh generators, but it cannot
+    bound a hole or a region.
 
 **Surfaces as complexes.** Every triangulated surface can be turned into
 a two-dimensional simplicial complex embedded in three dimensions with
@@ -790,8 +793,11 @@ homology(ec5)                  # [1, 1, 1, 0]
 ```
 
 The automatically chosen point refers to the region enclosed by the
-surface *at the time it is added*. If further surfaces are placed inside
-a hole surface later, the hole point might end up in the wrong region.
+surface *at the time it is added*. The ray stops at all surfaces which
+are already part of the domain, so a hole surface around a previously
+added surface removes only the space between the two. If further
+surfaces are placed inside a hole surface later, however, the hole
+point might end up in the wrong region.
 Consider two concentric spheres. Adding the outer sphere with
 `hole=true` creates a hole point at the origin. After adding the inner
 sphere, this point lies inside the inner ball, and only the inner ball
@@ -809,9 +815,11 @@ homology(tetgen_to_simplicial(tetgen_mesh(domw; maxvolume=0.05)))
 # [1, 0, 1, 0]
 ```
 
-In such cases, the hole point should be given explicitly with
+In such cases, the inner surface should be added first, or the hole
+point should be given explicitly with
 [`tetgen_domain_add_hole`](@ref). The following commands remove the
-spherical shell between the two spheres. The result consists of two
+spherical shell between the two spheres, and adding `V2, T2` first and
+then `V1, T1` with `hole=true` gives the same result. The result consists of two
 components, namely the inner ball and the box with a spherical cavity, as
 the middle panel of the figure of the domains with holes shows:
 
@@ -865,8 +873,7 @@ homology(tetgen_to_simplicial(tetgen_mesh(dom8; maxvolume=0.05)))
 The same applies to regions. For nested components within one surface,
 such as two concentric spheres, both the inner ball and the shell
 between the spheres become holes. To remove only the shell, add the
-spheres separately and specify the hole point explicitly, as shown
-above.
+spheres separately, as shown above.
 
 ### Regions and Local Refinement
 

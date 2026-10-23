@@ -794,7 +794,9 @@ fig3 = plot_simplicial3d_morse(ec, ms; colors=[:purple, :gold, :seagreen],
 
 The three plots are shown in the figure of the Morse sets of a vector
 field on a tetrahedral mesh. On this coarse mesh, each Morse set
-consists of a single tetrahedron and its faces.
+contains a single tetrahedron. For the two attractors, the Morse set
+consists of this tetrahedron and all its faces, while the Morse set
+of the saddle contains only six of its fourteen faces.
 
 ![Morse sets of a vector field on a tetrahedral mesh](img/makie3d_morse.png)
 
@@ -917,8 +919,9 @@ fig3 = plot_cubical3d_morse(eca, msa; ci=true)
 ```
 
 The Morse decomposition consists of seven Morse sets: two attracting
-equilibria, two equilibria each with one- and two-dimensional unstable
-manifolds, and the trivial equilibrium, whose unstable manifold is
+equilibria, two equilibria with one-dimensional unstable manifolds, two
+equilibria with two-dimensional unstable manifolds, and the trivial
+equilibrium, whose unstable manifold is
 three-dimensional. The three plots are shown in the figure of the
 cubical complexes in three dimensions. In the right panel, the colors of
 the Conley indices immediately identify the

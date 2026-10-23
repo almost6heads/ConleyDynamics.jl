@@ -296,7 +296,7 @@ savefig(pcombined34, "delaunayext3.png")
 ### Complete Example
 
 The following self-contained snippet combines all three steps — bounding
-rectangle, two circular constraints, mesh refinement, and conversion:
+rectangle, two closed constraint curves, mesh refinement, and conversion:
 
 ```julia
 using Plots

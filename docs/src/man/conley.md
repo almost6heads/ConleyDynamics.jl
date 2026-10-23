@@ -275,7 +275,7 @@ The multivector field from the package logo, which is shown in the
 figure of the two triangles `ABC` and `BCD` with their multivectors,
 consists of three critical cells, two Forman
 arrows, as well as one multivector which consists of four cells.
-Beyond the constant essenetial solutions in each of the three
+Beyond the constant essential solutions in each of the three
 critical cells, another essential solution is the *periodic
 orbit*
 

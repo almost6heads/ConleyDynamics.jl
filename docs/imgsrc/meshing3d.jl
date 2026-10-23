@@ -1,6 +1,6 @@
 #
 # Figures for the manual sections on three-dimensional meshes
-# (extensions.md) and three-dimensional plotting (plotting.md).
+# (meshing3d.md) and three-dimensional plotting (plotting.md).
 #
 # The script needs an environment which contains ConleyDynamics,
 # TetGen, Gmsh, and CairoMakie. It writes the PNG files into the

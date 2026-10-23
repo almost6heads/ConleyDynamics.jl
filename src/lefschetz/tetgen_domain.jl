@@ -124,6 +124,10 @@ function tetgen_domain_from_surface(V::AbstractVector, T::AbstractVector)
         throw(ArgumentError("tetgen_domain_from_surface: the triangles contain " *
                             "indices outside of 1:$nv"))
     end
+    if any(length(t) != 3 for t in T)
+        throw(ArgumentError("tetgen_domain_from_surface: every triangle needs " *
+                            "three vertex indices"))
+    end
     closed, _ = _trisurface_check(T)
     if !closed
         throw(ArgumentError("tetgen_domain_from_surface: the surface is not closed"))
@@ -181,14 +185,17 @@ cannot be combined:
   tetrahedra in this region can be found with `tetgen_region_cells`.
 
 In both cases, the surface has to be closed and consistently oriented,
-and a point inside the surface is determined automatically. If the
-surface consists of several connected components, such as two disjoint
+and a point inside the surface is determined automatically. This point
+avoids the surfaces which are already part of the domain, so that a
+region bounded by a sphere around a previously added hole is the shell
+between the two surfaces. If the surface consists of several connected components, such as two disjoint
 spheres, one point is determined for every component, so that all of
 them become holes or regions. Note that for nested components, such as
 two concentric spheres, both the inner ball and the shell between the
 spheres are removed or marked. If this is not intended, add the
-surfaces separately and use `tetgen_domain_add_hole` or
-`tetgen_domain_add_region` with explicit points.
+surfaces separately, starting with the inner one, or use
+`tetgen_domain_add_hole` or `tetgen_domain_add_region` with explicit
+points.
 
 Vertices of the surface which coincide exactly with existing points of
 the domain are identified with them. Apart from such shared vertices
@@ -210,6 +217,10 @@ function tetgen_domain_add_surface(dom::TetDomain, V::AbstractVector, T::Abstrac
         throw(ArgumentError("tetgen_domain_add_surface: the triangles contain " *
                             "indices outside of 1:$nv"))
     end
+    if any(length(t) != 3 for t in T)
+        throw(ArgumentError("tetgen_domain_add_surface: every triangle needs " *
+                            "three vertex indices"))
+    end
     if hole && !isnothing(region)
         throw(ArgumentError("tetgen_domain_add_surface: a surface cannot bound " *
                             "both a hole and a region"))
@@ -229,16 +240,23 @@ function tetgen_domain_add_surface(dom::TetDomain, V::AbstractVector, T::Abstrac
 
     cmarker = isnothing(marker) ? _next_marker(dom) : marker
     points, newindex = _merge_points(dom.points, [_point3(v) for v in V])
-    facets  = vcat(deepcopy(dom.facets), [newindex[collect(t)] for t in T])
+    newfacets = [newindex[collect(t)] for t in T]
+    facets  = vcat(deepcopy(dom.facets), newfacets)
     markers = vcat(dom.markers, fill(cmarker, length(T)))
     holes   = copy(dom.holes)
     regions = copy(dom.regions)
 
-    # One hole or region point inside every connected component
+    # One hole or region point inside every connected component. The
+    # ray which determines it stops at the new surface and at all
+    # polygonal facets of the domain, so that the point does not end
+    # up inside a surface which was added before, such as a smaller
+    # concentric sphere.
 
     if hole || !isnothing(region)
-        for comp in _trisurface_components(T)
-            q = _point3(_trisurface_interior_point(V, T[comp], T))
+        oldtris = [[f[1], f[k], f[k+1]] for f in dom.facets for k in 2:length(f)-1]
+        alltris = vcat(newfacets, oldtris)
+        for comp in _trisurface_components(newfacets)
+            q = _point3(_trisurface_interior_point(points, newfacets[comp], alltris))
             hole && push!(holes, q)
             if !isnothing(region)
                 push!(regions, (q, region[1], Float64(region[2])))
@@ -377,7 +395,8 @@ function _point3(v)
     if !all(isfinite, v)
         throw(ArgumentError("Point coordinates need to be finite, got $v"))
     end
-    return (Float64(v[1]), Float64(v[2]), Float64(v[3]))
+    # Adding 0.0 turns -0.0 into 0.0, so that equal points are merged
+    return (Float64(v[1]) + 0.0, Float64(v[2]) + 0.0, Float64(v[3]) + 0.0)
 end
 
 function _next_marker(dom::TetDomain)
