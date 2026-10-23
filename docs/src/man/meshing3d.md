@@ -44,6 +44,7 @@ function is part of the core package.
 | [`gmsh_to_simplicial`](@ref) | `Gmsh` | Convert the current `Gmsh` mesh |
 | [`gmsh_file_to_simplicial`](@ref) | `Gmsh` | Read and convert a mesh or geometry file |
 | [`gmsh_marker_cells`](@ref) | `Gmsh` | Cells of physical groups and entities |
+| [`gmsh_common_refinement`](@ref) | `Gmsh` | Split intersecting objects into common pieces |
 
 The domain builders of `TetGen` and the conversion functions are part of
 the core package, so that domains can be prepared and stored without
@@ -1265,13 +1266,19 @@ since it requires non-intersecting facets, see the
 [Error Messages](@ref) above. Computing such an intersection by hand is
 a difficult problem in computational geometry. `Gmsh`, on the other hand,
 computes it with a single `fragment` operation, which splits all entities
-along their mutual intersections.
+along their mutual intersections. The function
+[`gmsh_common_refinement`](@ref) performs this operation and keeps
+track of the resulting pieces, see
+[Intersecting Constraint Surfaces](@ref) and
+[Common Refinements of Several Objects](@ref) below.
 
-The extension provides three functions: [`gmsh_to_simplicial`](@ref)
+The extension provides four functions: [`gmsh_to_simplicial`](@ref)
 converts the mesh of the current `Gmsh` model into an
 [`EuclideanComplex`](@ref), [`gmsh_marker_cells`](@ref) finds the cells
-of physical groups and entities, and [`gmsh_file_to_simplicial`](@ref)
-reads mesh and geometry files. Everything else, i.e., the construction
+of physical groups and entities, [`gmsh_common_refinement`](@ref)
+splits intersecting objects along their intersections and keeps track
+of the pieces, and [`gmsh_file_to_simplicial`](@ref) reads mesh and
+geometry files. Everything else, i.e., the construction
 of the geometry and the meshing itself, is done with the `Gmsh` API. Its
 documentation can be found on the [Gmsh](https://gmsh.info) web page,
 and the examples below cover the most important commands. All of them
@@ -1376,7 +1383,13 @@ nodes does not matter.
 
 We now return to the example from the introduction of this section: A
 box `[-2,2]^3` which contains the plane `z = 0.3` and the unit sphere,
-both as constraint surfaces. The geometry is constructed as follows:
+both as constraint surfaces. What we are looking for is a *common
+refinement* of the box, the plane, and the sphere: A tetrahedral mesh
+of the box in which the plane and the sphere are both unions of
+triangles, and in which their intersection, the circle, is a union of
+edges. In the language of [Basic Notions](@ref meshing3d_notions), the
+plane, the sphere, and the circle are then subcomplexes of the mesh.
+The geometry is constructed as follows:
 
 ```julia
 using Gmsh: gmsh
@@ -1399,51 +1412,39 @@ gmsh.model.occ.synchronize()
 sphsurf = gmsh.model.getBoundary([(3, sphere)], false, false)
 gmsh.model.occ.remove([(3, sphere)])
 
-# 3. Fragment the box (the object) with the plane and the sphere surface
-#    (the tools). This splits all entities along their intersections.
+# 3. Split all objects along their intersections, and create one
+#    physical group for each of them.
 
-out, outmap = gmsh.model.occ.fragment([(3, box)], vcat([(2, plane)], sphsurf))
-gmsh.model.occ.synchronize()
+pg_box, pg_plane, pg_sphere = gmsh_common_refinement([(3, box), (2, plane), sphsurf];
+                                                     names=["box", "plane", "sphere"])
 ```
 
-The fragment operation returns two values. The vector `out` contains all
-resulting entities, and `outmap[k]` contains the pieces of the `k`-th
-input entity, in the order object first, then tools. In our case, the
-box was split into four volumes (above and below the plane, each inside
-and outside the sphere), the plane was split into a disk inside the
-sphere and the rest, and the sphere surface was split into two caps:
+The function `addSphere` creates a solid ball, whose boundary surface is
+returned by `getBoundary`. The two arguments `false` request the
+boundary surfaces themselves, without orientation signs and without
+recursion to lower dimensions. The function
+[`gmsh_common_refinement`](@ref) expects a vector of *objects*, where
+every object is either a single entity `(dim, tag)`, such as the box and
+the plane, or a vector of entities of the same dimension, such as the
+boundary surfaces of the sphere. It splits all objects along their
+mutual intersections, and it returns one physical group for every
+object, which contains all pieces of this object. The optional argument
+`names` gives these groups names, which are also stored in mesh files.
+In our case, the box is split into four volumes (above and below the
+plane, each inside and outside the sphere), the plane into a disk
+inside the sphere and the rest, and the sphere surface into two caps.
+The pieces of the box can be listed with
+`gmsh.model.getEntitiesForPhysicalGroup`, and we collect the ones
+above the plane, which are identified by their centers of mass, into a
+further physical group:
 
 ```julia
-out
-# [(3, 1), (3, 2), (3, 3), (3, 4)]
-outmap
-# [[(3, 1), (3, 2), (3, 3), (3, 4)],     # pieces of the box
-#  [(2, 3), (2, 14)],                    # pieces of the plane
-#  [(2, 13), (2, 7)]]                    # pieces of the sphere surface
+volumes  = gmsh.model.getEntitiesForPhysicalGroup(3, pg_box)    # [1, 2, 3, 4]
+upper    = [v for v in volumes if gmsh.model.occ.getCenterOfMass(3, v)[3] > 0.3]
+pg_upper = gmsh.model.addPhysicalGroup(3, upper)
 ```
 
-The tags of the pieces depend on the internal bookkeeping of
-OpenCASCADE, and they should never be hard-coded. Instead, the pieces are
-collected into physical groups directly from `outmap`. In addition, we
-create a physical group for the part of the box above the plane, which
-is identified by the centers of mass of the volume pieces:
-
-```julia
-plane_pieces  = [tag for (d, tag) in outmap[2] if d == 2]
-sphere_pieces = [tag for m in outmap[3:end] for (d, tag) in m if d == 2]
-volumes       = [tag for (d, tag) in outmap[1] if d == 3]
-upper = [v for v in volumes if gmsh.model.occ.getCenterOfMass(3, v)[3] > 0.3]
-
-pg_plane  = gmsh.model.addPhysicalGroup(2, plane_pieces)
-pg_sphere = gmsh.model.addPhysicalGroup(2, sphere_pieces)
-pg_upper  = gmsh.model.addPhysicalGroup(3, upper)
-gmsh.model.setPhysicalName(2, pg_sphere, "sphere")      # optional
-```
-
-The expression `outmap[3:end]` collects the pieces of all tools after the
-plane, which makes the code independent of the number of surfaces that
-form the sphere boundary. Physical groups can also be given names, which
-are stored in mesh files. Now the model is meshed and converted:
+Now the model is meshed and converted:
 
 ```julia
 gmsh.option.setNumber("Mesh.MeshSizeMax", 0.25)
@@ -1464,24 +1465,25 @@ homology(lefschetz_subcomplex(ec, circle_cells))     # [1, 1]
 
 Even though the four volumes are separate entities in `Gmsh`, their
 meshes match along the common surfaces, and the complex is a single
-contractible tetrahedral mesh of the box. This is a consequence of the
-fragment operation. The plane and the sphere are
-both subcomplexes, and their intersection is a circle made of edges of
-the mesh. This is exactly the kind of mesh that `TetGen` cannot create.
-The plane, the sphere, and the circle are shown in the left panel of the
-figure of the plane and the sphere intersecting in a circle.
+contractible tetrahedral mesh of the box. The plane and the sphere are
+both subcomplexes, and since the mesh is a common refinement, their
+intersection is exactly the circle, made of edges of the mesh. This is
+exactly the kind of mesh that `TetGen` cannot create. The plane, the
+sphere, and the circle are shown in the left panel of the figure of the
+plane and the sphere intersecting in a circle.
 
-!!! warning "Touching or intersecting entities have to be fragmented"
-    If entities which touch or intersect are meshed without a fragment
-    operation, `Gmsh` meshes them independently. The resulting mesh
-    contains distinct nodes at the same positions, and the complex falls
-    apart along them. For example, two boxes `[0,1]^3` and `[1,2] x [0,1]
-    x [0,1]` created with `addBox` and meshed directly give a complex with
-    homology `[2, 0, 0, 0]`, i.e., two separate cubes, and cells on the
-    common face are not found reliably by [`gmsh_marker_cells`](@ref). In
-    such cases, [`gmsh_to_simplicial`](@ref) prints a warning. Calling
-    `gmsh.model.occ.fragment([(3, b1)], [(3, b2)])` before meshing gives
-    one connected mesh with homology `[1, 0, 0, 0]`.
+!!! warning "Touching or intersecting entities have to be refined together"
+    If entities which touch or intersect are meshed without
+    [`gmsh_common_refinement`](@ref) or a fragment operation, `Gmsh`
+    meshes them independently. The resulting mesh contains distinct nodes
+    at the same positions, and the complex falls apart along them. For
+    example, two boxes `[0,1]^3` and `[1,2] x [0,1] x [0,1]` created with
+    `addBox` and meshed directly give a complex with homology
+    `[2, 0, 0, 0]`, i.e., two separate cubes, and cells on the common face
+    are not found reliably by [`gmsh_marker_cells`](@ref). In such cases,
+    [`gmsh_to_simplicial`](@ref) prints a warning. Calling
+    `gmsh_common_refinement([(3, b1), (3, b2)])` before meshing gives one
+    connected mesh with homology `[1, 0, 0, 0]`.
 
 ![A plane and a sphere intersecting in a circle, meshed with Gmsh](img/meshing3d_gmsh.png)
 
@@ -1490,7 +1492,7 @@ the upper cap of the sphere is the sphere piece whose center of mass lies
 above the plane:
 
 ```julia
-caps   = sphere_pieces
+caps   = gmsh.model.getEntitiesForPhysicalGroup(2, pg_sphere)
 topcap = [t for t in caps if gmsh.model.occ.getCenterOfMass(2, t)[3] > 0.3][1]
 top    = gmsh_marker_cells(ec, 2, topcap; physical=false)
 homology(lefschetz_subcomplex(ec, top))              # [1, 0, 0]
@@ -1513,7 +1515,41 @@ sort(circle2) == sort(circle_cells)                  # true
 ```
 
 The `abs` is needed since `getBoundary` returns oriented curves, whose tag
-is negative if the orientation is reversed.
+is negative if the orientation is reversed. In most cases, however, it is
+simpler to work with the cell lists of the physical groups and their
+intersections, as above.
+
+**What happens behind the scenes.** The function
+[`gmsh_common_refinement`](@ref) is a thin wrapper around the
+OpenCASCADE function `gmsh.model.occ.fragment`, which splits a list of
+*object* entities and a list of *tool* entities along all their
+intersections. It returns two values: a vector `out` with all resulting
+entities, and a vector `outmap`, whose `k`-th entry contains the pieces
+of the `k`-th input entity, in the order objects first, then tools. The
+tags of the pieces depend on the internal bookkeeping of OpenCASCADE,
+and they should never be hard-coded. Instead of step 3 above, one could
+therefore also write
+
+```julia
+out, outmap = gmsh.model.occ.fragment([(3, box)], vcat([(2, plane)], sphsurf))
+gmsh.model.occ.synchronize()
+outmap
+# [[(3, 1), (3, 2), (3, 3), (3, 4)],     # pieces of the box
+#  [(2, 3), (2, 14)],                    # pieces of the plane
+#  [(2, 13), (2, 7)]]                    # pieces of the sphere surface
+
+pg_box    = gmsh.model.addPhysicalGroup(3, [t for (d, t) in outmap[1] if d == 3])
+pg_plane  = gmsh.model.addPhysicalGroup(2, [t for (d, t) in outmap[2] if d == 2])
+pg_sphere = gmsh.model.addPhysicalGroup(2, [t for m in outmap[3:end] for (d, t) in m
+                                            if d == 2])
+```
+
+This gives the same mesh and the same physical groups. Here,
+`outmap[3:end]` collects the pieces of all boundary surfaces of the
+sphere, so that the code does not depend on the number of surfaces that
+form the sphere boundary. The wrapper performs exactly this bookkeeping
+for any number of objects, which is less error-prone, in particular if
+objects consist of several entities.
 
 ### Restricting the Mesh to Parts of the Model
 
@@ -1597,20 +1633,165 @@ end of the previous section can be read and analyzed as follows:
 gmsh.initialize()
 ecm = gmsh_file_to_simplicial("intersecting.msh")
 lefschetz_cell_count(ecm)            # [4335, 26847, 43139, 20626]
-gmsh.model.getPhysicalGroups()       # [(2, 1), (2, 2), (3, 3)]
-gmsh.model.getPhysicalName(2, 2)     # "sphere"
-homology(lefschetz_subcomplex(ecm, gmsh_marker_cells(ecm, 2, 2)))   # [1, 0, 1]
+gmsh.model.getPhysicalGroups()       # [(2, 2), (2, 3), (3, 1), (3, 4)]
+gmsh.model.getPhysicalName(2, 3)     # "sphere"
+homology(lefschetz_subcomplex(ecm, gmsh_marker_cells(ecm, 2, 3)))   # [1, 0, 1]
 gmsh.finalize()
 ```
+
+The physical groups are numbered in the order in which they were
+created: the box, the plane, and the sphere by
+[`gmsh_common_refinement`](@ref), and the upper part of the box
+afterwards. Their tags are therefore `1` to `4`, and each tag comes
+with the dimension of its group.
 
 !!! warning "Saving meshes with physical groups"
     As soon as a model contains physical groups, `Gmsh` by default only
     saves the elements which belong to some physical group. In the
-    example above, without the option `Mesh.SaveAll`, the file would only
-    contain the tetrahedra of the upper part of the box, since this is
-    the only three-dimensional physical group. Either set
+    example above, all tetrahedra belong to the physical group of the
+    box which was created by [`gmsh_common_refinement`](@ref), so the
+    complete tetrahedral mesh would be saved even without the option
+    `Mesh.SaveAll`. If the only three-dimensional physical group were
+    the upper part of the box, however, the file would only contain the
+    tetrahedra of this part. To be on the safe side, either set
     `Mesh.SaveAll` to `1` as above, or define physical groups for all
     volumes.
+
+### Common Refinements of Several Objects
+
+The function [`gmsh_common_refinement`](@ref) accepts any number of
+objects of dimensions `0` to `3`: volumes, surfaces, curves, and single
+points. All of them are refined together, so that the mesh of every
+object is a subcomplex, and the intersection of any two objects is the
+intersection of their subcomplexes. As a second example, consider two
+unit spheres around the points `(-1/2, 0, 0)` and `(1/2, 0, 0)`, which
+intersect in a circle in the plane `x = 0`, together with the segment of
+the `x`-axis from `-1.9` to `1.9`, which crosses both spheres twice. The
+segment is a curve, i.e., an entity of dimension `1`, which is created
+from its two endpoints:
+
+```julia
+gmsh.initialize()
+gmsh.option.setNumber("General.Terminal", 0)
+gmsh.model.add("twospheres")
+
+function spheresurface(x, y, z, r)
+    s = gmsh.model.occ.addSphere(x, y, z, r)
+    gmsh.model.occ.synchronize()
+    bnd = gmsh.model.getBoundary([(3, s)], false, false)
+    gmsh.model.occ.remove([(3, s)])
+    return bnd
+end
+
+box   = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+left  = spheresurface(-0.5, 0, 0, 1.0)
+right = spheresurface( 0.5, 0, 0, 1.0)
+axis  = gmsh.model.occ.addLine(gmsh.model.occ.addPoint(-1.9, 0, 0),
+                               gmsh.model.occ.addPoint( 1.9, 0, 0))
+
+pgs = gmsh_common_refinement([(3, box), left, right, (1, axis)])
+gmsh.option.setNumber("Mesh.MeshSizeMax", 0.25)
+gmsh.model.mesh.generate(3)
+ec2 = gmsh_to_simplicial()
+lefschetz_cell_count(ec2)                               # [4303, 26845, 43256, 20713]
+
+cl = gmsh_marker_cells(ec2, 2, pgs[2])                  # left sphere
+cr = gmsh_marker_cells(ec2, 2, pgs[3])                  # right sphere
+ca = gmsh_marker_cells(ec2, 1, pgs[4])                  # axis
+homology(lefschetz_subcomplex(ec2, cl))                 # [1, 0, 1]
+homology(lefschetz_subcomplex(ec2, intersect(cl, cr)))  # [1, 1]
+homology(lefschetz_subcomplex(ec2, union(cl, cr)))      # [1, 0, 3]
+homology(lefschetz_subcomplex(ec2, ca))                 # [1, 0]
+
+crossings = intersect(ca, union(cl, cr))
+sort([ec2.coords[k][1][1] for k in crossings])          # [-1.5, -0.5, 0.5, 1.5]
+```
+
+Both spheres are subcomplexes with the homology of a sphere, and their
+intersection is a circle. Their union consists of four disks, namely
+the two caps of each sphere, which are glued along the common circle.
+It therefore encloses three cavities, which explains the Betti number
+`b2 = 3`. The axis is a chain of edges of the mesh, and it meets the
+spheres in exactly four vertices, at the four points where the segment
+crosses them. Since the segment was refined together with the spheres,
+these crossing points are vertices of the mesh, and not just points
+somewhere inside of triangles.
+
+Volumes can be used as objects as well. They are the natural way to
+describe *regions*, in which, for example, a vector field has a known
+behavior. Moreover, an object does not have to lie inside of the box. In
+the following example, the plane is larger than the box, and the solid
+unit ball is a region:
+
+```julia
+gmsh.model.add("region")
+box   = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+plane = gmsh.model.occ.addRectangle(-3, -3, 0.2, 6, 6)
+ball  = gmsh.model.occ.addSphere(0, 0, 0, 1.0)
+
+pg_box, pg_plane, pg_ball = gmsh_common_refinement([(3, box), (2, plane), (3, ball)])
+gmsh.option.setNumber("Mesh.MeshSizeMax", 0.4)
+gmsh.model.mesh.generate(3)
+ec3 = gmsh_to_simplicial()
+
+plane_cells = gmsh_marker_cells(ec3, 2, pg_plane)
+ball_cells  = gmsh_marker_cells(ec3, 3, pg_ball)
+homology(lefschetz_subcomplex(ec3, ball_cells))                         # [1, 0, 0, 0]
+homology(lefschetz_subcomplex(ec3, intersect(plane_cells, ball_cells)))  # [1, 0, 0]
+maximum(maximum(abs.(ec3.coords[k][1])) for k in plane_cells)          # 2.0
+gmsh.finalize()
+```
+
+The cells of the ball form a closed subcomplex, and the intersection of
+the ball with the plane is a disk. The part of the plane outside of the
+box is split off by the refinement and meshed only as a surface. Since
+it does not belong to any tetrahedron, it is not part of the complex,
+and [`gmsh_marker_cells`](@ref) ignores it, so that all vertices of
+`plane_cells` lie in the box.
+
+Both examples are shown in the figure of the common refinements of
+several objects. In the left panel, the two spheres are drawn in blue
+and orange, their intersection circle in red, and the axis together
+with its four crossing points in black. The right panel shows the
+second mesh clipped at the plane `y = 0`, with the ball region in orange
+and the plane in blue.
+
+![Common refinements of several objects, meshed with Gmsh](img/meshing3d_refinement.png)
+
+The following remarks summarize how common refinements are used in
+practice:
+
+* **Describing the objects.** Constraint surfaces and regions have to
+  be created as CAD entities with the functions in `gmsh.model.occ`,
+  such as `addBox`, `addSphere`, `addCylinder`, `addCone`, `addTorus`,
+  and `addWedge` for solids, `addRectangle` and `addDisk` for planar
+  surfaces, and `addPoint`, `addLine`, `addCircle`, and `addSpline` for
+  points and curves. The surface of a solid is obtained with
+  `getBoundary`, as for the spheres above. Curved surfaces which are not
+  of this form can be created, for example, with `addBSplineSurface`,
+  `addSurfaceFilling`, or `addThruSections`, and CAD files in the STEP
+  or IGES format can be loaded with `gmsh.model.occ.importShapes`. See
+  the `Gmsh` documentation for details.
+* **Triangulated surfaces.** The surfaces created by the `trisurface_*`
+  functions are triangulations, not CAD entities. They are meant for
+  `TetGen`, and they cannot be used for boolean operations in `Gmsh`.
+  If an analytic description is available, as for spheres, cylinders,
+  and tori, use the corresponding CAD function instead.
+* **Positioning.** Entities can be moved and rotated with
+  `gmsh.model.occ.translate` and `gmsh.model.occ.rotate`, for example
+  `gmsh.model.occ.rotate([(2, plane)], 0, 0, 0, 1, 0, 0, pi/2)` rotates
+  a plane by ninety degrees around the `x`-axis through the origin.
+* **Mesh size.** The intersection curves are meshed like all other
+  curves, so their edges have length at most `Mesh.MeshSizeMax`. If two
+  objects intersect at a very small angle, or if they are very close to
+  each other without intersecting, `Gmsh` needs small elements to
+  resolve the geometry, which can lead to large meshes.
+* **Using the cells.** The cell lists returned by
+  [`gmsh_marker_cells`](@ref) are closed subcomplexes. Their unions and
+  intersections, computed with `union` and `intersect`, are again
+  closed, and they can be used as exit sets, as arguments of
+  [`relative_homology`](@ref), or to restrict a multivector field to
+  a part of the mesh.
 
 ### Mesh Sizes and Other Options
 

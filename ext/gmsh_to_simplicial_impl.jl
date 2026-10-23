@@ -160,3 +160,64 @@ function ConleyDynamics.gmsh_marker_cells(ec::EuclideanComplex, dim::Integer, ta
 
     return closure ? lefschetz_closure(ec, cells) : sort(unique(cells))
 end
+
+function ConleyDynamics.gmsh_common_refinement(objects::AbstractVector;
+                                               names::Union{AbstractVector{<:AbstractString},Nothing}=nothing)
+    #
+    # Fragment all objects along their intersections, and create one
+    # physical group with the pieces of every object
+    #
+
+    _gmsh_check_initialized("gmsh_common_refinement")
+    if isempty(objects)
+        throw(ArgumentError("gmsh_common_refinement: no objects given"))
+    end
+    if !isnothing(names) && (length(names) != length(objects))
+        throw(ArgumentError("gmsh_common_refinement: need one name per object"))
+    end
+
+    # Every object is a vector of entities of the same dimension
+
+    groups = Vector{Vector{Tuple{Int,Int}}}()
+    for obj in objects
+        ents = obj isa Tuple ? [obj] : collect(obj)
+        if isempty(ents) || !all(e -> (e isa Tuple) && (length(e) == 2), ents)
+            throw(ArgumentError("gmsh_common_refinement: every object needs to be " *
+                                "an entity (dim, tag) or a nonempty vector of entities"))
+        end
+        ents = [(Int(d), Int(t)) for (d, t) in ents]
+        if !all(e -> e[1] == ents[1][1], ents) || !(0 <= ents[1][1] <= 3)
+            throw(ArgumentError("gmsh_common_refinement: the entities of an object " *
+                                "need to have the same dimension between 0 and 3"))
+        end
+        push!(groups, ents)
+    end
+
+    # Fragment all entities. The map outmap contains the pieces of every
+    # input entity, in the order in which they were passed. A single
+    # entity has nothing to be split against.
+
+    allents = reduce(vcat, groups)
+    if length(allents) > 1
+        _, outmap = gmsh.model.occ.fragment(allents[1:1], allents[2:end])
+    else
+        outmap = [allents]
+    end
+    gmsh.model.occ.synchronize()
+
+    # One physical group per object
+
+    tags   = Vector{Int}()
+    offset = 0
+    for (k, ents) in enumerate(groups)
+        d = ents[1][1]
+        pieces = unique(Int(t) for m in outmap[offset+1:offset+length(ents)]
+                        for (dd, t) in m if dd == d)
+        offset += length(ents)
+        pg = gmsh.model.addPhysicalGroup(d, pieces)
+        isnothing(names) || gmsh.model.setPhysicalName(d, pg, names[k])
+        push!(tags, pg)
+    end
+
+    return tags
+end

@@ -123,6 +123,7 @@ end
 function ConleyDynamics.plot_cubical(ec::EuclideanComplex;
                                      mvf::CellSubsets=Vector{Vector{Int}}([]),
                                      pdim::Vector{Bool}=[true,true,true])
+    ConleyDynamics._check_coords2d(ec, "plot_cubical")
     data = CubicalComplexPlot(ec, mvf, pdim)
     return Plots.plot(data)
 end

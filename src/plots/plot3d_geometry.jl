@@ -21,6 +21,19 @@ function _check_coords3d(ec::EuclideanComplex, fname::String)
     end
 end
 
+function _check_coords2d(ec::EuclideanComplex, fname::String,
+                         hint::String="For complexes in three dimensions, " *
+                                      "use the Makie.jl functions such as " *
+                                      "plot_simplicial3d.")
+    #
+    # Check that the complex is embedded in two dimensions
+    #
+    if (ec.ncells == 0) || (length(ec.coords[1][1]) != 2)
+        throw(ArgumentError("$fname: the complex needs to be embedded in " *
+                            "two dimensions. " * hint))
+    end
+end
+
 function _check_pdim3d(pdim::AbstractVector, fname::String)
     #
     # Check that pdim has one entry for each cell dimension 0 to 3

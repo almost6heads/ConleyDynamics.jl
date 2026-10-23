@@ -169,3 +169,107 @@ end
 
     gmsh.finalize()
 end
+
+@testset "Gmsh extension: common refinements" begin
+    #
+    # Intersecting constraint surfaces, curves, and volumes are split
+    # along their intersections by gmsh_common_refinement
+    #
+    sub(ec, c) = homology(lefschetz_subcomplex(ec, c))
+    verts(ec, c) = [ec.coords[k][1] for k in c if ec.dimensions[k] == 0]
+    function spheresurf(x, y, z, r)
+        s = gmsh.model.occ.addSphere(x, y, z, r)
+        gmsh.model.occ.synchronize()
+        bnd = gmsh.model.getBoundary([(3, s)], false, false)
+        gmsh.model.occ.remove([(3, s)])
+        return bnd
+    end
+    function meshmodel(h)
+        gmsh.option.setNumber("Mesh.MeshSizeMax", h)
+        gmsh.model.mesh.generate(3)
+        return @test_logs gmsh_to_simplicial()
+    end
+
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+
+    # Two intersecting spheres, and a line through both of them
+
+    gmsh.model.add("spheres")
+    box = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+    sa  = spheresurf(-0.5, 0, 0, 1.0)
+    sb  = spheresurf( 0.5, 0, 0, 1.0)
+    ln  = gmsh.model.occ.addLine(gmsh.model.occ.addPoint(-1.9, 0, 0),
+                                 gmsh.model.occ.addPoint( 1.9, 0, 0))
+    pgs = gmsh_common_refinement([(3, box), sa, sb, (1, ln)];
+                                 names=["box", "left", "right", "axis"])
+    @test length(pgs) == 4
+    @test gmsh.model.getPhysicalName(2, pgs[3]) == "right"
+    ec = meshmodel(0.35)
+    @test homology(ec) == [1,0,0,0]
+    @test length(gmsh_marker_cells(ec, 3, pgs[1])) == ec.ncells
+    ca = gmsh_marker_cells(ec, 2, pgs[2])
+    cb = gmsh_marker_cells(ec, 2, pgs[3])
+    cl = gmsh_marker_cells(ec, 1, pgs[4])
+    @test sub(ec, ca) == [1,0,1]
+    @test sub(ec, cb) == [1,0,1]
+    @test sub(ec, union(ca, cb)) == [1,0,3]
+    circle = intersect(ca, cb)
+    @test sub(ec, circle) == [1,1]
+    @test all(abs(v[1]) < 1e-10 && abs(v[2]^2 + v[3]^2 - 0.75) < 1e-8 for v in verts(ec, circle))
+    @test sub(ec, cl) == [1,0]
+    xs = sort([v[1] for v in verts(ec, intersect(cl, union(ca, cb)))])
+    @test length(xs) == 4
+    @test maximum(abs.(xs .- [-1.5, -0.5, 0.5, 1.5])) < 1e-10
+    gmsh.model.remove()
+
+    # Three coordinate planes meet in a single vertex
+
+    gmsh.model.add("planes")
+    box = gmsh.model.occ.addBox(-1, -1, -1, 2, 2, 2)
+    p1  = gmsh.model.occ.addRectangle(-1, -1, 0, 2, 2)
+    p2  = gmsh.model.occ.addRectangle(-1, -1, 0, 2, 2)
+    p3  = gmsh.model.occ.addRectangle(-1, -1, 0, 2, 2)
+    gmsh.model.occ.rotate([(2, p2)], 0, 0, 0, 1, 0, 0, pi/2)
+    gmsh.model.occ.rotate([(2, p3)], 0, 0, 0, 0, 1, 0, pi/2)
+    pgs = gmsh_common_refinement([(3, box), (2, p1), (2, p2), (2, p3)])
+    ec = meshmodel(0.5)
+    c = [gmsh_marker_cells(ec, 2, t) for t in pgs[2:4]]
+    @test all(sub(ec, ci) == [1,0,0] for ci in c)
+    @test all(sub(ec, intersect(c[i], c[j])) == [1,0] for (i, j) in ((1,2), (1,3), (2,3)))
+    center = intersect(c...)
+    @test length(center) == 1
+    @test maximum(abs.(verts(ec, center)[1])) < 1e-12
+    gmsh.model.remove()
+
+    # A plane which extends beyond the box, and a ball as a volume region
+
+    gmsh.model.add("region")
+    box  = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+    pl   = gmsh.model.occ.addRectangle(-3, -3, 0.2, 6, 6)
+    ball = gmsh.model.occ.addSphere(0, 0, 0, 1.0)
+    pgbox, pgpl, pgball = gmsh_common_refinement([(3, box), (2, pl), (3, ball)])
+    ec = meshmodel(0.4)
+    cpl   = gmsh_marker_cells(ec, 2, pgpl)
+    cball = gmsh_marker_cells(ec, 3, pgball)
+    @test sub(ec, cpl) == [1,0,0]
+    @test all(maximum(abs.(v)) <= 2 + 1e-12 for v in verts(ec, cpl))
+    @test sub(ec, cball) == [1,0,0,0]
+    @test sub(ec, intersect(cpl, cball)) == [1,0,0]
+    @test all(sum(abs2, sum(ec.coords[k]) ./ 4) < 1 for k in cball if ec.dimensions[k] == 3)
+    gmsh.model.remove()
+
+    # Errors and a single object
+
+    gmsh.model.add("errors")
+    b1 = gmsh.model.occ.addBox(0, 0, 0, 1, 1, 1)
+    r1 = gmsh.model.occ.addRectangle(0, 0, 0.5, 1, 1)
+    @test_throws ArgumentError gmsh_common_refinement([])
+    @test_throws ArgumentError gmsh_common_refinement([[(3, b1), (2, r1)]])
+    @test_throws ArgumentError gmsh_common_refinement([(3, b1)]; names=["a", "b"])
+    @test_throws ArgumentError gmsh_common_refinement([Tuple{Int,Int}[]])
+    @test length(gmsh_common_refinement([(3, b1)])) == 1
+
+    gmsh.finalize()
+    @test_throws ArgumentError gmsh_common_refinement([(3, 1)])
+end

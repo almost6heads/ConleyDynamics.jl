@@ -239,16 +239,11 @@ plane  = gmsh.model.occ.addRectangle(-2, -2, 0.3, 4, 4)
 gmsh.model.occ.synchronize()
 sphsurf = gmsh.model.getBoundary([(3, sphere)], false, false)
 gmsh.model.occ.remove([(3, sphere)])
-out, outmap = gmsh.model.occ.fragment([(3, box)], vcat([(2, plane)], sphsurf))
-gmsh.model.occ.synchronize()
-
-plane_pieces  = [tag for (d, tag) in outmap[2] if d == 2]
-sphere_pieces = [tag for m in outmap[3:end] for (d, tag) in m if d == 2]
-volumes       = [tag for (d, tag) in outmap[1] if d == 3]
-upper = [v for v in volumes if gmsh.model.occ.getCenterOfMass(3, v)[3] > 0.3]
-pg_plane  = gmsh.model.addPhysicalGroup(2, plane_pieces)
-pg_sphere = gmsh.model.addPhysicalGroup(2, sphere_pieces)
-pg_upper  = gmsh.model.addPhysicalGroup(3, upper)
+pg_box, pg_plane, pg_sphere = gmsh_common_refinement([(3, box), (2, plane), sphsurf];
+                                                     names=["box", "plane", "sphere"])
+volumes  = gmsh.model.getEntitiesForPhysicalGroup(3, pg_box)
+upper    = [v for v in volumes if gmsh.model.occ.getCenterOfMass(3, v)[3] > 0.3]
+pg_upper = gmsh.model.addPhysicalGroup(3, upper)
 
 gmsh.option.setNumber("Mesh.MeshSizeMax", 0.25)
 gmsh.model.mesh.generate(3)
@@ -270,6 +265,64 @@ plot_cells3d!(ax1, ecg, [k for k in circle_cells if ecg.dimensions[k] == 1];
 ax2 = panel(fig, (1,2), "Upper volume, clipped at y = 0")
 plot_simplicial3d!(ax2, ecu; clip=([0,1,0], 0.0), alpha=0.6)
 savefig3d("meshing3d_gmsh.png", fig)
+
+##############################################################################
+#
+# Extensions: common refinement of two spheres, an axis, a ball, and a plane
+#
+##############################################################################
+
+function spheresurface(x, y, z, r)
+    s = gmsh.model.occ.addSphere(x, y, z, r)
+    gmsh.model.occ.synchronize()
+    bnd = gmsh.model.getBoundary([(3, s)], false, false)
+    gmsh.model.occ.remove([(3, s)])
+    return bnd
+end
+
+gmsh.initialize()
+gmsh.option.setNumber("General.Terminal", 0)
+gmsh.model.add("twospheres")
+box   = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+left  = spheresurface(-0.5, 0, 0, 1.0)
+right = spheresurface( 0.5, 0, 0, 1.0)
+axis  = gmsh.model.occ.addLine(gmsh.model.occ.addPoint(-1.9, 0, 0),
+                               gmsh.model.occ.addPoint( 1.9, 0, 0))
+pgs = gmsh_common_refinement([(3, box), left, right, (1, axis)])
+gmsh.option.setNumber("Mesh.MeshSizeMax", 0.25)
+gmsh.model.mesh.generate(3)
+ec2 = gmsh_to_simplicial()
+cl = gmsh_marker_cells(ec2, 2, pgs[2])
+cr = gmsh_marker_cells(ec2, 2, pgs[3])
+ca = gmsh_marker_cells(ec2, 1, pgs[4])
+crossings = intersect(ca, union(cl, cr))
+
+gmsh.model.add("region")
+box   = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+plane = gmsh.model.occ.addRectangle(-3, -3, 0.2, 6, 6)
+ball  = gmsh.model.occ.addSphere(0, 0, 0, 1.0)
+pg_box, pg_plane, pg_ball = gmsh_common_refinement([(3, box), (2, plane), (3, ball)])
+gmsh.option.setNumber("Mesh.MeshSizeMax", 0.4)
+gmsh.model.mesh.generate(3)
+ec3 = gmsh_to_simplicial()
+plane_cells = gmsh_marker_cells(ec3, 2, pg_plane)
+ball_cells  = gmsh_marker_cells(ec3, 3, pg_ball)
+gmsh.finalize()
+
+fig = Figure(size=(1200,550))
+ax1 = panel(fig, (1,1), "Two spheres and an axis")
+plot_simplicial3d!(ax1, ec2; alpha=0.03, linealpha=0.05)
+plot_cells3d!(ax1, ec2, cl; color=:steelblue, alpha=0.45)
+plot_cells3d!(ax1, ec2, cr; color=:darkorange, alpha=0.45)
+plot_cells3d!(ax1, ec2, [k for k in intersect(cl, cr) if ec2.dimensions[k] == 1];
+              color=:red)
+plot_cells3d!(ax1, ec2, [k for k in ca if ec2.dimensions[k] == 1]; color=:black, linewidth=3)
+plot_cells3d!(ax1, ec2, crossings; color=:black, markersize=0.07)
+ax2 = panel(fig, (1,2), "Ball region and plane, clipped at y = 0")
+plot_simplicial3d!(ax2, ec3; clip=([0,1,0], 0.0), alpha=0.04, linealpha=0.1)
+plot_cells3d!(ax2, ec3, ball_cells; clip=([0,1,0], 0.0), color=:darkorange, alpha=0.9)
+plot_cells3d!(ax2, ec3, plane_cells; clip=([0,1,0], 0.0), color=:steelblue, alpha=0.5)
+savefig3d("meshing3d_refinement.png", fig)
 
 ##############################################################################
 #

@@ -115,3 +115,24 @@ end
     @test CDG._cells3d_geometry(ec, [15], keep; pdim=trues(4)) ==
           CDG._cells3d_geometry(ec, [15], keep; pdim=[true,true,true,true])
 end
+
+@testset "Planar and spatial functions check the embedding dimension" begin
+    #
+    # Planar functions reject complexes in three dimensions, and spatial
+    # multivector fields need three-dimensional complexes in space
+    #
+    ec3 = tetmesh_to_euclidean([[0,0,0],[1,0,0],[0,1,0],[0,0,1]], [[1,2,3,4]])
+    ecs = tetmesh_to_euclidean(trisurface_sphere([0,0,0], 1.0, 1)...)
+    ec2 = tetmesh_to_euclidean([[0,0],[1,0],[0,1]], [[1,2,3]])
+    vf3(x) = [-x[2], x[1], 0.0]
+    vf2(x) = [-x[2], x[1]]
+    @test_throws ArgumentError create_planar_mvf(ec3, vf2)
+    @test_throws ArgumentError create_spatial_mvf(ecs, vf3)
+    @test_throws ArgumentError create_spatial_mvf(ec2, vf3)
+    @test create_spatial_mvf(ec3, vf3) isa Vector
+    @test create_planar_mvf(ec2, vf2) isa Vector
+    mktempdir() do dir
+        @test_throws ArgumentError plot_planar_simplicial(ec3, joinpath(dir, "a.pdf"))
+        @test_throws ArgumentError plot_planar_simplicial_morse(ec3, joinpath(dir, "a.pdf"), [[1]])
+    end
+end

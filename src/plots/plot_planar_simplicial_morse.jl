@@ -249,6 +249,7 @@ function plot_planar_simplicial_morse(ec::EuclideanComplex,
     # EuclideanComplex, using the vertex coordinates stored directly in
     # ec.coords[k] for each cell k.
     #
+    _check_coords2d(ec, "plot_planar_simplicial_morse")
 
     # Check that the filename has a valid extension
     if !(lowercase(fname[end-3:end]) in [".png", ".pdf", ".eps", ".svg"])

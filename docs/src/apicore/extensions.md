@@ -51,4 +51,5 @@ The following functions are available when `Gmsh.jl` is loaded alongside
 gmsh_to_simplicial
 gmsh_file_to_simplicial
 gmsh_marker_cells
+gmsh_common_refinement
 ```

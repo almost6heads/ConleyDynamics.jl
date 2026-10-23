@@ -1,4 +1,5 @@
 export gmsh_to_simplicial, gmsh_file_to_simplicial, gmsh_marker_cells
+export gmsh_common_refinement
 
 """
     gmsh_to_simplicial(; dim::Int=3, p::Int=2,
@@ -101,3 +102,64 @@ not matter.
 This function requires `Gmsh.jl` to be loaded.
 """
 function gmsh_marker_cells end
+
+"""
+    gmsh_common_refinement(objects::AbstractVector;
+                           names::Union{AbstractVector{<:AbstractString},Nothing}=nothing)
+                           -> Vector{Int}
+
+Split the given geometric objects of the current `Gmsh.jl` model along
+all their mutual intersections, and create one physical group for every
+object.
+
+Every element of `objects` describes one geometric object by a single
+entity `(dim, tag)` or by a vector of such entities, all of the same
+dimension. For example, a box is given by `(3, box)`, a rectangle by
+`(2, rect)`, and the surface of a sphere by the vector of its boundary
+surfaces, see the manual. The objects have to be created with the
+OpenCASCADE kernel `gmsh.model.occ`.
+
+The function calls `gmsh.model.occ.fragment` for all entities of all
+objects, which replaces them by pieces that only meet along common
+faces, edges, and points. Afterwards, the mesh of every object consists
+of the mesh elements of its pieces, and any two objects share exactly
+the mesh elements of their intersection. In other words, the mesh is a
+*common refinement* of all objects. For every object, the function then
+creates a physical group of the same dimension, which contains all
+pieces of the object, and it returns the tags of these groups in the
+order of `objects`. If `names` is given, it contains a name for every
+physical group.
+
+After meshing, the cells of the objects are found with
+`gmsh_marker_cells`, and the cells on the intersection of two objects
+are the intersection of their cell lists. Pieces of an object which lie
+outside of all volumes, for example the part of a plane outside of a
+box, are not part of the tetrahedral mesh, and their elements are
+ignored by `gmsh_marker_cells`.
+
+This function requires `Gmsh.jl` to be loaded.
+
+# Example
+
+```julia
+using Gmsh: gmsh
+using ConleyDynamics
+
+gmsh.initialize()
+box    = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+sphere = gmsh.model.occ.addSphere(0, 0, 0, 1.0)
+plane  = gmsh.model.occ.addRectangle(-2, -2, 0.3, 4, 4)
+gmsh.model.occ.synchronize()
+sphsurf = gmsh.model.getBoundary([(3, sphere)], false, false)
+gmsh.model.occ.remove([(3, sphere)])
+
+pgbox, pgplane, pgsphere = gmsh_common_refinement([(3, box), (2, plane), sphsurf])
+gmsh.option.setNumber("Mesh.MeshSizeMax", 0.25)
+gmsh.model.mesh.generate(3)
+
+ec     = gmsh_to_simplicial()
+circle = intersect(gmsh_marker_cells(ec, 2, pgplane), gmsh_marker_cells(ec, 2, pgsphere))
+gmsh.finalize()
+```
+"""
+function gmsh_common_refinement end

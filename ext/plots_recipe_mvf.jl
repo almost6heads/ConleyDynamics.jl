@@ -310,6 +310,7 @@ function ConleyDynamics.plot_simplicial_mvf(ec::EuclideanComplex,
                                             mvfalpha::Real=0.3,
                                             addcritical::Bool=true,
                                             ci::Bool=false)
+    ConleyDynamics._check_coords2d(ec, "plot_simplicial_mvf")
     colors = mvfcolor isa String ? [mvfcolor] : mvfcolor
     data = MVFPlot(ec, mvf, pdim, Float64(tubefac), colors, Float64(mvfalpha), addcritical, ci)
     return Plots.plot(data)
@@ -323,6 +324,7 @@ function ConleyDynamics.plot_cubical_mvf(ec::EuclideanComplex,
                                          mvfalpha::Real=0.3,
                                          addcritical::Bool=true,
                                          ci::Bool=false)
+    ConleyDynamics._check_coords2d(ec, "plot_cubical_mvf")
     colors = mvfcolor isa String ? [mvfcolor] : mvfcolor
     data = MVFPlot(ec, mvf, pdim, Float64(tubefac), colors, Float64(mvfalpha), addcritical, ci)
     return Plots.plot(data)
@@ -420,6 +422,7 @@ function ConleyDynamics.plot_simplicial_mv(ec::EuclideanComplex,
                                            tubefac::Real=0.05,
                                            mvfcolor::String="darkorange",
                                            mvfalpha::Real=0.3)
+    ConleyDynamics._check_coords2d(ec, "plot_simplicial_mv")
     mv_int = mv isa Vector{String} ? convert_cellsubsets(ec, [mv])[1] : mv
     data = MVRegionPlot(ec, mv_int, pdim, Float64(tubefac), mvfcolor, Float64(mvfalpha))
     return Plots.plot(data)
@@ -431,6 +434,7 @@ function ConleyDynamics.plot_cubical_mv(ec::EuclideanComplex,
                                         tubefac::Real=0.05,
                                         mvfcolor::String="darkorange",
                                         mvfalpha::Real=0.3)
+    ConleyDynamics._check_coords2d(ec, "plot_cubical_mv")
     mv_int = mv isa Vector{String} ? convert_cellsubsets(ec, [mv])[1] : mv
     data = MVRegionPlot(ec, mv_int, pdim, Float64(tubefac), mvfcolor, Float64(mvfalpha))
     return Plots.plot(data)
