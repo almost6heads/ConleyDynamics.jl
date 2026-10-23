@@ -141,17 +141,17 @@ chapter are *simplices*: vertices (dimension `0`), edges (dimension
 `1`), triangles (dimension `2`), and tetrahedra (dimension `3`). The
 *faces* of a simplex are the simplices spanned by subsets of its
 vertices, see also the [Tutorial](@ref). For example, a tetrahedron has
-four triangles, six edges, and four vertices as proper faces. A *tetrahedral mesh* of a domain is a
-collection of tetrahedra which fill the domain and which only meet in
-common faces, i.e., two tetrahedra share either nothing, a vertex, an
-edge, or a whole triangle. Since all faces are determined by the
-tetrahedra, a mesh is described completely by the vertex coordinates
-and the list of its *maximal simplices*, i.e., those which are not
-faces of larger ones. This is exactly the input of
-[`tetmesh_to_euclidean`](@ref). The resulting
-[`EuclideanComplex`](@ref) contains all simplices of the mesh as its
-*cells*, together with their coordinates, see the section
-[Euclidean Complexes](@ref) in the chapter on Lefschetz complexes.
+four triangles, six edges, and four vertices as proper faces. A
+*tetrahedral mesh* of a domain is a collection of tetrahedra which fill
+the domain and which only meet in common faces, i.e., two tetrahedra
+share either nothing, a vertex, an edge, or a whole triangle. Since all
+faces are determined by the tetrahedra, a mesh is described completely
+by the vertex coordinates and the list of its *maximal simplices*, i.e.,
+those which are not faces of larger ones. This is exactly the input of
+[`tetmesh_to_euclidean`](@ref). The resulting [`EuclideanComplex`](@ref)
+contains all simplices of the mesh as its *cells*, together with their
+coordinates, see the section [Euclidean Complexes](@ref) in the chapter
+on Lefschetz complexes.
 
 **Subcomplexes.** A set of cells is *closed* if it contains all faces
 of its cells. Closed sets of cells are again simplicial complexes, the
@@ -435,9 +435,10 @@ merged, and triangles which become degenerate are removed. The value of
 `tol` has to be positive, and since it is an absolute distance, it has
 to be scaled with the size of the surface. For a surface of diameter
 `1e10`, for example, rounding errors in the coordinates are of the order
-`1e-6`, and the seams are only glued with a correspondingly larger
-`tol`. As an example, the following commands create a unit sphere in
-spherical coordinates:
+`1e-6`, and points such as the poles of a sphere are only merged with a
+correspondingly larger `tol`. The seams of `uperiodic` and `vperiodic`
+are glued by construction, independently of `tol`. As an example, the
+following commands create a unit sphere in spherical coordinates:
 
 ```julia
 fsph(u,v) = [cos(u)*sin(v), sin(u)*sin(v), cos(v)]
@@ -672,17 +673,17 @@ contains the smallest dihedral angle in the mesh:
 
 The table illustrates two points which are important in practice. First,
 the quality bounds of `TetGen` remove most badly shaped tetrahedra, but
-they do not guarantee the absence of *slivers*: Flat tetrahedra with four
-nearly coplanar vertices, whose radius-edge ratio can be small even
+they do not guarantee the absence of *slivers*: Flat tetrahedra with
+four nearly coplanar vertices, whose radius-edge ratio can be small even
 though their dihedral angles are close to `0°` or `180°`. A few such
 tetrahedra are harmless for the construction of multivector fields.
 Second, disallowing Steiner points on the boundary is a strong
-restriction. Since no boundary triangle may be split, `TetGen` cannot insert any point whose
-neighborhood reaches the boundary. In a coarse box, every tetrahedron
-touches the boundary, and therefore *no* refinement takes place at all,
-and even the volume constraint is ignored. This option is only useful if
-the boundary is already fine, or together with interior nodes as in the
-next section.
+restriction. Since no boundary triangle may be split, `TetGen` cannot
+insert any point whose neighborhood reaches the boundary. In a coarse
+box, every tetrahedron touches the boundary, and therefore *no*
+refinement takes place at all, and even the volume constraint is
+ignored. This option is only useful if the boundary is already fine, or
+together with interior nodes as in the next section.
 
 The switch string gives access to all options of `TetGen`. With
 `maxvolume=0.01` and default values for all other optional arguments,
@@ -775,14 +776,15 @@ ec2  = tetgen_to_simplicial(res2)
 lefschetz_cell_count(ec2)                      # [950, 5616, 8865, 4198]
 ```
 
-A curve is closed if its first and last points agree, up to `1e-9`
-times the size of the curve. In that case, the last point is not added
-a second time. Repeated consecutive points and segments which occur
-more than once are ignored. The sphere and the square automatically received the markers `1` and `2`,
-while the segment was given the marker `7` explicitly with the optional
-argument `marker`. Explicit markers are useful if several surfaces or
-curves form one geometric object: They can all be given the same marker,
-and they are then treated as one constraint.
+A curve is closed if its first and last points agree, up to `1e-9` times
+the size of the curve. In that case, the last point is not added a
+second time. Repeated consecutive points and segments which occur more
+than once are ignored. The sphere and the square automatically received
+the markers `1` and `2`, while the segment was given the marker `7`
+explicitly with the optional argument `marker`. Explicit markers are
+useful if several surfaces or curves form one geometric object: They can
+all be given the same marker, and they are then treated as one
+constraint.
 
 After meshing, the function [`tetgen_marker_cells`](@ref) returns the
 indices of all cells of the complex which lie on the constraints with a
@@ -928,11 +930,11 @@ The automatically chosen point refers to the region enclosed by the
 surface *at the time it is added*. The ray stops at all surfaces which
 are already part of the domain, so a hole surface around a previously
 added surface removes only the space between the two. If further
-surfaces are placed inside a hole surface later, however, the hole
-point might end up in the wrong region. Consider two concentric spheres. Adding the outer sphere with
-`hole=true` creates a hole point at the origin. After adding the inner
-sphere, this point lies inside the inner ball, and only the inner ball
-is removed:
+surfaces are placed inside a hole surface later, however, the hole point
+might end up in the wrong region. Consider two concentric spheres.
+Adding the outer sphere with `hole=true` creates a hole point at the
+origin. After adding the inner sphere, this point lies inside the inner
+ball, and only the inner ball is removed:
 
 ```julia
 V1, T1 = trisurface_sphere([0,0,0], 1.0, 2)
@@ -1104,6 +1106,14 @@ tetgen_domain_from_surface(trisurface_cylinder([0,0,-1], [0,0,1], 0.5, 16, 4;
 # ERROR: ArgumentError: tetgen_domain_from_surface: the surface is not closed
 ```
 
+Surfaces from other sources, such as STL files, often store every
+triangle with its own copies of its three vertices. Both
+[`tetgen_domain_from_surface`](@ref) and
+[`tetgen_domain_add_surface`](@ref) identify vertices with the same
+coordinates before they check the surface, so that such surfaces can
+be used directly. Triangles which then have repeated vertices are
+rejected with an `ArgumentError`.
+
 ### Delaunay Triangulations of Random Points
 
 The function [`create_simplicial_delaunay3d`](@ref) computes the
@@ -1177,8 +1187,9 @@ intersecting facets, it writes the debugging files
 current directory. Since they are of no use without the `TetGen` command
 line tools, [`tetgen_mesh`](@ref) removes them again; files with these
 names which existed before the call are not touched. The second typical
-failure is a mesh without any tetrahedra, which happens if the outer boundary is not closed, or if a
-hole point does not lie in an enclosed region:
+failure is a mesh without any tetrahedra, which happens if the outer
+boundary is not closed, or if a hole point does not lie in an enclosed
+region:
 
 ```julia
 tetgen_mesh(tetgen_domain_add_hole(tetgen_domain_box([-2,-2,-2], [2,2,2]),
@@ -1371,14 +1382,14 @@ homology(ecs)                  # [1, 0, 1]
 ```
 
 The optional argument `p` selects the coefficient field as usual. The
-`Gmsh` node numbering can have gaps, and nodes which do not belong to the
-converted elements are dropped. The vertices are then numbered
+`Gmsh` node numbering can have gaps, and nodes which do not belong to
+the converted elements are dropped. The vertices are then numbered
 consecutively, and they are labeled as in
 [`tetmesh_to_euclidean`](@ref), for example `"001"`, `"002"`, and so on
-for a mesh with between 100 and 999 vertices. Only linear simplices are supported. If the
-mesh contains hexahedra, prisms, or pyramids, for example because of
-recombination options, or second order elements created by
-`gmsh.model.mesh.setOrder(2)`, an `ArgumentError` is raised.
+for a mesh with between 100 and 999 vertices. Only linear simplices are
+supported. If the mesh contains hexahedra, prisms, or pyramids, for
+example because of recombination options, or second order elements
+created by `gmsh.model.mesh.setOrder(2)`, an `ArgumentError` is raised.
 
 ### Physical Groups and Entities
 
@@ -1917,20 +1928,20 @@ full_from_sparse(cmb.matrix)
 
 The Morse decomposition consists of two Morse sets. The first one has
 the Conley index `[1, 1, 0, 0]` of an attracting periodic orbit, which
-agrees with the homology of a circle, and the second one has the
-Conley index `[0, 0, 1, 0]` of an equilibrium with a two-dimensional
-unstable manifold. The connection matrix has three rows and columns,
-one for each nonzero entry of the two Conley indices. Its nonzero entry
-in row `2` and column `3` connects the two-dimensional entry of the
-equilibrium with the one-dimensional entry of the periodic orbit, and
-records the connection from the equilibrium to the periodic orbit. The
-computation takes a few seconds. The Morse sets are shown in the figure of the Morse sets of the vector
-field with a periodic orbit in a ball. The clipped view in the right
-panel reveals the small Morse set of the equilibrium inside the
-much larger isolating neighborhood of the periodic orbit. With a coarser
-mesh size of `0.3`, the multivector field is not fine enough to separate
-the two invariant sets, and one obtains a single Morse set with the
-Conley index of an attractor.
+agrees with the homology of a circle, and the second one has the Conley
+index `[0, 0, 1, 0]` of an equilibrium with a two-dimensional unstable
+manifold. The connection matrix has three rows and columns, one for each
+nonzero entry of the two Conley indices. Its nonzero entry in row `2`
+and column `3` connects the two-dimensional entry of the equilibrium
+with the one-dimensional entry of the periodic orbit, and records the
+connection from the equilibrium to the periodic orbit. The computation
+takes a few seconds. The Morse sets are shown in the figure of the Morse
+sets of the vector field with a periodic orbit in a ball. The clipped
+view in the right panel reveals the small Morse set of the equilibrium
+inside the much larger isolating neighborhood of the periodic orbit.
+With a coarser mesh size of `0.3`, the multivector field is not fine
+enough to separate the two invariant sets, and one obtains a single
+Morse set with the Conley index of an attractor.
 
 ![Morse sets of a vector field with a periodic orbit in a ball meshed by Gmsh](img/meshing3d_cycle.png)
 

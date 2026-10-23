@@ -12,6 +12,20 @@ function ConleyDynamics.tetgen_mesh(dom::TetDomain;
     if isempty(dom.facets)
         throw(ArgumentError("tetgen_mesh: the domain has no facets"))
     end
+
+    # Non-finite values would be written into the switch string as Inf
+    # or NaN, whose letters TetGen reads as further switches
+
+    for (name, val) in (("maxvolume", maxvolume), ("minratio", minratio),
+                        ("mindihedral", mindihedral))
+        if !isnothing(val) && !isfinite(val)
+            throw(ArgumentError("tetgen_mesh: $name needs to be finite"))
+        end
+    end
+    if any(isnan(r[3]) for r in dom.regions)
+        throw(ArgumentError("tetgen_mesh: the maximum volumes of the regions " *
+                            "cannot be NaN"))
+    end
     if !isnothing(minratio) && (minratio < 1)
         throw(ArgumentError("tetgen_mesh: minratio needs to be at least 1, since " *
                             "TetGen does not terminate for smaller values"))

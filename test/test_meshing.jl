@@ -92,6 +92,10 @@ end
     @test_throws ArgumentError poisson_points_box([0,0], [1,1,1], 0.1)
     @test_throws ArgumentError poisson_points_box([0,0], [1,0], 0.1)
     @test_throws ArgumentError poisson_points_box([0,0], [1,1], 0.0)
+    @test_throws ArgumentError poisson_points_box([0,0], [1,1], NaN)
+    @test_throws ArgumentError poisson_points_box([0,0], [1,1], Inf)
+    @test_throws ArgumentError poisson_points_box([0,0], [Inf,1], 0.1)
+    @test_throws ArgumentError poisson_points_box([NaN,0], [1,1], 0.1)
 end
 
 @testset "trisurface generators" begin

@@ -80,7 +80,9 @@ arguments control the mesh quality and size:
   with marker `0`.
 
 Quality refinement is switched on by default, since flat tetrahedra
-can make the construction of multivector fields fragile.
+can make the construction of multivector fields fragile. The values of
+`maxvolume`, `minratio`, and `mindihedral` have to be finite, otherwise
+an `ArgumentError` is raised.
 
 If the facets of the domain intersect, or if the quality bounds are
 too strict, `TetGen` fails, and an `ArgumentError` is raised. In that

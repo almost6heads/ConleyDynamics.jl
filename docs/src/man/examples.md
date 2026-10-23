@@ -940,7 +940,7 @@ vector field, as shown in the figure of the Forman chaos in the Dunce
 hat. This vector field has the three critical simplices ``\mathrm{1}``,
 ``\mathrm{12}``,
 and ``\mathrm{128}``. Finally, the chaotic Forman vector field is
-returned in `vfC`. Is it obtained from the gradient field by combining
+returned in `vfC`. It is obtained from the gradient field by combining
 the two critical cells ``\mathrm{12}`` and ``\mathrm{128}`` into
 a Forman arrow, which is indicated in green in this figure. This
 reverses the flow between these two simplices. In more detail,
@@ -1013,7 +1013,7 @@ and the two Forman vector fields. The gradient vector field is returned
 in `vfG`, and it corresponds to the Forman vector fields shown in red
 in the figure of the Forman chaos in a space with torsion. The return
 variable `vfC` gives the chaotic
-Forman vector field. Is it obtained from the gradient field by combining
+Forman vector field. It is obtained from the gradient field by combining
 the two critical cells ``\mathrm{0w0x}`` and ``\mathrm{0w0x1s}`` into
 a Forman arrow, which is indicated in green in this figure. Note that
 this reverses the flow between these two simplices. In the above

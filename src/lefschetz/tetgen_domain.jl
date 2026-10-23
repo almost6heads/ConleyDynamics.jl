@@ -126,7 +126,10 @@ surface given by the vertices `V` and the triangles `T`.
 
 The surface is usually created by one of the `trisurface_*` functions,
 and it has to be closed, i.e., every edge has to belong to exactly two
-triangles. Otherwise an `ArgumentError` is raised. For example, the
+triangles. Otherwise an `ArgumentError` is raised. Vertices with the
+same coordinates are identified before this check, so the surface can
+also be given as a list of separate triangles, each with its own copies
+of the vertices, as in STL files. For example, the
 output of `trisurface_sphere` gives a ball, and the output of
 `trisurface_torus` gives a solid torus. All facets get marker `0`.
 """
@@ -144,13 +147,17 @@ function tetgen_domain_from_surface(V::AbstractVector, T::AbstractVector)
         throw(ArgumentError("tetgen_domain_from_surface: every triangle needs " *
                             "three vertex indices"))
     end
-    closed, _ = _trisurface_check(T)
+
+    # Vertices with the same coordinates are merged before the surface
+    # is checked, so that triangle soups as read from STL files work
+
+    points, newindex = _merge_points(NTuple{3,Float64}[], [_point3(v) for v in V])
+    facets = [newindex[collect(t)] for t in T]
+    _check_triangles(facets, "tetgen_domain_from_surface")
+    closed, _ = _trisurface_check(facets)
     if !closed
         throw(ArgumentError("tetgen_domain_from_surface: the surface is not closed"))
     end
-
-    points = [_point3(v) for v in V]
-    facets = [Vector{Int}(collect(t)) for t in T]
 
     return TetDomain(points, facets, zeros(Int, length(facets)))
 end
@@ -208,17 +215,19 @@ In both cases, the surface has to be closed and consistently oriented,
 and a point inside the surface is determined automatically. This point
 avoids the surfaces which are already part of the domain, so that a
 region bounded by a sphere around a previously added hole is the shell
-between the two surfaces. If the surface consists of several connected components, such as two disjoint
-spheres, one point is determined for every component, so that all of
-them become holes or regions. Note that for nested components, such as
+between the two surfaces. If the surface consists of several connected
+components, such as two disjoint spheres, one point is determined for
+every component, so that all of them become holes or regions. Note that for nested components, such as
 two concentric spheres, both the inner ball and the shell between the
 spheres are removed or marked. If this is not intended, add the
 surfaces separately, starting with the inner one, or use
 `tetgen_domain_add_hole` or `tetgen_domain_add_region` with explicit
 points.
 
-Vertices of the surface which coincide exactly with existing points of
-the domain are identified with them. Apart from such shared vertices
+Vertices of the surface which coincide exactly with each other or with
+existing points of the domain are identified, before the surface is
+checked. Triangles which then have repeated vertices are rejected.
+Apart from such shared vertices
 and edges, the surface must not intersect other surfaces or the
 boundary of the domain. For intersecting surfaces, use `Gmsh.jl`
 instead, see the manual. The function returns a new `TetDomain`, and the
@@ -246,8 +255,16 @@ function tetgen_domain_add_surface(dom::TetDomain, V::AbstractVector, T::Abstrac
                             "both a hole and a region"))
     end
 
+    # Vertices with the same coordinates are merged before the surface
+    # is checked, so that triangle soups as read from STL files work
+
+    cmarker = isnothing(marker) ? _next_marker(dom) : marker
+    points, newindex = _merge_points(dom.points, [_point3(v) for v in V])
+    newfacets = [newindex[collect(t)] for t in T]
+    _check_triangles(newfacets, "tetgen_domain_add_surface")
+
     if hole || !isnothing(region)
-        closed, oriented = _trisurface_check(T)
+        closed, oriented = _trisurface_check(newfacets)
         if !closed
             throw(ArgumentError("tetgen_domain_add_surface: holes and regions " *
                                 "require a closed surface"))
@@ -258,9 +275,6 @@ function tetgen_domain_add_surface(dom::TetDomain, V::AbstractVector, T::Abstrac
         end
     end
 
-    cmarker = isnothing(marker) ? _next_marker(dom) : marker
-    points, newindex = _merge_points(dom.points, [_point3(v) for v in V])
-    newfacets = [newindex[collect(t)] for t in T]
     facets  = vcat(deepcopy(dom.facets), newfacets)
     markers = vcat(dom.markers, fill(cmarker, length(T)))
     holes   = copy(dom.holes)
@@ -423,6 +437,20 @@ function _point3(v)
     end
     # Adding 0.0 turns -0.0 into 0.0, so that equal points are merged
     return (Float64(v[1]) + 0.0, Float64(v[2]) + 0.0, Float64(v[3]) + 0.0)
+end
+
+function _check_triangles(T::Vector{Vector{Int}}, fname::String)
+    #
+    # Reject triangles with repeated vertices, which can also arise
+    # if distinct vertices with the same coordinates are merged
+    #
+    for t in T
+        if !allunique(t)
+            throw(ArgumentError("$fname: the triangle $t has repeated vertices, " *
+                                "possibly after merging vertices with the same " *
+                                "coordinates"))
+        end
+    end
 end
 
 function _next_marker(dom::TetDomain)

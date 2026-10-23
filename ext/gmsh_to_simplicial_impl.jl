@@ -100,7 +100,8 @@ function ConleyDynamics.gmsh_to_simplicial(; dim::Int=3, p::Int=2,
         @warn "gmsh_to_simplicial: the mesh contains distinct nodes with " *
               "identical coordinates, so the complex is not connected across " *
               "them. This usually happens if touching or intersecting entities " *
-              "were not fragmented; use gmsh.model.occ.fragment before meshing."
+              "were not fragmented; use gmsh_common_refinement or " *
+              "gmsh.model.occ.fragment before meshing."
     end
 
     return tetmesh_to_euclidean(points, cells; p=p, droporphans=true)

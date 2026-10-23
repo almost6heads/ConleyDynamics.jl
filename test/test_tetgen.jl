@@ -275,6 +275,43 @@ end
     @test_throws ArgumentError create_simplicial_delaunay3d([0,0], [1,1], 10)
     @test_throws ArgumentError create_simplicial_delaunay3d([0,0,0], [1,1,1], 3)
     @test_throws ArgumentError create_simplicial_delaunay3d([0,0,0], [1,0,1], 10)
+
+    # Non-finite values would end up as letters in the switch string
+
+    for kw in ((maxvolume=Inf,), (maxvolume=NaN,), (minratio=Inf,),
+               (minratio=NaN,), (mindihedral=NaN,))
+        @test_throws ArgumentError tetgen_mesh(box; kw...)
+    end
+    @test_throws ArgumentError tetgen_mesh(tetgen_domain_add_region(box, [0,0,0], 1, NaN))
+end
+
+@testset "TetGen extension: triangle soups" begin
+    #
+    # Surfaces in which every triangle has its own copies of the
+    # vertices, as in STL files, are merged before they are checked
+    #
+    box = tetgen_domain_box([-1,-1,-1], [1,1,1])
+    V, T = trisurface_sphere([0,0,0], 0.5, 1)
+    Vs = [V[i] for t in T for i in t]
+    Ts = [[3k-2, 3k-1, 3k] for k in 1:length(T)]
+
+    dom = tetgen_domain_add_surface(box, Vs, Ts; hole=true)
+    @test length(dom.points) == 8 + length(V)
+    @test length(dom.holes) == 1
+    @test homology(tetgen_to_simplicial(tetgen_mesh(dom; maxvolume=0.05))) == [1,0,1,0]
+    dom = tetgen_domain_add_surface(box, Vs, Ts; region=(1, 0.01))
+    @test length(dom.regions) == 1
+
+    dom = tetgen_domain_from_surface(Vs, Ts)
+    @test length(dom.points) == length(V)
+    @test homology(tetgen_to_simplicial(tetgen_mesh(dom; maxvolume=0.01))) == [1,0,0,0]
+
+    # Triangles with repeated vertices, also after merging, are rejected
+
+    @test_throws ArgumentError tetgen_domain_add_surface(box, V, vcat(T, [[1,1,2]]))
+    @test_throws ArgumentError tetgen_domain_from_surface(V, vcat(T, [[1,2,2]]))
+    V2 = vcat(V, [V[1]])
+    @test_throws ArgumentError tetgen_domain_add_surface(box, V2, [[1, length(V2), 2]])
 end
 
 @testset "TetGen extension: box face markers and exit sets" begin

@@ -48,12 +48,16 @@ function poisson_points_box(bmin::AbstractVector{<:Real}, bmax::AbstractVector{<
         throw(ArgumentError("poisson_points_box: bmin and bmax need to have " *
                             "the same positive length"))
     end
+    if !all(isfinite, bmin) || !all(isfinite, bmax)
+        throw(ArgumentError("poisson_points_box: bmin and bmax need to be finite"))
+    end
     if any(bmax .<= bmin)
         throw(ArgumentError("poisson_points_box: bmax needs to be larger " *
                             "than bmin in every coordinate"))
     end
-    if pdist <= 0
-        throw(ArgumentError("poisson_points_box: pdist needs to be positive"))
+    if !(0 < pdist < Inf)
+        throw(ArgumentError("poisson_points_box: pdist needs to be positive " *
+                            "and finite"))
     end
     if attempts < 1
         throw(ArgumentError("poisson_points_box: attempts needs to be positive"))
