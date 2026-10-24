@@ -714,6 +714,13 @@ in [Loading the Required Packages](@ref meshing3d_loading). Note that
 `TetGen` is distributed under the GNU Affero General Public License, see
 [Licences of the Meshing Backends](@ref) below.
 
+!!! warning "TetGen is unreliable on 32-bit systems"
+    On 32-bit Linux, `TetGen` was found to fail with internal errors or
+    to crash Julia with a segmentation fault for domains which are
+    meshed without problems on 64-bit systems, such as a box with a
+    spherical hole. The `TetGen` extension should therefore only be
+    used on 64-bit systems, and its tests are skipped on 32-bit systems.
+
 ### Describing a Domain
 
 A [`TetDomain`](@ref) is a plain Julia struct with five fields:

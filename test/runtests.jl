@@ -6,7 +6,11 @@ if !isnothing(Base.find_package("DelaunayTriangulation"))
     include("test_delaunay.jl")
 end
 
-if !isnothing(Base.find_package("TetGen"))
+# On 32-bit Linux, TetGen fails with internal errors or segmentation
+# faults for domains which work on 64-bit systems, such as a box
+# with a spherical hole, so its tests are skipped there
+
+if !isnothing(Base.find_package("TetGen")) && Sys.WORD_SIZE == 64
     using TetGen
     include("test_tetgen.jl")
 end
