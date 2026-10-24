@@ -4,6 +4,19 @@ using Random
 tet_volumes(ec) = [abs(det(hcat((c[2:4] .- Ref(c[1]))...))) / 6
                    for (c, d) in zip(ec.coords, ec.dimensions) if d == 3]
 
+function radius_edge_ratios(res)
+    ratios = Float64[]
+    for t in res.tetrahedra
+        a, b, c, d = (Float64.(collect(res.points[i])) for i in t)
+        A = 2 .* hcat(b - a, c - a, d - a)'
+        center = A \ [dot(x, x) - dot(a, a) for x in (b, c, d)]
+        minedge = minimum(norm(x - y) for (x, y) in
+                          ((a,b), (a,c), (a,d), (b,c), (b,d), (c,d)))
+        push!(ratios, norm(center - a) / minedge)
+    end
+    return ratios
+end
+
 @testset "TetGen extension: boxes" begin
     #
     # A box gives a contractible complex whose tetrahedra fill the box
@@ -35,12 +48,16 @@ tet_volumes(ec) = [abs(det(hcat((c[2:4] .- Ref(c[1]))...))) / 6
 
     ec3 = tetgen_to_simplicial(res; p=3)
     @test homology(ec3) == [1,0,0,0]
-    res0 = tetgen_mesh(tetgen_domain_box([0,0,0], [1,1,1]); minratio=nothing)
+    # A thin box needs quality refinement, which reduces the radius-edge
+    # ratio up to a small tolerance. Comparing the numbers of tetrahedra
+    # for a fine volume bound depends on the platform.
+
+    res0 = tetgen_mesh(tetgen_domain_box([0,0,0], [1,1,0.1]); minratio=nothing)
     @test length(res0.points) == 8
-    resd = tetgen_mesh(tetgen_domain_box([0,0,0], [1,1,1]); maxvolume=0.01)
-    resq = tetgen_mesh(tetgen_domain_box([0,0,0], [1,1,1]); maxvolume=0.01,
-                       minratio=1.1, mindihedral=20)
-    @test length(resq.tetrahedra) > length(resd.tetrahedra)
+    @test maximum(radius_edge_ratios(res0)) > 5
+    resq = tetgen_mesh(tetgen_domain_box([0,0,0], [1,1,0.1]))
+    @test length(resq.points) > 20
+    @test maximum(radius_edge_ratios(resq)) < 1.5
     @test homology(tetgen_to_simplicial(resq)) == [1,0,0,0]
 end
 
