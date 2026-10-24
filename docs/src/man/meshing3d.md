@@ -2039,7 +2039,6 @@ ball_cells  = gmsh_marker_cells(ec3, 3, pg_ball)
 homology(lefschetz_subcomplex(ec3, ball_cells))                          # [1, 0, 0, 0]
 homology(lefschetz_subcomplex(ec3, intersect(plane_cells, ball_cells)))  # [1, 0, 0]
 maximum(maximum(abs.(ec3.coords[k][1])) for k in plane_cells)            # 2.0
-gmsh.finalize()
 ```
 
 The cells of the ball form a closed subcomplex, and the intersection of
@@ -2058,6 +2057,83 @@ and the plane in blue.
 
 ![Common refinements of several objects, meshed with Gmsh](img/meshing3d_refinement.png)
 
+In applications, surfaces are often only known as triangulations, for
+example as the output of the `trisurface_*` functions, or as read from
+an STL file. Such a surface can be added to the model with
+[`gmsh_add_trisurface`](@ref). It turns every triangle into a flat
+surface of `gmsh.model.occ`, where adjacent triangles share their points
+and edges, so that the surface is the piecewise linear interpolation of
+its vertices. The function returns the vector of these surfaces, which
+is one object of [`gmsh_common_refinement`](@ref). As a third example,
+consider a box which contains the unit sphere, a rectangle in the plane
+`x = 0.4`, and a triangulation of the paraboloid
+`z = -0.6 + (x^2 + y^2)/2` over the square `[-1.5, 1.5]^2`. The
+rectangle is created in a horizontal plane, then rotated by ninety
+degrees around the `y`-axis, and finally moved to the plane `x = 0.4`:
+
+```julia
+gmsh.model.add("paraboloid")
+
+fpar(x, y) = -0.6 + 0.5*(x^2 + y^2)
+Vp, Tp = trisurface_parametric((x, y) -> [x, y, fpar(x, y)],
+                               (-1.5, 1.5), (-1.5, 1.5), 12, 12)
+
+box    = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+sphere = spheresurface(0, 0, 0, 1.0)
+rect   = gmsh.model.occ.addRectangle(-1.6, -1.6, 0, 3.2, 3.2)
+gmsh.model.occ.rotate([(2, rect)], 0, 0, 0, 0, 1, 0, pi/2)
+gmsh.model.occ.translate([(2, rect)], 0.4, 0, 0)
+parab  = gmsh_add_trisurface(Vp, Tp)
+length(parab)                                          # 288
+
+pgs = gmsh_common_refinement([(3, box), sphere, (2, rect), parab])
+gmsh.option.setNumber("Mesh.MeshSizeMax", 0.25)
+gmsh.model.mesh.generate(3)
+ec4 = gmsh_to_simplicial()
+lefschetz_cell_count(ec4)                              # [6114, 39797, 65538, 31854]
+
+cs = gmsh_marker_cells(ec4, 2, pgs[2])                 # sphere
+cr = gmsh_marker_cells(ec4, 2, pgs[3])                 # rectangle
+cp = gmsh_marker_cells(ec4, 2, pgs[4])                 # paraboloid
+gmsh.finalize()
+
+homology(lefschetz_subcomplex(ec4, cp))                # [1, 0, 0]
+homology(lefschetz_subcomplex(ec4, intersect(cs, cr))) # [1, 1]
+homology(lefschetz_subcomplex(ec4, intersect(cs, cp))) # [1, 1]
+homology(lefschetz_subcomplex(ec4, intersect(cr, cp))) # [1, 0]
+
+triple = intersect(cs, cr, cp)
+[round.(ec4.coords[k][1]; digits=3) for k in triple]
+# 2-element Vector{Vector{Float64}}:
+#  [0.4, -0.912, -0.089]
+#  [0.4, 0.912, -0.089]
+```
+
+The `12 x 12` grid of the parameter square gives `288` triangles, and
+thus `288` surfaces of the model. After the refinement, the paraboloid
+is a disk. It meets the sphere in a closed curve, and the rectangle in
+an arc of a parabola, while the sphere and the rectangle meet in a
+circle. All three surfaces have exactly two points in common. For the
+smooth paraboloid, these points would be `(0.4, ±0.910, -0.106)`, but
+the piecewise linear interpolation of a convex function lies above
+the function, so that the points of the triangulated paraboloid are
+slightly higher. On the other hand, every edge of the triangulation
+becomes a curve of the model, and the mesh has to contain it as a chain
+of edges. The mesh near a triangulated surface is therefore at least as
+fine as the triangulation, regardless of `Mesh.MeshSizeMax`. In our
+example, the mesh has about a third more vertices than with a smooth
+paraboloid, and with a `48 x 48` grid, it has almost three times as
+many.
+
+The figure of the common refinement of a sphere, a rectangle, and a
+triangulated paraboloid shows the result. In the left panel, the sphere
+is drawn in orange, the rectangle in blue, and the paraboloid in green,
+together with the three intersection curves in red and the two common
+points in black. The right panel shows the tetrahedral mesh, clipped at
+the plane `y = 0`, together with the three surfaces.
+
+![Common refinement of a sphere, a rectangle, and a triangulated paraboloid, meshed with Gmsh](img/meshing3d_trisurface.png)
+
 The following remarks summarize how common refinements are used in
 practice:
 
@@ -2073,10 +2149,14 @@ practice:
   or IGES format can be loaded with `gmsh.model.occ.importShapes`. See
   the `Gmsh` documentation for details.
 * **Triangulated surfaces.** The surfaces created by the `trisurface_*`
-  functions are triangulations, not CAD entities. They are meant for
-  `TetGen`, and they cannot be used for boolean operations in `Gmsh`.
-  If an analytic description is available, as for spheres, cylinders,
-  and tori, use the corresponding CAD function instead.
+  functions, or read from STL files, are triangulations, not CAD
+  entities. They can be added to the model with
+  [`gmsh_add_trisurface`](@ref), as for the paraboloid above. Since
+  every triangle becomes a surface of the model, and every edge a
+  curve, this is slower than a CAD entity for fine triangulations, and
+  it forces a fine mesh. If an analytic description is available, as
+  for spheres, cylinders, and tori, use the corresponding CAD function
+  instead.
 * **Positioning.** Entities can be moved and rotated with
   `gmsh.model.occ.translate` and `gmsh.model.occ.rotate`, for example
   `gmsh.model.occ.rotate([(2, plane)], 0, 0, 0, 1, 0, 0, pi/2)` rotates

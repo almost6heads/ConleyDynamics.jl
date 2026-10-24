@@ -281,3 +281,82 @@ end
     gmsh.finalize()
     @test_throws ArgumentError gmsh_common_refinement([(3, 1)])
 end
+
+@testset "Gmsh extension: triangulated surfaces" begin
+    #
+    # Triangulated surfaces are added as flat OpenCASCADE surfaces by
+    # gmsh_add_trisurface, and refined together with other objects
+    #
+    sub(ec, c) = homology(lefschetz_subcomplex(ec, c))
+    verts(ec, c) = [ec.coords[k][1] for k in c if ec.dimensions[k] == 0]
+    function meshmodel(h)
+        gmsh.option.setNumber("Mesh.MeshSizeMax", h)
+        gmsh.model.mesh.generate(3)
+        return @test_logs gmsh_to_simplicial()
+    end
+
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+
+    # A paraboloid patch, a sphere, and a rectangle
+
+    fpar(x, y) = -0.6 + 0.5*(x^2 + y^2)
+    V, T = trisurface_parametric((x, y) -> [x, y, fpar(x, y)],
+                                 (-1.5, 1.5), (-1.5, 1.5), 12, 12)
+    gmsh.model.add("paraboloid")
+    box  = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+    sph  = gmsh.model.occ.addSphere(0, 0, 0, 1.0)
+    gmsh.model.occ.synchronize()
+    ssph = gmsh.model.getBoundary([(3, sph)], false, false)
+    gmsh.model.occ.remove([(3, sph)])
+    rect = gmsh.model.occ.addRectangle(-1.6, -1.6, 0, 3.2, 3.2)
+    gmsh.model.occ.rotate([(2, rect)], 0, 0, 0, 0, 1, 0, pi/2)
+    gmsh.model.occ.translate([(2, rect)], 0.4, 0, 0)
+    spar = gmsh_add_trisurface(V, T)
+    @test length(spar) == length(T)
+    pgs = gmsh_common_refinement([(3, box), ssph, (2, rect), spar])
+    ec = meshmodel(0.35)
+    @test homology(ec) == [1,0,0,0]
+    cs, cr, cp = (gmsh_marker_cells(ec, 2, t) for t in pgs[2:4])
+    @test sub(ec, cp) == [1,0,0]
+    @test sub(ec, intersect(cs, cp)) == [1,1]
+    @test sub(ec, intersect(cr, cp)) == [1,0]
+    @test all(0 <= v[3] - fpar(v[1], v[2]) < 0.05 for v in verts(ec, cp))
+    triple = verts(ec, intersect(cs, cr, cp))
+    @test length(triple) == 2
+    @test all(abs(v[1] - 0.4) < 1e-10 && abs(sum(abs2, v) - 1) < 1e-8 for v in triple)
+    gmsh.model.remove()
+
+    # A closed surface given as a triangle soup, with separate copies of
+    # the vertices of every triangle
+
+    Vs, Ts = trisurface_sphere([0, 0, 0], 1.0, 1)
+    Vsoup = [Vs[k] for t in Ts for k in t]
+    Tsoup = [[3k-2, 3k-1, 3k] for k in 1:length(Ts)]
+    gmsh.model.add("soup")
+    box  = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+    soup = gmsh_add_trisurface(Vsoup, Tsoup)
+    pgbox, pgsoup = gmsh_common_refinement([(3, box), soup])
+    ec = meshmodel(0.5)
+    csoup = gmsh_marker_cells(ec, 2, pgsoup)
+    @test sub(ec, csoup) == [1,0,1]
+    @test length(verts(ec, csoup)) >= length(Vs)
+    gmsh.model.remove()
+
+    # Errors
+
+    gmsh.model.add("errors")
+    Vt = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [2, 0, 0], [0, 0, 0]]
+    @test_throws ArgumentError gmsh_add_trisurface(Vt, Vector{Int}[])
+    @test_throws ArgumentError gmsh_add_trisurface(Vt, [[1, 2]])
+    @test_throws ArgumentError gmsh_add_trisurface(Vt, [[1, 2, 6]])
+    @test_throws ArgumentError gmsh_add_trisurface(Vt, [[1, 2, 5]])
+    @test_throws ArgumentError gmsh_add_trisurface(Vt, [[1, 2, 4]])
+    @test_throws ArgumentError gmsh_add_trisurface(Vt, [[1, 2, 3], [3, 1, 2]])
+    @test_throws ArgumentError gmsh_add_trisurface([[0, 0], [1, 0], [0, 1]], [[1, 2, 3]])
+    @test_throws ArgumentError gmsh_add_trisurface([[0, 0, NaN], [1, 0, 0], [0, 1, 0]],
+                                                   [[1, 2, 3]])
+
+    gmsh.finalize()
+    @test_throws ArgumentError gmsh_add_trisurface(Vt, [[1, 2, 3]])
+end

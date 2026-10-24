@@ -52,4 +52,5 @@ gmsh_to_simplicial
 gmsh_file_to_simplicial
 gmsh_marker_cells
 gmsh_common_refinement
+gmsh_add_trisurface
 ```

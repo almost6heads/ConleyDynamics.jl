@@ -1,5 +1,5 @@
 export gmsh_to_simplicial, gmsh_file_to_simplicial, gmsh_marker_cells
-export gmsh_common_refinement
+export gmsh_common_refinement, gmsh_add_trisurface
 
 """
     gmsh_to_simplicial(; dim::Int=3, p::Int=2,
@@ -178,3 +178,56 @@ gmsh.finalize()
 ```
 """
 function gmsh_common_refinement end
+
+"""
+    gmsh_add_trisurface(V::AbstractVector, T::AbstractVector)
+                        -> Vector{Tuple{Int,Int}}
+
+Add a triangulated surface to the current `Gmsh.jl` model, so that it
+can be used as an object of `gmsh_common_refinement`.
+
+The surface is given by the vertices `V` and the triangles `T`, for
+example as created by one of the `trisurface_*` functions, or as read
+from an STL file. Every triangle becomes a flat surface of the
+OpenCASCADE kernel `gmsh.model.occ`, and adjacent triangles share their
+points and edges, so the surface is the piecewise linear interpolation
+of its vertices. The function returns the entities `(2, tag)` of these
+surfaces, which form one object of `gmsh_common_refinement`. The
+surface does not have to be closed or consistently oriented, and an
+edge may belong to more than two triangles.
+
+Vertices with the same coordinates are identified, so the surface can
+also be given as a list of separate triangles, each with its own copies
+of the vertices. An `ArgumentError` is raised for triangles with
+repeated vertices, for degenerate triangles whose vertices lie on a
+line, and for triangles which occur more than once.
+
+Since every edge of the triangulation becomes a curve of the model, the
+mesh near the surface is at least as fine as the triangulation, even if
+`Mesh.MeshSizeMax` is larger. The triangulation should therefore not be
+finer than needed. The function calls `gmsh.model.occ.synchronize()`.
+
+This function requires `Gmsh.jl` to be loaded.
+
+# Example
+
+```julia
+using Gmsh: gmsh
+using ConleyDynamics
+
+gmsh.initialize()
+box  = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+V, T = trisurface_parametric((x, y) -> [x, y, (x^2 + y^2) / 2 - 1],
+                             (-1.5, 1.5), (-1.5, 1.5), 12, 12)
+surf = gmsh_add_trisurface(V, T)
+
+pgbox, pgsurf = gmsh_common_refinement([(3, box), surf])
+gmsh.option.setNumber("Mesh.MeshSizeMax", 0.25)
+gmsh.model.mesh.generate(3)
+
+ec    = gmsh_to_simplicial()
+cells = gmsh_marker_cells(ec, 2, pgsurf)
+gmsh.finalize()
+```
+"""
+function gmsh_add_trisurface end

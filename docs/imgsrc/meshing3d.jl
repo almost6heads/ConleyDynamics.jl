@@ -331,6 +331,51 @@ savefig3d("meshing3d_refinement.png", fig)
 
 ##############################################################################
 #
+# Extensions: common refinement of a sphere, a rectangle, and a
+# triangulated paraboloid
+#
+##############################################################################
+
+gmsh.initialize()
+gmsh.option.setNumber("General.Terminal", 0)
+gmsh.model.add("paraboloid")
+fpar(x, y) = -0.6 + 0.5*(x^2 + y^2)
+Vp, Tp = trisurface_parametric((x, y) -> [x, y, fpar(x, y)],
+                               (-1.5, 1.5), (-1.5, 1.5), 12, 12)
+box    = gmsh.model.occ.addBox(-2, -2, -2, 4, 4, 4)
+sphere = spheresurface(0, 0, 0, 1.0)
+rect   = gmsh.model.occ.addRectangle(-1.6, -1.6, 0, 3.2, 3.2)
+gmsh.model.occ.rotate([(2, rect)], 0, 0, 0, 0, 1, 0, pi/2)
+gmsh.model.occ.translate([(2, rect)], 0.4, 0, 0)
+parab  = gmsh_add_trisurface(Vp, Tp)
+pgs = gmsh_common_refinement([(3, box), sphere, (2, rect), parab])
+gmsh.option.setNumber("Mesh.MeshSizeMax", 0.25)
+gmsh.model.mesh.generate(3)
+ec4 = gmsh_to_simplicial()
+cs = gmsh_marker_cells(ec4, 2, pgs[2])
+cr = gmsh_marker_cells(ec4, 2, pgs[3])
+cp = gmsh_marker_cells(ec4, 2, pgs[4])
+gmsh.finalize()
+curves = [k for k in union(intersect(cs, cr), intersect(cs, cp), intersect(cr, cp))
+          if ec4.dimensions[k] == 1]
+
+fig = Figure(size=(1200,550))
+ax1 = panel(fig, (1,1), "Sphere, rectangle, and paraboloid")
+plot_simplicial3d!(ax1, ec4; alpha=0.03, linealpha=0.05)
+plot_cells3d!(ax1, ec4, cs; color=:darkorange, alpha=0.5)
+plot_cells3d!(ax1, ec4, cr; color=:steelblue, alpha=0.5)
+plot_cells3d!(ax1, ec4, cp; color=:seagreen, alpha=0.5)
+plot_cells3d!(ax1, ec4, curves; color=:red)
+plot_cells3d!(ax1, ec4, intersect(cs, cr, cp); color=:black, markersize=0.07)
+ax2 = panel(fig, (1,2), "Mesh, clipped at y = 0")
+plot_simplicial3d!(ax2, ec4; clip=([0,-1,0], 0.0), alpha=0.3)
+plot_cells3d!(ax2, ec4, cs; clip=([0,-1,0], 0.0), color=:darkorange, alpha=0.9)
+plot_cells3d!(ax2, ec4, cr; clip=([0,-1,0], 0.0), color=:steelblue, alpha=0.9)
+plot_cells3d!(ax2, ec4, cp; clip=([0,-1,0], 0.0), color=:seagreen, alpha=0.9)
+savefig3d("meshing3d_trisurface.png", fig)
+
+##############################################################################
+#
 # Extensions: a periodic orbit in a ball meshed by Gmsh
 #
 ##############################################################################

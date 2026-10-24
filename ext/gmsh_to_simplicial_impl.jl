@@ -240,3 +240,65 @@ function ConleyDynamics.gmsh_common_refinement(objects::AbstractVector;
 
     return tags
 end
+
+function ConleyDynamics.gmsh_add_trisurface(V::AbstractVector, T::AbstractVector)
+    #
+    # Add every triangle of a triangulated surface as a flat OpenCASCADE
+    # surface, where adjacent triangles share their points and edges
+    #
+
+    fname = "gmsh_add_trisurface"
+    _gmsh_check_initialized(fname)
+    nv = length(V)
+    if isempty(T)
+        throw(ArgumentError("$fname: no triangles given"))
+    end
+    if any(length(t) != 3 for t in T)
+        throw(ArgumentError("$fname: every triangle needs three vertex indices"))
+    end
+    if any(any(v -> !(1 <= v <= nv), t) for t in T)
+        throw(ArgumentError("$fname: the triangles contain indices outside of 1:$nv"))
+    end
+
+    # Vertices with the same coordinates are merged, so that triangle
+    # soups as read from STL files work
+
+    points, newindex = ConleyDynamics._merge_points(NTuple{3,Float64}[],
+                                                    [ConleyDynamics._point3(v) for v in V])
+    tris = [newindex[collect(t)] for t in T]
+    ConleyDynamics._check_triangles(tris, fname)
+    if !allunique(sort(t) for t in tris)
+        throw(ArgumentError("$fname: some triangles occur more than once"))
+    end
+    for t in tris
+        a, b, c = (collect(points[k]) for k in t)
+        u, w = b .- a, c .- a
+        n = [u[2]*w[3] - u[3]*w[2], u[3]*w[1] - u[1]*w[3], u[1]*w[2] - u[2]*w[1]]
+        hmax = max(sum(abs2, u), sum(abs2, w), sum(abs2, c .- b))
+        if sum(abs2, n) <= 1e-20 * hmax^2
+            throw(ArgumentError("$fname: the triangle $t is degenerate"))
+        end
+    end
+
+    # Only the vertices of the triangles become points of the model,
+    # and every edge becomes one line, which is used with the opposite
+    # orientation by the second triangle
+
+    used  = sort(unique(reduce(vcat, tris)))
+    ptags = Dict(k => gmsh.model.occ.addPoint(points[k]...) for k in used)
+    lines = Dict{Tuple{Int,Int},Int}()
+    function edge(i, j)
+        i < j && return  get!(() -> gmsh.model.occ.addLine(ptags[i], ptags[j]), lines, (i, j))
+        return -get!(() -> gmsh.model.occ.addLine(ptags[j], ptags[i]), lines, (j, i))
+    end
+
+    surfaces = Vector{Tuple{Int,Int}}()
+    for t in tris
+        loop = gmsh.model.occ.addCurveLoop([edge(t[1], t[2]), edge(t[2], t[3]),
+                                            edge(t[3], t[1])])
+        push!(surfaces, (2, gmsh.model.occ.addPlaneSurface([loop])))
+    end
+    gmsh.model.occ.synchronize()
+
+    return surfaces
+end
