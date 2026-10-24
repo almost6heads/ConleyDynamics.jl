@@ -13,6 +13,14 @@ description, etc.
 
 Release notes:
 
+## v0.8.0 (October 24, 2026)
+
+Finally, meshing in 3d has arrived! This release adds new functionality
+which is triggered by the weak dependencies `TetGen.jl` and `Gmsh.jl`.
+For more details, see the new section on `3d Meshing` in the manual.
+
+This release contains no breaking changes.
+
 ## v0.7.25 (October 15, 2026)
 
 More speed improvements for the central underlying algorithms.
