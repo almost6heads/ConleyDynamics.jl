@@ -288,6 +288,54 @@ end
     @test_throws ArgumentError tetgen_domain_add_curve(box, [[0,0,0], [0,0,0]])
 end
 
+@testset "Meshing inputs: error messages and unused vertices" begin
+    #
+    # Errors about points name the function, and vertices which do not
+    # belong to any triangle are ignored
+    #
+    function errmsg(f)
+        try
+            f()
+        catch e
+            return e isa ArgumentError ? e.msg : ""
+        end
+        return ""
+    end
+    box = tetgen_domain_box([-2,-2,-2], [2,2,2])
+    V, T = trisurface_sphere([0,0,0], 1.0, 1)
+    Vnan = vcat(V, [[NaN, 0.0, 0.0]])
+    Vbad = copy(V)
+    Vbad[T[1][1]] = [Inf, 0.0, 0.0]
+
+    @test startswith(errmsg(() -> tetgen_domain_from_surface(Vbad, T)),
+                     "tetgen_domain_from_surface: the vertex $(T[1][1])")
+    @test startswith(errmsg(() -> tetgen_domain_add_surface(box, Vbad, T)),
+                     "tetgen_domain_add_surface: the vertex $(T[1][1])")
+    @test startswith(errmsg(() -> tetgen_domain_add_nodes(box, [[0.5, 0.5]])),
+                     "tetgen_domain_add_nodes: the point")
+    @test startswith(errmsg(() -> tetgen_domain_add_curve(box, [[0,0,0], [1,0,NaN]])),
+                     "tetgen_domain_add_curve: the point")
+    @test startswith(errmsg(() -> tetgen_domain_add_hole(box, [0.0, NaN, 0.0])),
+                     "tetgen_domain_add_hole: the point")
+    @test startswith(errmsg(() -> tetgen_domain_add_region(box, [0.0, 0.0], 1)),
+                     "tetgen_domain_add_region: the point")
+    @test startswith(errmsg(() -> tetgen_domain_from_surface(V, [[1.0, 2.0, 3.0]])),
+                     "tetgen_domain_from_surface: every triangle")
+    @test startswith(errmsg(() -> tetgen_domain_add_surface(box, V, [[1, 2]])),
+                     "tetgen_domain_add_surface: every triangle")
+
+    dom1 = tetgen_domain_from_surface(V, T)
+    dom2 = tetgen_domain_from_surface(Vnan, T)
+    @test dom2.points == dom1.points
+    @test dom2.facets == dom1.facets
+    dom1 = tetgen_domain_add_surface(box, V, T; hole=true)
+    dom2 = tetgen_domain_add_surface(box, Vnan, T; hole=true)
+    @test dom2.points == dom1.points
+    @test dom2.facets == dom1.facets
+    @test dom2.holes == dom1.holes
+    @test length(tetgen_domain_add_surface(box, V, Vector{Int}[]).points) == length(box.points)
+end
+
 @testset "Meshing inputs: tuples, indices, thin boxes" begin
     box = tetgen_domain_box([-2,-2,-2], [2,2,2])
     V, T = trisurface_sphere([0,0,0], 1.0, 1)

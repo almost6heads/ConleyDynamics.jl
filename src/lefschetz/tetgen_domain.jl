@@ -129,31 +129,24 @@ and it has to be closed, i.e., every edge has to belong to exactly two
 triangles. Otherwise an `ArgumentError` is raised. Vertices with the
 same coordinates are identified before this check, so the surface can
 also be given as a list of separate triangles, each with its own copies
-of the vertices, as in STL files. For example, the
-output of `trisurface_sphere` gives a ball, and the output of
-`trisurface_torus` gives a solid torus. All facets get marker `0`.
+of the vertices, as in STL files. Vertices which do not belong to any
+triangle are ignored. For example, the output of `trisurface_sphere`
+gives a ball, and the output of `trisurface_torus` gives a solid torus.
+All facets get marker `0`.
 """
 function tetgen_domain_from_surface(V::AbstractVector, T::AbstractVector)
     #
     # Create a domain bounded by a closed triangulated surface
     #
 
-    nv = length(V)
-    if any(any(v -> !(1 <= v <= nv), t) for t in T)
-        throw(ArgumentError("tetgen_domain_from_surface: the triangles contain " *
-                            "indices outside of 1:$nv"))
-    end
-    if any(length(t) != 3 for t in T)
-        throw(ArgumentError("tetgen_domain_from_surface: every triangle needs " *
-                            "three vertex indices"))
-    end
-
     # Vertices with the same coordinates are merged before the surface
     # is checked, so that triangle soups as read from STL files work
 
-    points, newindex = _merge_points(NTuple{3,Float64}[], [_point3(v) for v in V])
-    facets = [newindex[collect(t)] for t in T]
-    _check_triangles(facets, "tetgen_domain_from_surface")
+    fname = "tetgen_domain_from_surface"
+    vpoints, tris = _triangle_points(V, T, fname)
+    points, newindex = _merge_points(NTuple{3,Float64}[], vpoints)
+    facets = [newindex[t] for t in tris]
+    _check_triangles(facets, fname)
     closed, _ = _trisurface_check(facets)
     if !closed
         throw(ArgumentError("tetgen_domain_from_surface: the surface is not closed"))
@@ -181,7 +174,7 @@ function tetgen_domain_add_nodes(dom::TetDomain, newpoints::AbstractVector)
     #
     # Add interior nodes to a domain
     #
-    points = vcat(dom.points, [_point3(v) for v in newpoints])
+    points = vcat(dom.points, [_point3(v, "tetgen_domain_add_nodes") for v in newpoints])
     return TetDomain(points, deepcopy(dom.facets), copy(dom.markers),
                      copy(dom.holes), copy(dom.regions))
 end
@@ -226,10 +219,10 @@ points.
 
 Vertices of the surface which coincide exactly with each other or with
 existing points of the domain are identified, before the surface is
-checked. Triangles which then have repeated vertices are rejected.
-Apart from such shared vertices
-and edges, the surface must not intersect other surfaces or the
-boundary of the domain. For intersecting surfaces, use `Gmsh.jl`
+checked. Triangles which then have repeated vertices are rejected, and
+vertices which do not belong to any triangle are ignored. Apart from
+such shared vertices and edges, the surface must not intersect other
+surfaces or the boundary of the domain. For intersecting surfaces, use `Gmsh.jl`
 instead, see the manual. The function returns a new `TetDomain`, and the
 original domain is not changed.
 """
@@ -241,15 +234,7 @@ function tetgen_domain_add_surface(dom::TetDomain, V::AbstractVector, T::Abstrac
     # Add a triangulated constraint surface to a domain
     #
 
-    nv = length(V)
-    if any(any(v -> !(1 <= v <= nv), t) for t in T)
-        throw(ArgumentError("tetgen_domain_add_surface: the triangles contain " *
-                            "indices outside of 1:$nv"))
-    end
-    if any(length(t) != 3 for t in T)
-        throw(ArgumentError("tetgen_domain_add_surface: every triangle needs " *
-                            "three vertex indices"))
-    end
+    fname = "tetgen_domain_add_surface"
     if hole && !isnothing(region)
         throw(ArgumentError("tetgen_domain_add_surface: a surface cannot bound " *
                             "both a hole and a region"))
@@ -259,9 +244,10 @@ function tetgen_domain_add_surface(dom::TetDomain, V::AbstractVector, T::Abstrac
     # is checked, so that triangle soups as read from STL files work
 
     cmarker = isnothing(marker) ? _next_marker(dom) : marker
-    points, newindex = _merge_points(dom.points, [_point3(v) for v in V])
-    newfacets = [newindex[collect(t)] for t in T]
-    _check_triangles(newfacets, "tetgen_domain_add_surface")
+    vpoints, tris = _triangle_points(V, T, fname)
+    points, newindex = _merge_points(dom.points, vpoints)
+    newfacets = [newindex[t] for t in tris]
+    _check_triangles(newfacets, fname)
 
     if hole || !isnothing(region)
         closed, oriented = _trisurface_check(newfacets)
@@ -290,7 +276,7 @@ function tetgen_domain_add_surface(dom::TetDomain, V::AbstractVector, T::Abstrac
         oldtris = [[f[1], f[k], f[k+1]] for f in dom.facets for k in 2:length(f)-1]
         alltris = vcat(newfacets, oldtris)
         for comp in _trisurface_components(newfacets)
-            q = _point3(_trisurface_interior_point(points, newfacets[comp], alltris))
+            q = _point3(_trisurface_interior_point(points, newfacets[comp], alltris), fname)
             hole && push!(holes, q)
             if !isnothing(region)
                 push!(regions, (q, region[1], Float64(region[2])))
@@ -338,7 +324,7 @@ function tetgen_domain_add_curve(dom::TetDomain, curve::AbstractVector;
     # relative to its size, so that rounding errors in the coordinates
     # of large curves do not matter
 
-    cpoints = [_point3(v) for v in curve]
+    cpoints = [_point3(v, "tetgen_domain_add_curve") for v in curve]
     csize   = maximum(maximum(p[k] for p in cpoints) - minimum(p[k] for p in cpoints)
                       for k in 1:3)
     closed  = (length(cpoints) > 2) &&
@@ -393,7 +379,8 @@ function tetgen_domain_add_hole(dom::TetDomain, point::AbstractVector{<:Real})
     # Add a hole point to a domain
     #
     return TetDomain(copy(dom.points), deepcopy(dom.facets), copy(dom.markers),
-                     vcat(dom.holes, [_point3(point)]), copy(dom.regions))
+                     vcat(dom.holes, [_point3(point, "tetgen_domain_add_hole")]),
+                     copy(dom.regions))
 end
 
 """
@@ -416,7 +403,8 @@ function tetgen_domain_add_region(dom::TetDomain, point::AbstractVector{<:Real},
     #
     return TetDomain(copy(dom.points), deepcopy(dom.facets), copy(dom.markers),
                      copy(dom.holes),
-                     vcat(dom.regions, [(_point3(point), attr, Float64(maxvol))]))
+                     vcat(dom.regions, [(_point3(point, "tetgen_domain_add_region"),
+                                         attr, Float64(maxvol))]))
 end
 
 ############################
@@ -425,18 +413,40 @@ end
 #                          #
 ############################
 
-function _point3(v)
+function _point3(v, fname::String, k::Int=0)
     #
-    # Convert a point to a 3-tuple of Float64
+    # Convert a point to a 3-tuple of Float64. The error messages name
+    # the function fname, and the vertex k if it is positive.
     #
+    what = k > 0 ? "the vertex $k" : "the point"
     if length(v) != 3
-        throw(ArgumentError("Points need to have three coordinates, got $v"))
+        throw(ArgumentError("$fname: $what needs three coordinates, got $v"))
     end
     if !all(isfinite, v)
-        throw(ArgumentError("Point coordinates need to be finite, got $v"))
+        throw(ArgumentError("$fname: $what needs finite coordinates, got $v"))
     end
     # Adding 0.0 turns -0.0 into 0.0, so that equal points are merged
     return (Float64(v[1]) + 0.0, Float64(v[2]) + 0.0, Float64(v[3]) + 0.0)
+end
+
+function _triangle_points(V::AbstractVector, T::AbstractVector, fname::String)
+    #
+    # Check the vertex indices of the triangles T, and convert the
+    # vertices which belong to them. Vertices which do not belong to
+    # any triangle are ignored. Returns the converted vertices and the
+    # triangles with indices into them.
+    #
+    nv = length(V)
+    if any((length(t) != 3) || !all(k -> k isa Integer, t) for t in T)
+        throw(ArgumentError("$fname: every triangle needs three integer vertex indices"))
+    end
+    if any(any(k -> !(1 <= k <= nv), t) for t in T)
+        throw(ArgumentError("$fname: the triangles contain indices outside of 1:$nv"))
+    end
+    used     = sort(unique(Int[k for t in T for k in t]))
+    position = Dict(k => m for (m, k) in enumerate(used))
+    points   = NTuple{3,Float64}[_point3(V[k], fname, k) for k in used]
+    return points, Vector{Int}[[position[Int(k)] for k in t] for t in T]
 end
 
 function _check_triangles(T::Vector{Vector{Int}}, fname::String)

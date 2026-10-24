@@ -252,32 +252,17 @@ function ConleyDynamics.gmsh_add_trisurface(V::AbstractVector, T::AbstractVector
 
     fname = "gmsh_add_trisurface"
     _gmsh_check_initialized(fname)
-    nv = length(V)
     if isempty(T)
         throw(ArgumentError("$fname: no triangles given"))
-    end
-    if any((length(t) != 3) || !all(k -> k isa Integer, t) for t in T)
-        throw(ArgumentError("$fname: every triangle needs three integer vertex indices"))
-    end
-    if any(any(v -> !(1 <= v <= nv), t) for t in T)
-        throw(ArgumentError("$fname: the triangles contain indices outside of 1:$nv"))
     end
 
     # Only the vertices of the triangles are used. Vertices with the same
     # coordinates are merged, so that triangle soups as read from STL
     # files work
 
-    used = sort(unique(Int(k) for t in T for k in t))
-    for k in used
-        if (length(V[k]) != 3) || !all(isfinite, V[k])
-            throw(ArgumentError("$fname: the vertex $k needs three finite " *
-                                "coordinates, got $(V[k])"))
-        end
-    end
-    points, newindex = ConleyDynamics._merge_points(NTuple{3,Float64}[],
-                                                    [ConleyDynamics._point3(V[k]) for k in used])
-    position = Dict(k => newindex[m] for (m, k) in enumerate(used))
-    tris = [[position[Int(k)] for k in t] for t in T]
+    vpoints, vtris = ConleyDynamics._triangle_points(V, T, fname)
+    points, newindex = ConleyDynamics._merge_points(NTuple{3,Float64}[], vpoints)
+    tris = [newindex[t] for t in vtris]
     ConleyDynamics._check_triangles(tris, fname)
     if !allunique(sort(t) for t in tris)
         throw(ArgumentError("$fname: some triangles occur more than once"))
