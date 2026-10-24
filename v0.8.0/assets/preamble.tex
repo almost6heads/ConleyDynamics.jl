@@ -1,0 +1,39 @@
+\documentclass[oneside]{memoir}
+
+\usepackage{./documenter}
+\usepackage{./custom}
+
+%% Stretch interword spaces instead of letting long inline code
+%% (which cannot be hyphenated) run into the right margin
+\setlength{\emergencystretch}{3em}
+\tolerance=1000
+
+%% Do not break short inline code such as `x = 0` at its spaces. Code
+%% which is wider than a quarter of the line can still be broken, so
+%% that long function signatures do not run into the right margin.
+\usepackage{letltxmacro}
+\newsavebox{\cdinlinecodebox}
+\LetLtxMacro{\cdorigtexttt}{\texttt}
+\DeclareRobustCommand{\texttt}[1]{%
+  \sbox{\cdinlinecodebox}{\cdorigtexttt{#1}}%
+  \ifdim\wd\cdinlinecodebox<0.25\linewidth
+    \usebox{\cdinlinecodebox}%
+  \else
+    \cdorigtexttt{#1}%
+  \fi}
+
+%% Leave room for three-digit page numbers in the table of contents
+\setpnumwidth{2.2em}
+\setrmarg{3.2em}
+
+%% Main document begin
+\begin{document}
+
+\input{assets/titlepage.tex}
+
+\frontmatter
+% \maketitle
+\clearpage
+\tableofcontents
+
+\mainmatter
