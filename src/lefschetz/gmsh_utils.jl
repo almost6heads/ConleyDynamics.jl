@@ -198,9 +198,13 @@ edge may belong to more than two triangles.
 
 Vertices with the same coordinates are identified, so the surface can
 also be given as a list of separate triangles, each with its own copies
-of the vertices. An `ArgumentError` is raised for triangles with
-repeated vertices, for degenerate triangles whose vertices lie on a
-line, and for triangles which occur more than once.
+of the vertices. Vertices which do not belong to any triangle are
+ignored. An `ArgumentError` is raised for triangles with repeated
+vertices, for degenerate triangles whose vertices lie on a line, for
+triangles which occur more than once, and for triangles with an edge of
+length at most `2e-7`, since `OpenCASCADE` identifies points closer than
+`1e-7`. If `OpenCASCADE` fails nevertheless, the entities created so far
+are removed from the model before the error is passed on.
 
 Since every edge of the triangulation becomes a curve of the model, the
 mesh near the surface is at least as fine as the triangulation, even if

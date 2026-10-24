@@ -45,6 +45,28 @@ end
 
     gmsh.model.mesh.setOrder(2)
     @test_throws ArgumentError gmsh_to_simplicial()
+    @test_throws ArgumentError gmsh_to_simplicial(dim=1)
+    gmsh.model.remove()
+
+    # Hexahedral meshes are rejected, except for their linear edges
+
+    gmsh.model.add("hexahedra")
+    gmsh.model.occ.addBox(0, 0, 0, 1, 1, 1)
+    gmsh.model.occ.synchronize()
+    for (d, t) in gmsh.model.getEntities(1)
+        gmsh.model.mesh.setTransfiniteCurve(t, 4)
+    end
+    for (d, t) in gmsh.model.getEntities(2)
+        gmsh.model.mesh.setTransfiniteSurface(t)
+        gmsh.model.mesh.setRecombine(2, t)
+    end
+    gmsh.model.mesh.setTransfiniteVolume(1)
+    gmsh.model.mesh.generate(3)
+    @test_throws ArgumentError gmsh_to_simplicial()
+    @test_throws ArgumentError gmsh_to_simplicial(dim=2)
+    ech = gmsh_to_simplicial(dim=1)
+    @test lefschetz_cell_count(ech) == [32, 36]
+    @test homology(ech) == [1,5]
     gmsh.model.remove()
 
     # A box with a spherical hole
@@ -340,7 +362,15 @@ end
     ec = meshmodel(0.5)
     csoup = gmsh_marker_cells(ec, 2, pgsoup)
     @test sub(ec, csoup) == [1,0,1]
-    @test length(verts(ec, csoup)) >= length(Vs)
+    gmsh.model.remove()
+
+    # The copies of the vertices in the soup are merged, so it creates
+    # one point per vertex and one line per edge of the sphere
+
+    gmsh.model.add("merged")
+    soup = gmsh_add_trisurface(Vsoup, Tsoup)
+    @test length(gmsh.model.getEntities(0)) == length(Vs)
+    @test length(gmsh.model.getEntities(1)) == 3 * length(Ts) ÷ 2
     gmsh.model.remove()
 
     # Errors
@@ -356,6 +386,20 @@ end
     @test_throws ArgumentError gmsh_add_trisurface([[0, 0], [1, 0], [0, 1]], [[1, 2, 3]])
     @test_throws ArgumentError gmsh_add_trisurface([[0, 0, NaN], [1, 0, 0], [0, 1, 0]],
                                                    [[1, 2, 3]])
+    @test_throws ArgumentError gmsh_add_trisurface(Vt, [[1.0, 2.0, 3.0]])
+    err = try gmsh_add_trisurface([[0, 0, Inf], [1, 0, 0], [0, 1, 0]], [[1, 2, 3]]) catch e e end
+    @test startswith(err.msg, "gmsh_add_trisurface:")
+
+    # Edges below the tolerance of OpenCASCADE are rejected before any
+    # entity is created, and unused vertices are ignored
+
+    n0 = length(gmsh.model.occ.getEntities())
+    @test_throws ArgumentError gmsh_add_trisurface([[0, 0, 0], [1e-7, 0, 0], [0, 1e-7, 0]],
+                                                   [[1, 2, 3]])
+    @test length(gmsh.model.occ.getEntities()) == n0
+    @test length(gmsh_add_trisurface([[0, 0, 0], [1e-6, 0, 0], [0, 1e-6, 0]], [[1, 2, 3]])) == 1
+    @test length(gmsh_add_trisurface([[NaN, 0, 0], [0, 0, 1], [1, 0, 1], [0, 1, 1]],
+                                     [[2, 3, 4]])) == 1
 
     gmsh.finalize()
     @test_throws ArgumentError gmsh_add_trisurface(Vt, [[1, 2, 3]])

@@ -46,6 +46,7 @@ function is part of the core package.
 | [`gmsh_file_to_simplicial`](@ref) | `Gmsh` | Read and convert a mesh or geometry file |
 | [`gmsh_marker_cells`](@ref) | `Gmsh` | Cells of physical groups and entities |
 | [`gmsh_common_refinement`](@ref) | `Gmsh` | Split intersecting objects into common pieces |
+| [`gmsh_add_trisurface`](@ref) | `Gmsh` | Add a triangulated surface to the model |
 
 The domain builders of `TetGen` and the conversion functions are part of
 the core package, so that domains can be prepared and stored without
@@ -1514,9 +1515,10 @@ built-in CAD engine, and the [Gmsh.jl](https://github.com/JuliaFEM/Gmsh.jl)
 package makes its complete API available in Julia. Compared to `TetGen`,
 it offers two important advantages. First, geometry is described by CAD
 entities such as boxes, spheres, cylinders, and arbitrary curved
-surfaces, rather than by triangulations. Second, and more importantly in
-our context, it can compute *boolean operations* on such entities. In
-particular, it can handle constraint surfaces which intersect each other.
+surfaces, rather than only by triangulations. Second, and more
+importantly in our context, it can compute *boolean operations* on such
+entities. In particular, it can handle constraint surfaces which
+intersect each other.
 
 To see why this matters, consider a box which contains a plane at height
 `z = 0.3`, as well as a sphere around the origin intersecting it in a
@@ -1533,13 +1535,15 @@ track of the resulting pieces, see
 [Intersecting Constraint Surfaces](@ref) and
 [Common Refinements of Several Objects](@ref) below.
 
-The extension provides four functions: [`gmsh_to_simplicial`](@ref)
+The extension provides five functions: [`gmsh_to_simplicial`](@ref)
 converts the mesh of the current `Gmsh` model into an
 [`EuclideanComplex`](@ref), [`gmsh_marker_cells`](@ref) finds the cells
 of physical groups and entities, [`gmsh_common_refinement`](@ref)
 splits intersecting objects along their intersections and keeps track
-of the pieces, and [`gmsh_file_to_simplicial`](@ref) reads mesh and
-geometry files. Everything else, i.e., the construction
+of the pieces, [`gmsh_add_trisurface`](@ref) adds a triangulated
+surface to the model, so that it can be intersected with other objects,
+and [`gmsh_file_to_simplicial`](@ref) reads mesh and geometry files.
+Everything else, i.e., the construction
 of the geometry and the meshing itself, is done with the `Gmsh` API. Its
 documentation can be found on the [Gmsh](https://gmsh.info) web page,
 and the examples below cover the most important commands. All of them
@@ -2114,16 +2118,16 @@ thus `288` surfaces of the model. After the refinement, the paraboloid
 is a disk. It meets the sphere in a closed curve, and the rectangle in
 an arc of a parabola, while the sphere and the rectangle meet in a
 circle. All three surfaces have exactly two points in common. For the
-smooth paraboloid, these points would be `(0.4, ±0.910, -0.106)`, but
-the piecewise linear interpolation of a convex function lies above
-the function, so that the points of the triangulated paraboloid are
-slightly higher. On the other hand, every edge of the triangulation
-becomes a curve of the model, and the mesh has to contain it as a chain
-of edges. The mesh near a triangulated surface is therefore at least as
-fine as the triangulation, regardless of `Mesh.MeshSizeMax`. In our
-example, the mesh has about a third more vertices than with a smooth
-paraboloid, and with a `48 x 48` grid, it has almost three times as
-many.
+smooth paraboloid, these points would be `(0.4, -0.910, -0.106)` and
+`(0.4, 0.910, -0.106)`, but the piecewise linear interpolation of a
+convex function lies above the function, so that the points of the
+triangulated paraboloid are slightly higher. On the other hand, every
+edge of the triangulation becomes a curve of the model, and the mesh has
+to contain it as a chain of edges. The mesh near a triangulated surface
+is therefore at least as fine as the triangulation, regardless of
+`Mesh.MeshSizeMax`. In our example, the mesh has about a third more
+vertices than with a smooth paraboloid, and with a `48 x 48` grid, it
+has almost three times as many.
 
 The figure of the common refinement of a sphere, a rectangle, and a
 triangulated paraboloid shows the result. In the left panel, the sphere
@@ -2138,11 +2142,13 @@ The following remarks summarize how common refinements are used in
 practice:
 
 * **Describing the objects.** Constraint surfaces and regions have to
-  be created as CAD entities with the functions in `gmsh.model.occ`,
-  such as `addBox`, `addSphere`, `addCylinder`, `addCone`, `addTorus`,
-  and `addWedge` for solids, `addRectangle` and `addDisk` for planar
-  surfaces, and `addPoint`, `addLine`, `addCircle`, and `addSpline` for
-  points and curves. The surface of a solid is obtained with
+  be created as CAD entities with the functions in `gmsh.model.occ`, or,
+  for triangulated surfaces, with [`gmsh_add_trisurface`](@ref), see the
+  next remark. The functions in `gmsh.model.occ` include `addBox`,
+  `addSphere`, `addCylinder`, `addCone`, `addTorus`, and `addWedge` for
+  solids, `addRectangle` and `addDisk` for planar surfaces, and
+  `addPoint`, `addLine`, `addCircle`, and `addSpline` for points and
+  curves. The surface of a solid is obtained with
   `getBoundary`, as for the spheres above. Curved surfaces which are not
   of this form can be created, for example, with `addBSplineSurface`,
   `addSurfaceFilling`, or `addThruSections`, and CAD files in the STEP

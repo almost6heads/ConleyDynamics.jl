@@ -1,6 +1,9 @@
 # Gmsh element types of linear simplices, indexed by dimension + 1
 const GMSH_SIMPLEX_TYPES = (15, 1, 2, 4)
 
+# Default tolerance of OpenCASCADE, below which points are identified
+const OCC_TOLERANCE = 1e-7
+
 function _gmsh_check_initialized(fname::String)
     #
     # Make sure that Gmsh is running
@@ -253,50 +256,74 @@ function ConleyDynamics.gmsh_add_trisurface(V::AbstractVector, T::AbstractVector
     if isempty(T)
         throw(ArgumentError("$fname: no triangles given"))
     end
-    if any(length(t) != 3 for t in T)
-        throw(ArgumentError("$fname: every triangle needs three vertex indices"))
+    if any((length(t) != 3) || !all(k -> k isa Integer, t) for t in T)
+        throw(ArgumentError("$fname: every triangle needs three integer vertex indices"))
     end
     if any(any(v -> !(1 <= v <= nv), t) for t in T)
         throw(ArgumentError("$fname: the triangles contain indices outside of 1:$nv"))
     end
 
-    # Vertices with the same coordinates are merged, so that triangle
-    # soups as read from STL files work
+    # Only the vertices of the triangles are used. Vertices with the same
+    # coordinates are merged, so that triangle soups as read from STL
+    # files work
 
+    used = sort(unique(Int(k) for t in T for k in t))
+    for k in used
+        if (length(V[k]) != 3) || !all(isfinite, V[k])
+            throw(ArgumentError("$fname: the vertex $k needs three finite " *
+                                "coordinates, got $(V[k])"))
+        end
+    end
     points, newindex = ConleyDynamics._merge_points(NTuple{3,Float64}[],
-                                                    [ConleyDynamics._point3(v) for v in V])
-    tris = [newindex[collect(t)] for t in T]
+                                                    [ConleyDynamics._point3(V[k]) for k in used])
+    position = Dict(k => newindex[m] for (m, k) in enumerate(used))
+    tris = [[position[Int(k)] for k in t] for t in T]
     ConleyDynamics._check_triangles(tris, fname)
     if !allunique(sort(t) for t in tris)
         throw(ArgumentError("$fname: some triangles occur more than once"))
     end
+
+    # Degenerate triangles cannot be planar surfaces, and OpenCASCADE
+    # cannot create lines which are shorter than its tolerance
+
     for t in tris
         a, b, c = (collect(points[k]) for k in t)
         u, w = b .- a, c .- a
         n = [u[2]*w[3] - u[3]*w[2], u[3]*w[1] - u[1]*w[3], u[1]*w[2] - u[2]*w[1]]
+        hmin = min(sum(abs2, u), sum(abs2, w), sum(abs2, c .- b))
         hmax = max(sum(abs2, u), sum(abs2, w), sum(abs2, c .- b))
         if sum(abs2, n) <= 1e-20 * hmax^2
             throw(ArgumentError("$fname: the triangle $t is degenerate"))
         end
+        if hmin <= (2*OCC_TOLERANCE)^2
+            throw(ArgumentError("$fname: the triangle $t has an edge of length at most " *
+                                "$(2*OCC_TOLERANCE), twice the tolerance of OpenCASCADE"))
+        end
     end
 
-    # Only the vertices of the triangles become points of the model,
-    # and every edge becomes one line, which is used with the opposite
-    # orientation by the second triangle
+    # Every vertex becomes one point of the model, and every edge becomes
+    # one line, which is used with the opposite orientation by the second
+    # triangle. If OpenCASCADE fails, the entities created so far are
+    # removed again.
 
-    used  = sort(unique(reduce(vcat, tris)))
-    ptags = Dict(k => gmsh.model.occ.addPoint(points[k]...) for k in used)
-    lines = Dict{Tuple{Int,Int},Int}()
-    function edge(i, j)
-        i < j && return  get!(() -> gmsh.model.occ.addLine(ptags[i], ptags[j]), lines, (i, j))
-        return -get!(() -> gmsh.model.occ.addLine(ptags[j], ptags[i]), lines, (j, i))
-    end
-
+    before = Set(gmsh.model.occ.getEntities())
     surfaces = Vector{Tuple{Int,Int}}()
-    for t in tris
-        loop = gmsh.model.occ.addCurveLoop([edge(t[1], t[2]), edge(t[2], t[3]),
-                                            edge(t[3], t[1])])
-        push!(surfaces, (2, gmsh.model.occ.addPlaneSurface([loop])))
+    try
+        ptags = [gmsh.model.occ.addPoint(p...) for p in points]
+        lines = Dict{Tuple{Int,Int},Int}()
+        function edge(i, j)
+            i < j && return  get!(() -> gmsh.model.occ.addLine(ptags[i], ptags[j]), lines, (i, j))
+            return -get!(() -> gmsh.model.occ.addLine(ptags[j], ptags[i]), lines, (j, i))
+        end
+        for t in tris
+            loop = gmsh.model.occ.addCurveLoop([edge(t[1], t[2]), edge(t[2], t[3]),
+                                                edge(t[3], t[1])])
+            push!(surfaces, (2, gmsh.model.occ.addPlaneSurface([loop])))
+        end
+    catch
+        created = setdiff(gmsh.model.occ.getEntities(), before)
+        gmsh.model.occ.remove(sort(created; by=e -> -e[1]))
+        rethrow()
     end
     gmsh.model.occ.synchronize()
 
