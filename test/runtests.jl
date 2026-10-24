@@ -8,14 +8,15 @@ end
 
 # On 32-bit Linux, TetGen fails with internal errors or segmentation
 # faults for domains which work on 64-bit systems, such as a box
-# with a spherical hole, so its tests are skipped there
+# with a spherical hole, and Gmsh can hang in the tests of
+# gmsh_add_trisurface, so the tests of both are skipped there
 
 if !isnothing(Base.find_package("TetGen")) && Sys.WORD_SIZE == 64
     using TetGen
     include("test_tetgen.jl")
 end
 
-if !isnothing(Base.find_package("Gmsh"))
+if !isnothing(Base.find_package("Gmsh")) && Sys.WORD_SIZE == 64
     using Gmsh: gmsh
     include("test_gmsh.jl")
 end

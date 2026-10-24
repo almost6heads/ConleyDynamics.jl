@@ -15,6 +15,7 @@ jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -27,11 +28,8 @@ jobs:
           - macOS-latest
         arch:
           - x64
-          - x86
           - aarch64
         exclude:
-          - os: macOS-latest
-            arch: x86
           - os: macOS-latest
             arch: x64
           - os: ubuntu-latest

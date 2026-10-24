@@ -132,6 +132,16 @@ a Makie backend such as `CairoMakie` or `GLMakie` has to be installed
 and loaded in the same way, see
 [Three-Dimensional Plotting with Makie](@ref).
 
+!!! warning "TetGen and Gmsh are unreliable on 32-bit systems"
+    On 32-bit Linux, `TetGen` was found to fail with internal errors or
+    to crash Julia with a segmentation fault for domains which are
+    meshed without problems on 64-bit systems, such as a box with a
+    spherical hole, and `Gmsh` was found to hang while adding
+    triangulated surfaces with [`gmsh_add_trisurface`](@ref). Both
+    extensions should therefore only be used on 64-bit systems. Their
+    tests are skipped on 32-bit systems, and the package is only tested
+    on 64-bit systems.
+
 ## [Basic Notions](@id meshing3d_notions)
 
 This section collects the few notions from geometry and topology which
@@ -713,13 +723,6 @@ require `TetGen.jl`, which has to be installed and loaded as described
 in [Loading the Required Packages](@ref meshing3d_loading). Note that
 `TetGen` is distributed under the GNU Affero General Public License, see
 [Licences of the Meshing Backends](@ref) below.
-
-!!! warning "TetGen is unreliable on 32-bit systems"
-    On 32-bit Linux, `TetGen` was found to fail with internal errors or
-    to crash Julia with a segmentation fault for domains which are
-    meshed without problems on 64-bit systems, such as a box with a
-    spherical hole. The `TetGen` extension should therefore only be
-    used on 64-bit systems, and its tests are skipped on 32-bit systems.
 
 ### Describing a Domain
 
