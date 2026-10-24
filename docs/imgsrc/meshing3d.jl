@@ -358,6 +358,9 @@ fig = Figure(size=(1200,550))
 ax1 = panel(fig, (1,1), "Morse sets")
 plot_simplicial3d_morse!(ax1, ecb, cmb.morse; ci=true)
 ax2 = panel(fig, (1,2), "Morse sets, clipped at z = 0")
+# Look from above, so that the hole of the periodic orbit's Morse set
+# around the equilibrium is visible
+ax2.elevation = 0.4*pi
 plot_simplicial3d_morse!(ax2, ecb, cmb.morse; ci=true, clip=([0,0,1], 0.0))
 savefig3d("meshing3d_cycle.png", fig)
 

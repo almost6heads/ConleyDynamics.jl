@@ -15,13 +15,23 @@ model, which has to be meshed already, for example by calling
 the result is a tetrahedral mesh. For `dim=2`, the triangles are used,
 which gives a surface complex embedded in three dimensions, and for
 `dim=1`, the edges are used, which gives a graph. All faces of
-these elements are added automatically. If `physical=(pdim, ptag)` is
+these elements are added automatically. Since `Gmsh` only stores the
+triangles on the surfaces and the edges on the curves of the model, and
+not the interior faces of the tetrahedra, `dim=2` gives only the
+triangles on the surfaces of the model, and `dim=1` only the edges on
+its curves. If `physical=(pdim, ptag)` is
 given, only the elements of the physical group with dimension `pdim` and
 tag `ptag` are used, and `pdim` has to equal `dim`.
 
-Only linear simplices are supported. If the mesh contains other elements
-of dimension `dim`, such as hexahedra, prisms, or second order
-tetrahedra, an `ArgumentError` is raised. Nodes which do not belong to
+Only linear simplices are supported, i.e., edges, triangles, and
+tetrahedra whose nodes are their vertices. If the elements of dimension
+`dim` include other types, an `ArgumentError` is raised. This happens
+for quadrangles, hexahedra, prisms, and pyramids, which `Gmsh` creates
+with its recombination options. It also happens for second order
+elements, which `gmsh.model.mesh.setOrder(2)` creates by adding nodes
+on the edges to follow curved geometry. Only the elements of dimension
+`dim` are checked, so that, for example, a hexahedral mesh can still be
+converted with `dim=1`. Nodes which do not belong to
 any of the used elements are dropped. Vertex labels are zero-padded
 decimal strings as in `tetmesh_to_euclidean`.
 

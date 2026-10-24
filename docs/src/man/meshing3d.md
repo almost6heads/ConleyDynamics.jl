@@ -1519,8 +1519,8 @@ our context, it can compute *boolean operations* on such entities. In
 particular, it can handle constraint surfaces which intersect each other.
 
 To see why this matters, consider a box which contains a plane at height
-`z = 0.3` and a sphere around the origin. The plane and the sphere
-intersect in a circle. A conforming mesh which contains both surfaces
+`z = 0.3`, as well as a sphere around the origin intersecting it in a
+circle. A conforming mesh which contains both surfaces
 has to contain this circle as a union of edges, and the triangles of the
 plane and the sphere have to be split along it. `TetGen` cannot do this,
 since it requires non-intersecting facets, see the
@@ -1579,31 +1579,66 @@ homology(ec)                   # [1, 0, 0, 0]
 
 The call to `gmsh.model.occ.synchronize()` transfers the CAD geometry to
 the model, and it is needed after every change of the geometry. The
-command `gmsh.model.mesh.generate(3)` creates a tetrahedral mesh, which
-also contains triangles on all surfaces, edges on all curves, and
-vertices at all points. The function [`gmsh_to_simplicial`](@ref) only
-reads the current model. It neither initializes nor finalizes `Gmsh`, so
-that the model is still available afterwards. By default, it converts the
-tetrahedra. With the optional argument `dim=2`, it converts the
-triangles instead, which gives the boundary surface of the box as a
-two-dimensional complex (and `dim=1` converts the edges on the curves of
-the model, which gives a graph):
+argument of `gmsh.model.mesh.generate` is the largest dimension to be
+meshed, and `Gmsh` builds the mesh from the bottom up. The command
+`gmsh.model.mesh.generate(1)` divides all curves of the model into line
+segments. The command `gmsh.model.mesh.generate(2)` does this as well,
+and then covers all surfaces with triangles, which fit the segments on
+their boundary curves. Finally, `gmsh.model.mesh.generate(3)` performs
+both of these steps, and then fills all volumes with tetrahedra, which
+fit the triangles on their boundary surfaces. The resulting mesh
+therefore contains vertices at all points, edges on all curves,
+triangles on all surfaces, and tetrahedra in all volumes.
+
+The function [`gmsh_to_simplicial`](@ref) only reads the current model.
+It neither initializes nor finalizes `Gmsh`, so that the model is still
+available afterwards. By default, it converts the tetrahedra, and adds
+all their faces. With the optional argument `dim=2`, it converts the
+triangles instead, and with `dim=1` the edges. Note, however, that
+`Gmsh` does not store all faces of the tetrahedra as mesh elements.
+Every element belongs to one geometric entity of the model, i.e.,
+tetrahedra belong to volumes, triangles to surfaces, and edges to
+curves, while the triangles and edges in the interior of a volume are
+not stored. Therefore, `dim=2` only converts the triangles on the
+surfaces of the model, and not all triangles of the tetrahedral mesh.
+For the box, this gives its boundary surface as a two-dimensional
+complex. If the model contains interior surfaces, such as the interface
+between two volumes, their triangles are included as well. Similarly,
+`dim=1` only converts the edges on the curves of the model, which for
+the box gives the graph formed by its twelve edges:
 
 ```julia
 ecs = gmsh_to_simplicial(dim=2)
 lefschetz_cell_count(ecs)      # [323, 963, 642]
 homology(ecs)                  # [1, 0, 1]
+
+ecg = gmsh_to_simplicial(dim=1)
+lefschetz_cell_count(ecg)      # [76, 80]
+homology(ecg)                  # [1, 5]
 ```
+
+Compared to the tetrahedral mesh, the surface complex lacks the 84
+vertices and 1148 edges in the interior of the box, and contains only
+642 of its 3089 triangles. The graph has the first Betti number five,
+since the eight corners and twelve edges of the box give the Euler
+characteristic `8 - 12 = -4 = 1 - 5`.
 
 The optional argument `p` selects the coefficient field as usual. The
 `Gmsh` node numbering can have gaps, and nodes which do not belong to
 the converted elements are dropped. The vertices are then numbered
 consecutively, and they are labeled as in
 [`tetmesh_to_euclidean`](@ref), for example `"001"`, `"002"`, and so on
-for a mesh with between 100 and 999 vertices. Only linear simplices are
-supported. If the mesh contains hexahedra, prisms, or pyramids, for
-example because of recombination options, or second order elements
-created by `gmsh.model.mesh.setOrder(2)`, an `ArgumentError` is raised.
+for a mesh with between 100 and 999 vertices.
+
+Only linear simplices are supported, i.e., edges, triangles, and
+tetrahedra whose nodes are their vertices. If the elements of dimension
+`dim` include other types, an `ArgumentError` is raised. This happens
+for quadrangles, hexahedra, prisms, and pyramids, which `Gmsh` creates
+with its recombination options. It also happens for second order
+elements, which `gmsh.model.mesh.setOrder(2)` creates by adding nodes
+on the edges to follow curved geometry. Only the elements of dimension
+`dim` are checked. For example, a hexahedral mesh can still be
+converted with `dim=1`, since its edges are linear.
 
 ### Physical Groups and Entities
 
@@ -1644,10 +1679,10 @@ nodes does not matter.
 
 ### Intersecting Constraint Surfaces
 
-We now return to the example from the introduction of this section: A
-box `[-2,2]^3` which contains the plane `z = 0.3` and the unit sphere,
-both as constraint surfaces. What we are looking for is a *common
-refinement* of the box, the plane, and the sphere: A tetrahedral mesh
+We now return to the example from the introduction of this section. Consider
+a box `[-2,2]^3` which contains the plane `z = 0.3` and the unit sphere,
+both as constraint surfaces. What we are looking for is a *common refinement*
+of the box, the plane, and the sphere, i.e., a tetrahedral mesh
 of the box in which the plane and the sphere are both unions of
 triangles, and in which their intersection, the circle, is a union of
 edges. In the language of [Basic Notions](@ref meshing3d_notions), the
@@ -1690,7 +1725,7 @@ and the tags come without orientation signs. The function
 [`gmsh_common_refinement`](@ref) expects a vector of *objects*, where
 every object is either a single entity `(dim, tag)`, such as the box and
 the plane, or a vector of entities of the same dimension, such as the
-boundary surfaces of the sphere. It splits all objects along their
+boundary surface of the sphere. It splits all objects along their
 mutual intersections, and it returns one physical group for every
 object, which contains all pieces of this object. The optional argument
 `names` gives these groups names, which are also stored in mesh files.
@@ -1766,8 +1801,8 @@ unique(ec.dimensions[toptri]), length(toptri)        # ([2], 206)
 ```
 
 Finding the intersection circle as an entity is slightly more involved,
-since the OpenCASCADE sphere has a *seam*: A meridian curve along which
-the parametrization of the sphere is glued. Its pieces belong to the
+since the OpenCASCADE sphere has a *seam*, i.e., a meridian curve along 
+which the parametrization of the sphere is glued. Its pieces belong to the
 boundary of the caps as well. The intersection circle is the curve which
 the two caps have in common:
 
@@ -1905,7 +1940,7 @@ gmsh.finalize()
 ```
 
 The physical groups are numbered in the order in which they were
-created: The box, the plane, and the sphere by
+created, i.e., the box, the plane, and the sphere by
 [`gmsh_common_refinement`](@ref), and the upper part of the box
 afterwards. Their tags are therefore `1` to `4`, and each tag comes
 with the dimension of its group.
@@ -1925,8 +1960,8 @@ with the dimension of its group.
 ### Common Refinements of Several Objects
 
 The function [`gmsh_common_refinement`](@ref) accepts any number of
-objects of dimensions `0` to `3`: Volumes, surfaces, curves, and single
-points. All of them are refined together, so that the mesh of every
+objects of dimensions `0` to `3`, i.e., volumes, surfaces, curves, and 
+single points. All of them are refined together, so that the mesh of every
 object is a subcomplex, and the intersection of any two objects is the
 intersection of their subcomplexes. As a second example, consider two
 unit spheres around the points `(-1/2, 0, 0)` and `(1/2, 0, 0)`, which
@@ -2001,9 +2036,9 @@ ec3 = gmsh_to_simplicial()
 
 plane_cells = gmsh_marker_cells(ec3, 2, pg_plane)
 ball_cells  = gmsh_marker_cells(ec3, 3, pg_ball)
-homology(lefschetz_subcomplex(ec3, ball_cells))                         # [1, 0, 0, 0]
+homology(lefschetz_subcomplex(ec3, ball_cells))                          # [1, 0, 0, 0]
 homology(lefschetz_subcomplex(ec3, intersect(plane_cells, ball_cells)))  # [1, 0, 0]
-maximum(maximum(abs.(ec3.coords[k][1])) for k in plane_cells)          # 2.0
+maximum(maximum(abs.(ec3.coords[k][1])) for k in plane_cells)            # 2.0
 gmsh.finalize()
 ```
 
@@ -2150,11 +2185,12 @@ and column `3` connects the two-dimensional entry of the equilibrium
 with the one-dimensional entry of the periodic orbit, and records the
 connection from the equilibrium to the periodic orbit. The computation
 takes a few seconds. The Morse sets are shown in the figure of the Morse
-sets of the vector field with a periodic orbit in a ball. The clipped
-view in the right panel reveals the small Morse set of the equilibrium
-inside the much larger isolating neighborhood of the periodic orbit.
-With a coarser mesh size of `0.3`, the multivector field is not fine
-enough to separate the two invariant sets, and one obtains a single
+sets of the vector field with a periodic orbit in a ball. The right
+panel shows the lower half of the ball from above. The Morse set of the
+periodic orbit is a solid torus around the unit circle, and the small
+Morse set of the equilibrium lies in its hole, separated from it by a
+gap. With a coarser mesh size of `0.3`, the multivector field is not
+fine enough to separate the two invariant sets, and one obtains a single
 Morse set with the Conley index of an attractor.
 
 ![Morse sets of a vector field with a periodic orbit in a ball meshed by Gmsh](img/meshing3d_cycle.png)
