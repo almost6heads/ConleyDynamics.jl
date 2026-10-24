@@ -13,16 +13,11 @@ function ConleyDynamics.delaunay_to_simplicial(tt; p::Int=2)
     # Labels are zero-padded integers so that all labels have the same width,
     # which is required by create_simplicial_complex.
 
-    labwidth = Int(ceil(log(0.5 + length(ttvertices)) / log(10)))
-    labformat = "%0" * string(labwidth) * "d"
-
-    labels = Vector{String}()
+    labels = ConleyDynamics._vertex_labels(length(ttvertices))
     coords = Vector{Vector{Float64}}()
     ttv2index = Dict{Int,Int}()   # maps triangulation vertex id -> sequential index
 
     for k = 1:length(ttvertices)
-        clabel = Printf.format(Printf.Format(labformat), k)
-        push!(labels, clabel)
         px, py = getxy(get_point(ttpoints, ttvertices[k]))
         push!(coords, [Float64(px), Float64(py)])
         ttv2index[ttvertices[k]] = k

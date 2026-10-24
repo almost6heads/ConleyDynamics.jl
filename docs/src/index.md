@@ -85,7 +85,10 @@ More details, including on the underlying mathematics, are provided in
 the following three sections, which cover Lefschetz complexes, homology,
 and Conley theory, including connection matrices and algorithms for their
 computation. After discussing a number of examples in the sections
-[Flow Examples](@ref) and [Further Examples](@ref), the
+[Flow Examples](@ref) and [Further Examples](@ref), the chapters
+[Two-Dimensional Meshes](@ref) and [Three-Dimensional Meshes](@ref)
+explain how meshes of planar and spatial domains are created, and the
+chapter [Visualization](@ref) describes the plotting functions. The
 manual concludes with a description of the sparse matrix format
 underlying the package.
 
@@ -97,7 +100,8 @@ Pages = [
     "man/conley.md",
     "man/flowexamples.md",
     "man/examples.md",
-    "man/extensions.md",
+    "man/meshing2d.md",
+    "man/meshing3d.md",
     "man/plotting.md",
     "man/sparse.md",
 ]
@@ -108,9 +112,8 @@ Depth = 2
 
 If you use
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl),
-please cite it. There is a JOSS paper published at
-[https://doi.org/10.21105/joss.08085](https://doi.org/10.21105/joss.08085),
-see [wanner:25a](@cite).
+please cite the JOSS paper [wanner:25a](@cite), which is available at
+[https://doi.org/10.21105/joss.08085](https://doi.org/10.21105/joss.08085).
 The BibTeX entry for this paper is:
 
 ```bibtex

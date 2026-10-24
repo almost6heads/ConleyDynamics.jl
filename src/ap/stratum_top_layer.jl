@@ -128,7 +128,7 @@ construct the whole stratum first (via `construct_ap_stratum`) before
 filtering it down.
 
 Returns a `Vector{Vector{Vector{Int}}}`, in the same format as
-`construct_ap_space`/`construct_ap_stratum`.
+`construct_ap_space` and `construct_ap_stratum`.
 """
 function construct_ap_stratum_top(lc::AbstractComplex,
                                   target::Vector{Int};

@@ -167,8 +167,14 @@ vector field `vf`.
 
 This method extracts the vertex coordinates from the embedded coordinates
 of `ec` and delegates to the standard `create_planar_mvf` implementation.
+The complex has to be embedded in two dimensions, otherwise an
+`ArgumentError` is raised. For complexes in three dimensions, use
+`create_spatial_mvf`.
 """
 function create_planar_mvf(ec::EuclideanComplex, vf)
+    _check_coords2d(ec, "create_planar_mvf",
+                    "For complexes in three dimensions, use create_spatial_mvf.")
+
     #
     # Build a coords_by_index vector (indexed by cell index, vertex cells filled)
     #

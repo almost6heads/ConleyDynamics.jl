@@ -20,7 +20,8 @@ on their own by taking the respective source files as templates.
 
 Our first example is taken from [batko:etal:20a; Figure 1](@cite),
 and it is a Forman vector field on a one-dimensional simplicial
-complex as shown in the figure.
+complex as shown in the figure of the one-dimensional simplicial
+complex flow.
 
 ![A one-dimensional simplicial complex flow](img/examplebkmw1a.png)
 
@@ -41,7 +42,8 @@ Conley index of the periodic orbit, given by ``\mathrm{A}`` and
 ![Morse decomposition of the one-dimensional example](img/examplebkmw1b.png)
 
 The full Morse decomposition of this combinatorial dynamical system
-is depicted in the second figure, and all four Morse set are indicated
+is depicted in the figure of the Morse decomposition of the
+one-dimensional example, and all four Morse sets are indicated
 in the simplicial complex by different colors. They are also listed,
 together with their Conley indices, in the following Julia output:
 
@@ -72,8 +74,8 @@ algebraically.
 
 Our second example was originally discussed in the context of 
 [batko:etal:20a; Figure 3](@cite), and it consists of a Forman 
-vector field on a topological disk, as shown in the associated
-figure.
+vector field on a topological disk, as shown in the figure of the
+planar simplicial complex flow.
 
 ![A planar simplicial complex flow](img/examplebkmw3a.png)
 
@@ -89,8 +91,10 @@ example_forman2d()
 
 ![Morse decomposition of the planar flow](img/examplebkmw3c.png)
 
-The Morse decomposition of this example is shown in the second
-figure. Its eight Morse sets and associated Conley indices are
+The Morse decomposition of this example is shown in the figure of
+the Morse decomposition of the planar flow, together with its
+Conley-Morse graph. Its eight Morse sets and associated Conley
+indices are
 given by
 
 ```julia
@@ -120,7 +124,8 @@ julia> cm.conley
 We would like to point out that the collection of Morse sets
 does not in general encompass all possible isolated invariant
 sets for the combinatorial dynamical system. Consider for 
-example the set ``S`` shown in light blue in the next figure.
+example the set ``S`` shown in light blue in the figure of the
+nontrivial isolated invariant set.
 
 ![A nontrivial isolated invariant set](img/examplebkmw3b.png)
 
@@ -130,7 +135,8 @@ cells, and one can show that it is invariant. Thus, it is in
 fact an isolated invariant set for this Forman vector field.
 Note also that this cell does not correspond to an interval
 in the Conley-Morse graph either, and this is indicated via gray
-shading in the above image of the graph. The set ``S``, together
+shading in the Conley-Morse graph in the figure of the Morse
+decomposition of the planar flow. The set ``S``, together
 with its closure and its mouth, can be generated using the 
 following commands:
 
@@ -163,7 +169,8 @@ pair ``(\mathrm{cl}\, S, \mathrm{mo}\, S)``, as expected.
 ## The Multivector Field from the Logo
 
 This example is taken from [mrozek:wanner:25a; Figure 2.1](@cite),
-and it is visualized in the accompanying figure.
+and it is visualized in the figure of the logo multivector field,
+which shows the two triangles `ABC` and `BCD`.
 
 ![The logo multivector field](img/multivectorex.png)
 
@@ -224,7 +231,8 @@ time on a cylinder and on a Moebius strip. The underlying simplicial
 complexes are given by a horizontal strip of eight triangles, whose
 left and right vertical edges are identified. For the first complex
 `lc1` these edges are identified without twist, while for the
-complex `lc2` they are twisted. See also the labels in the figure.
+complex `lc2` they are twisted. See also the labels in the figure of
+the combinatorial flow on the cylinder and the Moebius strip.
 
 ![Combinatorial flow on cylinder and Moebius strip](img/examplemoebius.png)
 
@@ -294,7 +302,8 @@ algebraically.
 For the second example, the combinatorial flow on the
 Moebius strip, one only obtains three Morse sets. This
 time, there is only one periodic orbit which loops
-around both the top and bottom edges in the figure.
+around both the top and bottom edges of the strip in the figure of
+the combinatorial flow on the cylinder and the Moebius strip.
 This is confirmed by the commands
 
 ```julia
@@ -331,7 +340,7 @@ latter one is not recognized over the field ``GF(2)``.
 
 Our next example is concerned with another Forman vector field,
 but this time on a larger simplicial complex, as shown in the
-figure.
+figure of the example with nonunique connection matrices.
 
 ![An example with nonunique connection matrices](img/examplenonunique1.png)
 
@@ -371,11 +380,13 @@ at the center of the complex forms an attracting periodic orbit,
 whose Conley index has Betti numbers 1 in dimensions 0 and 1.
 One can break this periodic orbit by removing one of its three
 arrows, and replacing it with two critical cells of dimensions
-0 and 1. The next image shows two different ways of doing this.
+0 and 1. The figure on forcing different connection matrices, which
+consists of two copies of the complex, shows two different ways of
+doing this.
 
 ![Forcing different connection matrices](img/examplenonunique2.png)
 
-In the image on the left, the vector `["7", "79"]` is removed,
+In the left copy, the vector `["7", "79"]` is removed,
 while the one on the right breaks up `["8", "78"]`. The corresponding
 modified Forman vector fields, and their connection matrices, can be
 created as follows:
@@ -449,17 +460,18 @@ in the example.
 
 The next example is taken from [mrozek:wanner:25a; Figure 2.2](@cite),
 and it revolves around the combinatorial vector field on a simplicial 
-complex shown in the top left part of the figure.
+complex shown in the top left part of the figure of the example with
+three connection matrices.
 
 ![An example with three connection matrices](img/connectionex1.png)
 
 This combinatorial vector field is again of Forman type. It has 
 a periodic orbit, which is shown in yellow in the top right part
-of the figure. In addition to three index 1 equilibria, there are
+of this figure. In addition to three index 1 equilibria, there are
 two of index 2. The top right part shows that from these two index
 2 cells there are a combined total of five connecting orbits to
 the index 1 cells and to the periodic orbit. Its Morse decomposition
-is shown in the lower part of the figure. While the Morse sets are
+is shown in the lower part of this figure. While the Morse sets are
 indicated by different colors, the Conley-Morse graph is shown on
 the lower right.
 
@@ -478,7 +490,8 @@ to find them we use the same approach as in the last example, and
 break the periodic orbit by turning one of its arrows into two
 critical cells. Since there are three arrows in the periodic 
 orbit, this can be accomplished in three different ways. They
-are indicated in the next figure.
+are indicated in the figure of the three different ways to break
+up the periodic orbit.
 
 ![Three different ways to break up the periodic orbit](img/connectionex2.png)
 
@@ -562,8 +575,9 @@ that these matrices are different connection matrices for the
 original Forman vector field with periodic orbit, as long as the
 newly introduced index 1 and 0 equilibria are identified with the
 Conley index of the periodic solution. For the sake of completeness,
-the next figure shows the Morse decompositions for all three
-combinatorial gradient flows. In the Conley-Morse graphs, blue
+the figure of the Morse decompositions for the three gradient vector
+fields shows the Morse decompositions for all three combinatorial
+gradient flows. In the Conley-Morse graphs, blue
 arrows correspond to the heteroclinic orbits that are identified
 by the associated connection matrix.
 
@@ -572,7 +586,7 @@ by the associated connection matrix.
 In the Conley-Morse graphs, we used the same color yellow for the
 two Morse sets that are generated by breaking the periodic orbit
 through the introduction of two critical cells. It can be seen
-from the images that while the actual Morse set structure stays
+from these Conley-Morse graphs that while the actual Morse set structure stays
 fixed, the poset order in the Conley-Morse graphs changes from
 case to case.
 
@@ -580,13 +594,15 @@ case to case.
 
 The next example is taken from [mrozek:wanner:25a; Figure 2.3](@cite),
 and it is a combinatorial multivector field on a true Lefschetz 
-complex, as shown in the left panel of the associated figure.
+complex, as shown in the left panel of the figure of the multiflow
+example with trivial connection matrix.
 
 ![A multiflow example with trivial connection matrix](img/examplemultiflow.png)
 
 The example is a combinatorial representation of the multiflow shown
-on the right, which features nonunique forward dynamics at the point
-labeled ``5``. Note that the underlying Lefschetz complex is defined
+in the right panel of this figure, which features nonunique forward
+dynamics at the point labeled ``5``. Note that the underlying Lefschetz
+complex is defined
 as the subset of the depicted simplicial complex, where the vertices
 ``\mathrm{A}``, ``\mathrm{B}``, ``\mathrm{D}``, ``\mathrm{E}``, and
 ``\mathrm{F}`` have been removed. This Lefschetz complex `lc` and 
@@ -647,12 +663,12 @@ In [mrozek:wanner:25a; Figure 2.4](@cite) we introduced a small
 Lefschetz complex with periodic orbit and nonunique connection
 matrices. This complex consists of one 2-cell, three 1-cells,
 and two 0-cells, and it is shown in the leftmost panel of the
-figure.
+figure of the small Lefschetz complex with periodic orbit.
 
 ![A small Lefschetz complex with periodic orbit](img/examplelefschetzsm1.png)
 
 On the complex, consider the multivector field depicted
-in the middle of the figure, which consists of the critical 
+in the middle panel of this figure, which consists of the critical 
 cells ``\alpha`` and ``b``, as well as the two regular multivectors
 ``\{ A, a \}`` and ``\{ B, c \}``. For this small example, one can
 easily determine the Morse decomposition, and it is shown in the
@@ -682,7 +698,8 @@ two different connection matrices `cm1` and `cm2`.
 ![Direct derivation of connection matrices](img/examplelefschetzsm2.png)
 
 In this small example, one can easily determine the connection
-matrices directly, as illustrated in the second figure. While
+matrices directly, as illustrated in the figure on the direct
+derivation of connection matrices. While
 the detailed explanation can be found in [mrozek:wanner:25a](@cite),
 this is basically accomplished by contracting one of the two
 regular multivectors in a process called *elementary reduction*.
@@ -743,7 +760,8 @@ Our next example taken from [mrozek:wanner:25a](@cite) is concerned
 with turning a given multivector field into a Forman vector field
 by further subdividing the multivectors. For this, consider the
 three complexes and combinatorial vector fields shown in the
-associated figure, see also [mrozek:wanner:25a; Figure 7.1](@cite).
+figure on subdividing a multivector, see also
+[mrozek:wanner:25a; Figure 7.1](@cite).
 
 ![Subdividing a multivector](img/examplesubdivide.png)
 
@@ -769,7 +787,8 @@ example_subdivision()
 
 The different combinatorial vector fields can be selected via
 the function argument, which is an integer between `0` and `2`,
-from left to right in the figure. Thus, all fields and connection
+from left to right in the figure on subdividing a multivector. Thus,
+all fields and connection
 matrices can be computed using the commands
 
 ```julia
@@ -844,13 +863,13 @@ reordering of the cells in the Lefschetz complex.
 
 Our next example is taken from [kaczynski:etal:16a; Figure 3](@cite).
 It is a Forman vector field on a two-dimensional simplicial complex,
-as shown in the accompanying figure.
+as shown in the figure of the combinatorial Lorenz system.
 
 ![A combinatorial Lorenz system](img/clorenz.png)
 
 Notice that the underlying simplicial complex does not represent
 a manifold in this case, but rather a *branched manifold*. As
-indicated in the figure, the two triangles ``\mathbf{hin}`` and
+indicated in this figure, the two triangles ``\mathbf{hin}`` and
 ``\mathbf{hio}`` only intersect in the edge ``\mathbf{hi}``, and
 this edge is also contained in the third triangle ``\mathbf{chi}``.
 This system is a combinatorial version of the famous *Lorenz
@@ -917,12 +936,13 @@ The first of the above commands creates the simplicial complex `sc`
 and two Forman vector fields. The simplicial complex contains a
 minimal triangulation of the Dunce hat, which has 8 vertices,
 24 edges, and 17 triangles. The variable `vfG` returns a gradient
-vector field, as shown in the associated figure. This vector field
-has the three critical simplices ``\mathrm{1}``, ``\mathrm{12}``,
+vector field, as shown in the figure of the Forman chaos in the Dunce
+hat. This vector field has the three critical simplices ``\mathrm{1}``,
+``\mathrm{12}``,
 and ``\mathrm{128}``. Finally, the chaotic Forman vector field is
-returned in `vfC`. Is it obtained from the gradient field by combining
+returned in `vfC`. It is obtained from the gradient field by combining
 the two critical cells ``\mathrm{12}`` and ``\mathrm{128}`` into
-a Forman arrow, which is indicated in green in the figure. This
+a Forman arrow, which is indicated in green in this figure. This
 reverses the flow between these two simplices. In more detail,
 the above example provides the following analysis:
 
@@ -945,7 +965,8 @@ the above example provides the following analysis:
   It produces *two Morse sets*. In addition to the stable
   critical simplex, one also obtains an isolated invariant set
   with trivial index. This set exhibits chaotic behavior, and
-  is shown in purple in the accompanying figure.
+  is shown in purple in the figure of the Forman chaos in the
+  Dunce hat.
 * The return variable `psC` gives the flow-induced order
   between the Morse sets, which shows that there are 
   heteroclinic orbits between the chaotic Morse set and
@@ -954,7 +975,8 @@ the above example provides the following analysis:
   first is the stable equilibrium, the second one consists of
   8 edges and 8 triangles.
 
-One can see from the figure that the chaotic isolated invariant
+One can see from the figure of the Forman chaos in the Dunce hat
+that the chaotic isolated invariant
 set for the Forman vector field `vfC` has two periodic orbits.
 Starting with the edge ``\mathrm{12}`` in the upper right, they
 both traverse the edges ``\mathrm{28}``, ``\mathrm{78}``,
@@ -973,8 +995,8 @@ addition, by merging two critical cells in the Forman gradient vector
 field into an arrow, once obtains a Forman vector field with chaotic
 behavior. The simplicial complexes are based on the function
 [`simplicial_torsion_space`](@ref), and the Forman vector fields
-can be seen in the associated figure for the cases ``n=3`` and
-``n=4``.
+can be seen in the figure of the Forman chaos in a space with
+torsion for the cases ``n=3`` and ``n=4``.
 
 ![Forman chaos in a space with torsion](img/exampletorsionchaos.png)
 
@@ -988,11 +1010,12 @@ example_torsion_chaos
 
 The first of the above commands creates the simplicial complex `sc`
 and the two Forman vector fields. The gradient vector field is returned
-in `vfG`, and it corresponds to the Forman vector fields shown in red 
-in the accompanying figure. The return variable `vfC` gives the chaotic
-Forman vector field. Is it obtained from the gradient field by combining
+in `vfG`, and it corresponds to the Forman vector fields shown in red
+in the figure of the Forman chaos in a space with torsion. The return
+variable `vfC` gives the chaotic
+Forman vector field. It is obtained from the gradient field by combining
 the two critical cells ``\mathrm{0w0x}`` and ``\mathrm{0w0x1s}`` into
-a Forman arrow, which is indicated in green in the figure. Note that
+a Forman arrow, which is indicated in green in this figure. Note that
 this reverses the flow between these two simplices. In the above
 example, we use ``n=3`` and ``p=7``.
 
@@ -1020,7 +1043,8 @@ The next commands analyze the chaotic Forman vector field `vfC`:
   It produces *two Morse sets*. In addition to the stable
   critical cell, one also obtains an isolated invariant set
   with trivial index. This set exhibits chaotic behavior, and
-  is shown in purple in the accompanying figure. In  the case
+  is shown in purple in the figure of the Forman chaos in a space
+  with torsion. In the case
   ``n = 3``, it consists of ``26`` simplices. In the general
   case, it will have ``12n - 10`` simplices.
 * The return variable `psC` gives the flow-induced order

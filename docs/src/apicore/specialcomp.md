@@ -13,10 +13,23 @@ end
 create_simplicial_complex
 create_simplicial_rectangle
 create_simplicial_delaunay
+tetmesh_to_euclidean
 simplicial_torus
 simplicial_klein_bottle
 simplicial_projective_plane
 simplicial_torsion_space
+```
+
+## Point Sets and Triangulated Surfaces
+
+```@docs
+poisson_points_box
+trisurface_sphere
+trisurface_ellipsoid
+trisurface_cylinder
+trisurface_torus
+trisurface_plane_patch
+trisurface_parametric
 ```
 
 ## Cubical Complexes

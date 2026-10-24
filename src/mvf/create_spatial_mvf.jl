@@ -140,8 +140,20 @@ vector field `vf`.
 
 This method extracts the vertex coordinates from the embedded coordinates
 of `ec` and delegates to the standard `create_spatial_mvf` implementation.
+The complex has to be three-dimensional and embedded in three dimensions,
+such as a tetrahedral mesh created by `tetgen_to_simplicial` or
+`gmsh_to_simplicial`, or a cubical complex created by `create_cubical_box`.
+Otherwise, an `ArgumentError` is raised. In particular, triangulated
+surfaces in three dimensions are not supported.
 """
 function create_spatial_mvf(ec::EuclideanComplex, vf)
+    if (ec.ncells == 0) || (length(ec.coords[1][1]) != 3) || (ec.dim != 3)
+        throw(ArgumentError("create_spatial_mvf: the complex needs to be " *
+                            "three-dimensional and embedded in three dimensions, " *
+                            "such as a tetrahedral mesh or a cubical box. For " *
+                            "planar complexes, use create_planar_mvf."))
+    end
+
     #
     # Build a coords_by_index vector (indexed by cell index, vertex cells filled)
     #

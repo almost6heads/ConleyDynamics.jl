@@ -80,8 +80,9 @@ it is easy to generate a simplicial complex. This requires two objects:
 ![A first simplicial complex](img/tutorialsimplex.png)
 
 The following first example creates a simple simplicial complex.  The complex is
-shown in the above figure, and it has six vertices which we label by the first
-six letters.
+shown in the figure of a hollow triangle `ABC` connected by the edge `BD` to a
+filled triangle `DEF`, and it has six vertices which we label by the first six
+letters.
 
 ```@example T1
 using ..ConleyDynamics # hide
@@ -262,11 +263,13 @@ above:
 formanvf = [["A","AC"],["B","AB"],["C","BC"],["D","BD"],["E","DE"]]
 ```
 
-The Forman vector field `formanvf` is viualized in the accompanying figure.
+The Forman vector field `formanvf` is visualized in the figure which shows
+arrows and red critical cells on this simplicial complex.
 
 ![A first Forman vector field](img/tutorialforman.png)
 
-According to the figure, a Forman vector field is comprised of *arrows*, as well
+According to this figure, a Forman vector field is comprised of *arrows*,
+as well
 as *critical cells* which are indicated by red dots. Every simplex of the
 underlying simplicial complex is either critical, or it is contained in a unique
 arrow. In other words, the collection of critical cells and arrows forms a
@@ -296,7 +299,8 @@ induces the following *dynamical behavior* on the simplicial complex `sc`:
 - __Arrow targets__ create flow towards the boundary of ``\sigma^+``,
   except towards the source facet ``\sigma^-``.
 
-In the above figure, for example, the simplex `EF` is a critical cell, so it
+In the figure of the Forman vector field, for example, the simplex `EF` is a
+critical cell, so it
 contains an equilibrium. At the same time, it also allows for flow towards the
 boundary, which consists of the vertices `E` and `F`.  A solution flowing to the
 former then has to enter `DE`, flow through `D` to `BD`, before entering the
@@ -521,7 +525,8 @@ mvflogo = [["A","AB"],["C","AC"],["B","BC","BD","BCD"]]
 ```
 
 This example is taken from [mrozek:wanner:25a; Figure 2.1](@cite), and is
-visualized in the accompanying figure.
+visualized in the figure which shows the two triangles `ABC` and `BCD` together
+with the three multivectors of `mvflogo`.
 
 ![The logo multivector field](img/multivectorex.png)
 
@@ -630,7 +635,7 @@ stable equilibrium `D`, and they cancel algebraically.
 
 ## Analyzing Planar Vector Fields
 
-Our third and last example of the tutorial briefly indicates how
+Our third example of the tutorial briefly indicates how
 [ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
 can be used to analyze the global dynamics of
 certain planar ordinary differential equations. For this, consider
@@ -804,6 +809,117 @@ Finally, visualizing the Morse sets is achiebd using the command
 fname = "tutorialplanar.pdf"
 plot_planar_simplicial_morse(ec, fname, cm.morse, pv=true)
 ```
+
+## Analyzing Spatial Vector Fields
+
+The last example of the tutorial shows that the same workflow applies
+to vector fields in three dimensions. Consider the system
+
+```math
+   \begin{array}{rcl}
+     \dot{x}_1 & = & x_1 \left( 1 - x_1^2 \right) \\[1ex]
+     \dot{x}_2 & = & -x_2 \\[1ex]
+     \dot{x}_3 & = & -x_3
+   \end{array}
+```
+
+which has two stable equilibria at ``(\pm 1, 0, 0)`` and an equilibrium
+at the origin with a one-dimensional unstable manifold. Its right-hand
+side is implemented by the Julia function
+
+```julia
+function spatialvf(x::Vector{Float64})
+    #
+    # Sample spatial vector field with nontrivial Morse decomposition
+    #
+    x1, x2, x3 = x
+    y1 = x1 * (1.0 - x1*x1)
+    y2 = -x2
+    y3 = -x3
+    return [y1, y2, y3]
+end
+```
+
+Instead of a planar Delaunay triangulation, we now need a tetrahedral
+mesh of the box ``[-3/2, 3/2] \times [-1, 1] \times [-1, 1]``, which
+is a trapping region for the flow. Such meshes can be created with the
+mesh generator [TetGen](https://wias-berlin.de/software/tetgen/), which
+becomes available in
+[ConleyDynamics.jl](https://almost6heads.github.io/ConleyDynamics.jl)
+as soon as the package `TetGen.jl` is loaded. This package is not
+installed automatically, and it has to be added once with
+`import Pkg; Pkg.add("TetGen")`, see
+[Loading the Required Packages](@ref meshing3d_loading) for details:
+
+```julia
+using TetGen
+using ConleyDynamics
+
+dom = tetgen_domain_box([-1.5,-1,-1], [1.5,1,1])
+res = tetgen_mesh(dom; maxvolume=0.01)
+ec  = tetgen_to_simplicial(res)
+lefschetz_cell_count(ec)
+# 4-element Vector{Int64}:
+#   532
+#  3051
+#  4727
+#  2207
+```
+
+The first command describes the box domain, the second one creates a
+quality tetrahedral mesh whose tetrahedra have volume at most about
+`0.01`, and the third one converts this mesh into an
+[`EuclideanComplex`](@ref). The resulting simplicial complex consists of
+532 vertices, 3051 edges, 4727 triangles, and 2207 tetrahedra. The
+multivector field and its connection matrix are then computed exactly as
+in the planar case, except that the function
+[`create_spatial_mvf`](@ref) replaces [`create_planar_mvf`](@ref):
+
+```julia
+mvf = create_spatial_mvf(ec, spatialvf);
+cm  = connection_matrix(ec, mvf);
+cm.conley
+# 3-element Vector{Vector{Int64}}:
+#  [1, 0, 0, 0]
+#  [1, 0, 0, 0]
+#  [0, 1, 0, 0]
+full_from_sparse(cm.matrix)
+# 3×3 Matrix{Int64}:
+#  0  0  1
+#  0  0  1
+#  0  0  0
+```
+
+The computation finds two Morse sets with the Conley index of a stable
+equilibrium, and one Morse set with the Conley index of an equilibrium
+with a one-dimensional unstable manifold. The connection matrix shows
+that the latter is connected to both stable equilibria. Three-dimensional
+complexes can be visualized with the
+[Makie](https://docs.makie.org) plotting packages. For example, the
+commands
+
+```julia
+using GLMakie
+
+fig1 = plot_simplicial3d(ec; clip=([0,-1,0], 0.0), alpha=0.6)
+fig2 = plot_simplicial3d_morse(ec, cm.morse; ci=true)
+```
+
+show the mesh, clipped at the plane ``y = 0`` to reveal its interior, and
+the Morse sets, colored by their Conley indices. With `GLMakie`, a
+displayed figure appears in an interactive window, in which it can be
+rotated with the mouse. By default, this window shows the most recently
+displayed figure, and `display(fig1)` brings back the first one. Static
+versions of both plots are shown in the figure of the
+clipped tetrahedral mesh and the three Morse sets.
+
+![A tetrahedral mesh and the Morse sets of a spatial vector field](img/tutorialspatial.png)
+
+Much more on tetrahedral meshes, including embedded constraint surfaces,
+holes, local refinement, and intersecting geometry, can be found in the
+chapter [Three-Dimensional Meshes](@ref). The plotting functions are
+described in the section
+[Three-Dimensional Plotting with Makie](@ref).
 
 ## [References](@id reftutorial)
 

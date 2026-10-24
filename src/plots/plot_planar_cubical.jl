@@ -227,6 +227,7 @@ function plot_planar_cubical(ec::EuclideanComplex,
     # Create an image of a planar cubical complex from an EuclideanComplex,
     # using the vertex coordinates stored directly in ec.coords[k] for each cell k.
     #
+    _check_coords2d(ec, "plot_planar_cubical")
 
     # Check that the filename has a valid extension
     if !(lowercase(fname[end-3:end]) in [".png", ".pdf", ".eps", ".svg"])

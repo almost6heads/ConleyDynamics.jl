@@ -158,6 +158,7 @@ function ConleyDynamics.plot_simplicial_morse(ec::EuclideanComplex,
                                               pdim::Vector{Bool}=[false,true,true],
                                               ci::Bool=false,
                                               addcritical::Bool=false)
+    ConleyDynamics._check_coords2d(ec, "plot_simplicial_morse")
     data = SimplicialMorsePlot(ec, morsesets, pdim, ci, addcritical)
     return Plots.plot(data)
 end

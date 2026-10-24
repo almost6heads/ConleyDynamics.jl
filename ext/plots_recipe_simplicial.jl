@@ -143,6 +143,7 @@ function ConleyDynamics.plot_simplicial(ec::EuclideanComplex;
                                         labeldir::Vector{<:Real}=Float64[],
                                         labeldis::Real=0.05,
                                         pdim::Vector{Bool}=[true,true,true])
+    ConleyDynamics._check_coords2d(ec, "plot_simplicial")
     data = SimplicialComplexPlot(ec, mvf, pdim, Float64.(labeldir), Float64(labeldis))
     return Plots.plot(data)
 end
