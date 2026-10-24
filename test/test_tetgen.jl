@@ -39,7 +39,7 @@ tet_volumes(ec) = [abs(det(hcat((c[2:4] .- Ref(c[1]))...))) / 6
     @test length(res0.points) == 8
     resd = tetgen_mesh(tetgen_domain_box([0,0,0], [1,1,1]); maxvolume=0.01)
     resq = tetgen_mesh(tetgen_domain_box([0,0,0], [1,1,1]); maxvolume=0.01,
-                       minratio=1.2, mindihedral=15)
+                       minratio=1.1, mindihedral=20)
     @test length(resq.tetrahedra) > length(resd.tetrahedra)
     @test homology(tetgen_to_simplicial(resq)) == [1,0,0,0]
 end
