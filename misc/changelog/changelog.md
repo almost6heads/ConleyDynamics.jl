@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.8.1 (November 5, 2026)
+
+Faster `create_mvf_hull` and `remove_exit_set`
+
 ## v0.8.0 (October 24, 2026)
 
 Finally, meshing in 3d has arrived! This release adds new functionality
