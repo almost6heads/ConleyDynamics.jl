@@ -36,36 +36,18 @@ function remove_exit_set(lc::AbstractComplex, mvf::CellSubsets)
 
     lcbnd = manifold_boundary(lc)
 
-    # Find all critical cells on the boundary
+    # Find all critical cells on the boundary. A cell is critical if
+    # it does not belong to a multivector with more than one cell.
+    # Marking these cells in one pass over the multivector field takes
+    # time proportional to the size of the complex.
 
-    mvfT = deepcopy(mvfI)
-    Threads.@threads for k in eachindex(mvfT)
-        mv = mvfT[k]
+    noncritical = falses(lc.ncells)
+    for mv in mvfI
         if length(mv) > 1
-            intersect!(mvfT[k], lcbnd)
-        else
-            mvfT[k] = Vector{Int}()
+            noncritical[mv] .= true
         end
     end
-    criticalcells = setdiff(lcbnd, unique(reduce(vcat,mvfT)))
-
-    # Below is the older and slower code for finding
-    # the critical cells. This should be removed eventually.
-    # 
-    # iscritical = fill(Int(1), length(lcbnd)) 
-    # for mv in mvfI
-    #     if length(mv) > 1
-    #         mvbnd = intersect(mv, lcbnd)
-    #         if length(mvbnd) > 0
-    #             for k in mvbnd
-    #                 ki = findfirst(x -> x==k, lcbnd)
-    #                 iscritical[ki] = 0
-    #             end
-    #         end
-    #     end
-    # end   
-    # criticalindices = findall(x -> x==1, iscritical)
-    # criticalcells = lcbnd[criticalindices]
+    criticalcells = [cell for cell in lcbnd if !noncritical[cell]]
 
     # Check whether the critical boundary cells form a closed set
 
