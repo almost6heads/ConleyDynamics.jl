@@ -64,7 +64,7 @@ if "--local-html" in ARGS
         format = Documenter.HTML(prettyurls = false,
                                  assets=String["assets/favicon.ico"],
                                  search_size_threshold_warn = 800 * 2^10,
-                                 size_threshold_warn = 150 * 2^10),
+                                 size_threshold_warn = 175 * 2^10),
         pages = pageslist,
         authors = "Thomas Wanner",
         plugins = [CitationBibliography(
@@ -95,7 +95,7 @@ else
         modules=[ConleyDynamics],
         format = Documenter.HTML(assets=String["assets/favicon.ico"],
                                  search_size_threshold_warn = 800 * 2^10,
-                                 size_threshold_warn = 150 * 2^10),
+                                 size_threshold_warn = 175 * 2^10),
         build = "build",
         pages = pageslist,
         authors = "Thomas Wanner",
