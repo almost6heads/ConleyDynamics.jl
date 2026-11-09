@@ -1,4 +1,5 @@
 export ouroboros_vf
+export circ_vf, circ_vf_ode!
 export vdp_vf, J_vdp_vf
 export vdp_vf_trev, J_vdp_vf_trev
 export vdp_vf_ode!
@@ -38,6 +39,25 @@ function ouroboros_vf(x::Vector{Float64})
     else
         return [2.1, 2.5] - x
     end
+end
+
+# 2D Circles vector field
+function circ_vf(v::Vector{Float64})
+    x, y = v/10 - [2.0, 2.0]
+
+    xd = -y + x*(x^2 + y^2 - 1.0)
+    yd =  x + y*(x^2 + y^2 - 1.0);
+
+    return [xd, yd]
+end
+
+# 2d Circles vector field for DifferentialEquations ODE solver
+function circ_vf_ode!(du,u,p,t)
+    x, y = u - [20.0, 20.0]
+
+    du[1] =  y - x*(x^2 + y^2 - 100.0)
+    du[2] = -x - y*(x^2 + y^2 - 100.0)
+
 end
 
 # Van Der Pol Vector Field

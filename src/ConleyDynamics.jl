@@ -101,6 +101,7 @@ include("./mvf/mvf_critical.jl")
 include("./mvf/mvf_regular.jl")
 include("./mvf/mvf_forward_orbit.jl")
 include("./mvf/mvf_neighborhood.jl")
+include("./mvf/dynamic_transition_space.jl")
 
 include("./ap/construct_ap_space.jl")
 include("./ap/construct_ap_stratum.jl")
