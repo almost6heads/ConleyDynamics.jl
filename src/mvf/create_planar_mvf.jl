@@ -1,4 +1,5 @@
 export create_planar_mvf
+export planar_mvf_vertex2region, planar_mvf_edge2region
 
 """
     create_planar_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf)
@@ -194,11 +195,20 @@ end
 #                          #
 ############################
 
-function planar_mvf_vertex2region(vindex::Int, lc::AbstractComplex,
-                                  coords::Vector{<:Vector{<:Real}}, vf)
+function planar_mvf_vertex2region(vindex::Int,
+                                  lc::AbstractComplex,
+                                  coords::Vector{<:Vector{<:Real}},
+                                  vf;
+                                  vf_rev::Bool=false)
     #
     # Find the 2d regions which can be entered from a vertex
     #
+
+    if vf_rev
+        vf_sign = -1
+    else
+        vf_sign = 1
+    end
 
     # Determine the adjacent edges and regions
 
@@ -217,7 +227,7 @@ function planar_mvf_vertex2region(vindex::Int, lc::AbstractComplex,
 
     targetregions = Vector{Int}()
     c0 = coords[vindex]
-    vfc0 = vf(c0)
+    vfc0 = vf_sign*vf(c0)
     tc0 = c0 .+ vfc0
 
     for k in adregns
@@ -246,13 +256,22 @@ end
 
 ###############################################################################
 
-function planar_mvf_edge2region(eindex::Int, lc::AbstractComplex,
-                                coords::Vector{<:Vector{<:Real}}, vf)
+function planar_mvf_edge2region(eindex::Int,
+                                lc::AbstractComplex,
+                                coords::Vector{<:Vector{<:Real}},
+                                vf;
+                                vf_rev::Bool=false)
     #
     # Find the 2d regions which can be entered from an edge
     #
 
     npts = 10   # Look at npts points along the edge interior to determine the flow
+
+    if vf_rev
+        vf_sign = -1
+    else
+        vf_sign = 1
+    end
 
     # Determine the boundary of the edge
 
@@ -277,7 +296,7 @@ function planar_mvf_edge2region(eindex::Int, lc::AbstractComplex,
     p0 = coords[v1]
     for k = 1:npts
         pc = p0 .+ ((k / (nptsf+1.0)) .* pvec)
-        pvf = vf(pc)
+        pvf = vf_sign*vf(pc)
         dprod = pvf[1]*nvec[1] + pvf[2]*nvec[2]
         if dprod > 0.0
             dp_is_p = true
