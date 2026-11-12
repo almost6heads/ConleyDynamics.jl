@@ -23,6 +23,8 @@ create_spatial_mvf
 planar_transitions
 spatial_transitions
 planar_nontransverse_edges
+mvf_dual_set
+mvf_dual
 ```
 
 ## Conley Index Computations

@@ -1,193 +1,219 @@
-export create_dual_set, create_mvf
-export graph_merge, dual_graph_merge
-export digraph_propagate
+export mvf_dual_set, mvf_dual
 
+"""
+    mvf_dual_set(lc::AbstractComplex, mv::Vector{Int}, bwd::Vector{Vector{Int}})
 
-################################################################################
-function create_dual_set(ec::EuclideanComplex, set::Vector{Int}, vf)
+Compute the dual of a multivector with respect to given backward transitions.
 
-    # Convert EC to LC
-    lc = euclidean_to_lefschetz(ec)
-    coords = [Vector{Float64}() for _ in 1:ec.ncells]
-    for k in 1:ec.ncells
-        if ec.dimensions[k] == 0
-            coords[k] = ec.coords[k][1]
-        end
-    end
+The backward transitions `bwd` have the format of the output of
+`planar_transitions` or `spatial_transitions`, applied to the reversed
+vector field, i.e., every entry has the form `[c; targets]`, where
+`targets` approximates the immediate past `Ipt(c)` of the cell `c`. Cells
+without an entry have an empty immediate past, which is the case for the
+entrance cells through which the flow enters the domain. The immediate
+past of a toplex is the toplex itself.
 
-    # Get boundary elements
-    set_bdry = lefschetz_topboundary(lc, set)
+The function returns the sorted vector of all cells `c` whose immediate
+past intersects `mv`, i.e., the set `mv* = { c : Ipt(c) ∩ mv ≠ ∅ }`. If
+`mv` belongs to a strongly accumulating multivector field, then `mv*` is
+the multivector of the dual multivector field with the same toplexes, and
+the mouth of `mv*` describes the entry set of the strong isolating block
+given by the closure of `mv`.
 
-    set_bdry_vi = set_bdry[findall(isequal(0), lc.dimensions[set_bdry])]
-    set_bdry_ei = set_bdry[findall(isequal(1), lc.dimensions[set_bdry])]
-
-
-    # Find the dual mouth
-    set_dmo = Vector{Int}()
-    for idx in set_bdry_vi
-        this_v2r = planar_mvf_vertex2region(idx, lc, coords,
-                                            vf, vf_rev=true)
-        if isempty(intersect(set, this_v2r))
-            push!(set_dmo, idx)
-        end
-    end
-
-    for idx in set_bdry_ei
-        this_e2r = planar_mvf_edge2region(idx, lc, coords,
-                                          vf, vf_rev=true)
-        if isempty(intersect(set, this_e2r))
-            push!(set_dmo, idx)
-        end
-    end
-
-    # Create dual set
-    set_intr = lefschetz_interior(lc, set)
-    set_dcap = setdiff(set_bdry, set_dmo)
-
-    return union(set_intr, set_dcap)
+The dual was introduced by Justin Thorpe in his dissertation *Periodic
+Orbits in the Setting of Combinatorial Dynamics* (George Mason University,
+2026) as the union of the interior of `mv` with the cells on its boundary
+whose immediate past meets `mv`, and it was implemented in pull request
+#10 as `create_dual_set`. For cells with nonempty immediate past, both
+descriptions agree. The present version excludes the entrance cells, and it
+uses precomputed backward transitions.
+"""
+function mvf_dual_set(lc::AbstractComplex, mv::Vector{Int}, bwd::Vector{Vector{Int}})
+    #
+    # Compute the dual of a single multivector
+    #
+    return mvf_dual(lc, [mv], bwd)[1]
 end
 
+"""
+    mvf_dual(lc::AbstractComplex, mvf::Vector{Vector{Int}}, bwd::Vector{Vector{Int}})
 
-function graph_merge(ec::EuclideanComplex, sg::SimpleGraph)
+Compute the duals of all multivectors in `mvf` with respect to the backward
+transitions `bwd`.
 
-    # Find future graph conn comp
-    sg_cc = connected_components(sg)
-    
-    # Loop over conn comps and merge as necessary
-    for cc in sg_cc
-        this_lchull = setdiff(lefschetz_lchull(ec, cc), cc)
+The result is a vector whose `k`-th entry is `mvf_dual_set(lc, mvf[k], bwd)`,
+but all duals are computed in a single pass over the transitions. The sets
+in `mvf` have to be disjoint. If the multivector field `mvf` is strongly
+accumulating with respect to the given transitions, then the duals are
+disjoint, and they form its dual multivector field. Conversely, a cell
+which lies in two duals shows that the corresponding multivectors have to
+be merged in every strongly accumulating multivector field. Toplexes which
+do not belong to any set in `mvf` are singletons, and their duals, which
+are again singletons, are not computed.
+"""
+function mvf_dual(lc::AbstractComplex, mvf::Vector{Vector{Int}}, bwd::Vector{Vector{Int}})
+    #
+    # Compute the duals of all multivectors in a single pass
+    #
 
-        for ele in this_lchull
-            this_ohull = lefschetz_openhull(ec, [ele])
-            this_ohull_tops = lefschetz_skeleton(ec, this_ohull, ec.dim)
-            this_tops = intersect(this_ohull_tops, cc)
-            
-            for top in this_tops
-                add_edge!(sg, ele, top)
+    # Find the multivector containing every cell
+
+    cell2mv = zeros(Int, lc.ncells)
+    for k in 1:length(mvf)
+        for c in mvf[k]
+            if cell2mv[c] != 0
+                throw(ArgumentError("mvf_dual: the multivectors have to be disjoint"))
+            end
+            cell2mv[c] = k
+        end
+    end
+
+    # Every toplex is its own immediate past
+
+    duals = [Vector{Int}() for _ in 1:length(mvf)]
+    for k in 1:length(mvf)
+        for c in mvf[k]
+            if lc.dimensions[c] == lc.dim
+                push!(duals[k], c)
             end
         end
     end
 
-    return sg
-end
+    # Add every cell to the duals of the multivectors which
+    # its immediate past meets
 
-
-function dual_graph_merge(ec::EuclideanComplex, sg::SimpleGraph, vf)
-
-    # Create dual graph from non-dual conn comp
-    sg_dual = SimpleGraph(ec.ncells)
-
-    sg_cc = connected_components(sg)
-    for cc in sg_cc
-        this_dual = create_dual_set(ec, cc, vf)
-        for m = 1:length(this_dual)-1
-            add_edge!(sg_dual, this_dual[m], this_dual[m+1])
-        end
-    end
-
-    # Loop over dual conn comps and merge as necessary
-    sg_dual_cc = connected_components(sg_dual)
-    for cc in sg_dual_cc
-        this_lchull = setdiff(lefschetz_lchull(ec, cc), cc)
-
-        for ele in this_lchull
-            this_ohull = lefschetz_openhull(ec, [ele])
-            this_ohull_tops = lefschetz_skeleton(ec, this_ohull, ec.dim)
-            this_cc_tops = intersect(this_ohull_tops, cc)
-            this_tops = setdiff(this_ohull_tops, this_cc_tops)
-        
-            # Merge in *non-dual* graph
-            for top in this_tops
-                add_edge!(sg, ele, top)
+    for t in bwd
+        c = t[1]
+        for m in 2:length(t)
+            k = cell2mv[t[m]]
+            if (k != 0) && (isempty(duals[k]) || (last(duals[k]) != c))
+                push!(duals[k], c)
             end
         end
     end
 
-    # Check if dual graph is locally closed after merging
-    dual_is_closed = true
-    sg_dual_cc = connected_components(sg_dual)
-    for cc in sg_dual_cc
-        if !lefschetz_is_locally_closed(ec, cc)
-            dual_is_closed = false
-            break
-        end
-    end
+    # Return the sorted duals
 
-    return sg, dual_is_closed
+    for k in 1:length(duals)
+        unique!(sort!(duals[k]))
+    end
+    return duals
 end
 
+###############################################################################
+#
+# The dual merging procedure of pull request #10, as a cross-check
+#
+###############################################################################
 
-function create_mvf(ec, sg, vf; strong_iso::Bool=false)
-    counter = 1
-    
-    merge_again = true
-    while merge_again && counter <= 5
-        merge_again = false
-        
+"""
+    strong_mvf_dual_merging(lc::AbstractComplex, fwd::Vector{Vector{Int}},
+                            bwd::Vector{Vector{Int}}; maxrounds::Int=1000)
 
-        println("Merge loop ", counter)
-        counter += 1
-        
+Merge multivectors until all duals are locally closed and disjoint.
 
-        close_loop = true
-        while close_loop
-            close_loop = false
+This is the merging procedure of Justin Thorpe from pull request #10 (the
+former function `create_mvf(...; strong_iso=true)`), formulated for
+precomputed forward and backward transitions `fwd` and `bwd`, and with
+three changes. Multivectors whose duals overlap are merged, the duals do
+not contain entrance cells, and a warning is issued if the procedure has
+not converged after `maxrounds` rounds.
 
-            graph_cc = connected_components(sg)
-            for cc in graph_cc
-                if !lefschetz_is_locally_closed(ec, cc)
-                    sg = graph_merge(ec, sg)
-                    close_loop = true
-                    break
+Every round forms the smallest multivector field containing the forward
+transitions and all merges so far, and computes the duals of its
+multivectors with `mvf_dual`. If a cell lies in several duals, then the
+corresponding multivectors are merged. If a dual `D` is not locally closed,
+then every cell of the remainder `lch(D) ∖ D` is joined to the toplexes in
+its star which are not in `D`. For planar complexes, every merge of this
+kind is forced, i.e., it occurs in every strongly accumulating multivector
+field. Thus, if the procedure converges, its result is the finest strongly
+accumulating multivector field for the given transitions. In three
+dimensions, the second rule may merge more than necessary.
+
+The function returns the multivector field in the format of
+`create_mvf_hull`. It is not exported, and is meant as an independent
+check of the planar case.
+"""
+function strong_mvf_dual_merging(lc::AbstractComplex, fwd::Vector{Vector{Int}},
+                                 bwd::Vector{Vector{Int}}; maxrounds::Int=1000)
+    #
+    # The dual merging procedure of pull request #10
+    #
+
+    base = copy(fwd)
+    toplexes = findall(isequal(lc.dim), lc.dimensions)
+    mvf = Vector{Vector{Int}}()
+    converged = false
+    stalled = false
+
+    for round in 1:maxrounds
+
+        # Form the multivector field, including the singleton toplexes
+
+        mvf = create_mvf_hull(lc, base)
+        inmv = falses(lc.ncells)
+        for mv in mvf
+            inmv[mv] .= true
+        end
+        allmvf = vcat(mvf, [[t] for t in toplexes if !inmv[t]])
+        duals = mvf_dual(lc, allmvf, bwd)
+
+        # Merge multivectors with overlapping duals
+
+        nbase = length(base)
+        clean = true
+        firstdual = zeros(Int, lc.ncells)
+        for k in 1:length(duals)
+            for c in duals[k]
+                if firstdual[c] == 0
+                    firstdual[c] = k
+                elseif firstdual[c] != k
+                    clean = false
+                    t1 = first(c2 for c2 in allmvf[firstdual[c]] if lc.dimensions[c2] == lc.dim)
+                    t2 = first(c2 for c2 in allmvf[k] if lc.dimensions[c2] == lc.dim)
+                    push!(base, [t1, t2])
                 end
             end
         end
 
-        if strong_iso
-            sg, dual_is_closed = dual_graph_merge(ec, sg, vf)
+        # Join the remainder cells of duals which are not locally closed
+        # to the toplexes in their star outside of the dual
 
-            if !dual_is_closed
-                merge_again = true
+        for k in 1:length(duals)
+            dual = duals[k]
+            remainder = setdiff(lefschetz_lchull(lc, dual), dual)
+            isempty(remainder) && continue
+            clean = false
+            indual = Set(dual)
+            for c in remainder
+                tops = [t for t in lefschetz_openhull(lc, [c])
+                        if (lc.dimensions[t] == lc.dim) && !(t in indual)]
+                if !isempty(tops)
+                    push!(base, vcat([c], tops))
+                end
             end
+        end
+
+        # Stop if all duals are disjoint and locally closed, or if
+        # nothing could be merged
+
+        if clean
+            converged = true
+            break
+        elseif length(base) == nbase
+            stalled = true
+            break
         end
     end
 
-    return sg
-end
-
-
-function digraph_propagate(dg, seeds, depth)
-    
-    pset = [[seed] for seed in seeds]
-    all_parents = [[seed] for seed in seeds]
-    visited = Set(seeds)
-
-    idg = [bfs_tree(dg, seed) for seed in seeds]
-    
-
-    for _ in 1:depth
-
-        for idx in eachindex(pset)
-            this_parents = all_parents[idx]
-
-            union!(visited, Set(this_parents))
-            all_kids = Set()
-
-            for parent in this_parents
-                kids = outneighbors(idg[idx], parent)
-                union!(all_kids, Set(kids))
-            end
-
-            eligible_kids = setdiff(all_kids, visited)
-
-            all_parents[idx] = collect(eligible_kids)
-            append!(pset[idx], all_parents[idx])
-        end
+    if stalled
+        @warn "strong_mvf_dual_merging: a dual is not locally closed, " *
+              "but no merge applies"
+    elseif !converged
+        @warn "strong_mvf_dual_merging: no convergence after $maxrounds rounds"
     end
 
-    for idx in eachindex(pset)
-        sort!(pset[idx])
-    end
-    
-    return pset
+    # Return the multivector field
+
+    return mvf
 end

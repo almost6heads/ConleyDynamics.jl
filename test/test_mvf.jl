@@ -259,3 +259,76 @@ end
     @test create_mvf_hull(lc3, spatial_transitions(lc3, coords3N, svf, npts=5)) ==
           create_spatial_mvf(lc3, coords3N, svf, npts=5)
 end
+
+@testset "Dual multivectors" begin
+    #
+    # Duals for the Ouroboros example, compared with the definition
+    # in the dissertation of Justin Thorpe (interior and dual cap)
+    #
+    ec, vf = example_ouroboros()
+    lc = euclidean_to_lefschetz(ec)
+    @test lc.ncells == 259
+    fwd = planar_transitions(ec, vf)
+    bwd = planar_transitions(ec, x -> -vf(x))
+    mvf = create_mvf_hull(lc, fwd)
+    duals = mvf_dual(lc, mvf, bwd)
+    @test duals[3] == mvf_dual_set(lc, mvf[3], bwd)
+
+    ipt = [Vector{Int}() for _ in 1:lc.ncells]
+    for t in bwd
+        ipt[t[1]] = t[2:end]
+    end
+    for k in 1:lc.ncells
+        if lc.dimensions[k] == 2
+            ipt[k] = [k]
+        end
+    end
+    for k in eachindex(mvf)
+        V = mvf[k]
+        interior = lefschetz_interior(lc, V)
+        boundary = lefschetz_topboundary(lc, V)
+        thesisdual = union(interior, [c for c in boundary if !isempty(intersect(ipt[c], V))])
+        @test duals[k] == sort(filter(c -> !isempty(ipt[c]), thesisdual))
+    end
+
+    # The flow enters through all 18 boundary edges, and these
+    # entrance cells belong to no dual
+
+    bedges = [c for c in 1:lc.ncells if lc.dimensions[c] == 1 && length(lefschetz_coboundary(lc, c)) == 1]
+    @test length(bedges) == 18
+    @test all(isempty(ipt[c]) for c in bedges)
+    @test all(!(c in D) for D in duals, c in bedges)
+end
+
+@testset "Dual merging cross-check" begin
+    #
+    # The merging procedure of pull request #10 on the Ouroboros example
+    # merges exactly one pair of multivectors, and its result has disjoint
+    # and locally closed duals with the same toplexes
+    #
+    ec, vf = example_ouroboros()
+    lc = euclidean_to_lefschetz(ec)
+    fwd = planar_transitions(ec, vf)
+    bwd = planar_transitions(ec, x -> -vf(x))
+    mvf0 = create_mvf_hull(lc, fwd)
+    mvf = ConleyDynamics.strong_mvf_dual_merging(lc, fwd, bwd)
+    @test length(mvf0) == 65
+    @test length(mvf) == 64
+    @test all(any(issubset(V0, V) for V in mvf) for V0 in mvf0)
+
+    toplexes = findall(isequal(2), lc.dimensions)
+    inmv = falses(lc.ncells)
+    for V in mvf
+        inmv[V] .= true
+    end
+    allmvf = vcat(mvf, [[t] for t in toplexes if !inmv[t]])
+    duals = mvf_dual(lc, allmvf, bwd)
+    count = zeros(Int, lc.ncells)
+    for D in duals, c in D
+        count[c] += 1
+    end
+    @test maximum(count) == 1
+    @test all(D -> lefschetz_is_locally_closed(lc, D), duals)
+    @test all(filter(c -> lc.dimensions[c] == 2, duals[k]) ==
+              filter(c -> lc.dimensions[c] == 2, allmvf[k]) for k in eachindex(duals))
+end
