@@ -27,6 +27,14 @@ mvf_dual_set
 mvf_dual
 ```
 
+## Multivector Digraphs and Periodic Orbits
+
+```@docs
+mvf_digraph
+cyclic_partition_bfs
+cyclic_partition_angular
+```
+
 ## Conley Index Computations
 
 ```@docs

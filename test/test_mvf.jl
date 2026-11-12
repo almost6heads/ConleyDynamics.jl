@@ -332,3 +332,44 @@ end
     @test all(filter(c -> lc.dimensions[c] == 2, duals[k]) ==
               filter(c -> lc.dimensions[c] == 2, allmvf[k]) for k in eachindex(duals))
 end
+
+@testset "Multivector digraphs and cyclic partitions" begin
+    #
+    # The breadth-first split always returns a partition
+    #
+    out = [[3], [3], Int[]]
+    @test cyclic_partition_bfs(out, [1, 2, 3], [1, 2]) == [1, 2, 1]
+    cycle = [[2], [3], [4], [1]]
+    @test cyclic_partition_bfs(cycle, [1, 2, 3, 4], [1]) == [1, 1, 1, 1]
+    @test cyclic_partition_bfs(cycle, [1, 2, 3, 4], [1, 3]) == [1, 1, 2, 2]
+    @test cyclic_partition_bfs(cycle, [2, 3, 4], [2]) == [1, 1, 1]
+    @test_logs (:warn,) cyclic_partition_bfs(cycle, [1, 2, 3], [2])
+
+    # The digraph agrees with the definition via mouths
+
+    ec, vf = example_ouroboros()
+    lc = euclidean_to_lefschetz(ec)
+    mvf = create_mvf_hull(lc, planar_transitions(ec, vf))
+    inmv = falses(lc.ncells)
+    for V in mvf
+        inmv[V] .= true
+    end
+    allmvf = vcat(mvf, [[c] for c in 1:lc.ncells if !inmv[c]])
+    dg, cell2mv, mouths = mvf_digraph(lc, allmvf)
+    @test all(cell2mv .> 0)
+    for k in eachindex(allmvf)
+        mo = setdiff(lefschetz_closure(lc, allmvf[k]), allmvf[k])
+        @test sort(mouths[k]) == sort(mo)
+        @test sort(dg[k]) == [m for m in eachindex(allmvf) if m != k && !isempty(intersect(mo, allmvf[m]))]
+    end
+
+    # Angular sectors around the center of the rectangle
+
+    labels = cyclic_partition_angular(ec, allmvf, collect(eachindex(allmvf)), 4, center=[2.0, 2.5])
+    @test sort(unique(labels)) == [1, 2, 3, 4]
+    vertex(p) = findfirst(k -> lc.dimensions[k] == 0 && ec.coords[k][1] == p, 1:lc.ncells)
+    corners = [[vertex([4.0, 5.0])], [vertex([0.0, 0.0])], [vertex([4.0, 0.0]), vertex([4.0, 1.0])]]
+    @test cyclic_partition_angular(ec, corners, [1, 2, 3], 4, center=[2.0, 2.5]) == [1, 3, 4]
+    @test cyclic_partition_angular(ec, corners, [1, 2, 3], 4, center=[2.0, 2.5],
+                                   clockwise=true) == [4, 2, 1]
+end
