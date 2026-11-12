@@ -593,3 +593,268 @@ end
     @test sort(dualmouth) == sort(info["entrance cells"])
     @test_throws ArgumentError strong_isoblock_sets(lc, mvf[1][1:1], mvf, dual)
 end
+
+@testset "Strongly accumulating fields: minimality and invariants" begin
+    #
+    # A small deterministic random number generator (splitmix64), so that
+    # the test instances do not depend on the Julia version
+    #
+    rngstate = Ref(UInt64(2026))
+    function rand01()
+        rngstate[] += 0x9e3779b97f4a7c15
+        z = rngstate[]
+        z = (z ⊻ (z >> 30)) * 0xbf58476d1ce4e5b9
+        z = (z ⊻ (z >> 27)) * 0x94d049bb133111eb
+        z = z ⊻ (z >> 31)
+        return (z >> 11) / 2.0^53
+    end
+    randelement(v) = v[1 + floor(Int, rand01() * length(v))]
+
+    # Flow-like transitions: every toplex gets a random height, every cell
+    # flows forward to the highest toplex in its star and backward to the
+    # lowest one, and with probability pextra a further toplex is added
+
+    function height_transitions(lc; pextra=0.15)
+        h = [rand01() for _ in 1:lc.ncells]
+        fwd = Vector{Vector{Int}}()
+        bwd = Vector{Vector{Int}}()
+        for c in 1:lc.ncells
+            lc.dimensions[c] == lc.dim && continue
+            tops = filter(x -> lc.dimensions[x] == lc.dim, lefschetz_openhull(lc, [c]))
+            f = [tops[argmax(h[tops])]]
+            b = [tops[argmin(h[tops])]]
+            rand01() < pextra && push!(f, randelement(tops))
+            rand01() < pextra && push!(b, randelement(tops))
+            push!(fwd, vcat([c], unique(f)))
+            push!(bwd, vcat([c], unique(b)))
+        end
+        return fwd, bwd
+    end
+
+    # Random boundary types: every boundary face of codimension one becomes
+    # an exit face (no forward transition), an entrance face (no backward
+    # transition), or a tangency face (neither)
+
+    function random_boundary!(lc, fwd, bwd)
+        bfaces = [c for c in 1:lc.ncells if lc.dimensions[c] == lc.dim - 1 &&
+                                            length(lefschetz_coboundary(lc, c)) == 1]
+        nofwd = Set{Int}()
+        nobwd = Set{Int}()
+        for c in bfaces
+            r = rand01()
+            r < 0.4 && push!(nofwd, c)
+            (r >= 0.4) && (r < 0.8) && push!(nobwd, c)
+            r >= 0.8 && (push!(nofwd, c); push!(nobwd, c))
+        end
+        filter!(t -> !(t[1] in nofwd), fwd)
+        filter!(t -> !(t[1] in nobwd), bwd)
+        return fwd, bwd
+    end
+
+    # Partitions of the toplexes, as canonical label vectors
+
+    canonical(lab) = (d = Dict{Int,Int}(); [get!(d, x, length(d)) for x in lab])
+    function toplabels(lc, mvf, tops)
+        c2m = zeros(Int, lc.ncells)
+        for (k, V) in enumerate(mvf), c in V
+            c2m[c] = k
+        end
+        return canonical([c2m[t] == 0 ? -t : c2m[t] for t in tops])
+    end
+    refines(a, b) = all(a[i] != a[j] || b[i] == b[j] for i in eachindex(a), j in eachindex(a))
+    canon(m) = Set(sort.(m))
+
+    # Brute force: a partition T of the toplexes belongs to a strongly
+    # accumulating multivector field if and only if the minimal forward and
+    # backward fields containing the transitions and T both induce T. The
+    # output has to be the unique finest such partition.
+
+    function all_valid_partitions(lc, fwd, bwd)
+        tops = findall(isequal(lc.dim), lc.dimensions)
+        n = length(tops)
+        valid = Vector{Vector{Int}}()
+        a = zeros(Int, n)
+        function visit(i, maxlabel)
+            if i > n
+                groups = Dict{Int,Vector{Int}}()
+                for k in 1:n
+                    push!(get!(groups, a[k], Int[]), tops[k])
+                end
+                T = [g for g in values(groups) if length(g) > 1]
+                V = create_mvf_hull(lc, vcat(fwd, T))
+                W = create_mvf_hull(lc, vcat(bwd, T))
+                if toplabels(lc, V, tops) == a && toplabels(lc, W, tops) == a
+                    push!(valid, copy(a))
+                end
+                return
+            end
+            for v in 0:(maxlabel + 1)
+                a[i] = v
+                visit(i + 1, max(maxlabel, v))
+            end
+        end
+        a[1] = 0
+        visit(2, 0)
+        return valid
+    end
+
+    nontrivial = 0
+    for lc in (create_simplicial_rectangle(1, 2)[1], create_cubical_rectangle(2, 4)[1],
+               create_cubical_box(2, 2, 1)[1])
+        tops = findall(isequal(lc.dim), lc.dimensions)
+        for trial in 1:4
+            fwd, bwd = height_transitions(lc)
+            mvf, dual, info = create_strong_mvf(lc, fwd, bwd, exitcells=Int[], entrancecells=Int[])
+            valid = all_valid_partitions(lc, fwd, bwd)
+            lab = toplabels(lc, mvf, tops)
+            @test lab in valid
+            @test all(refines(lab, v) for v in valid)
+            @test toplabels(lc, dual, tops) == lab
+            nontrivial += (length(valid) > 1)
+        end
+    end
+    @test nontrivial >= 6
+
+    # General transitions, which are open hulls of random subsets of the
+    # star and may contain lower-dimensional cells
+
+    lc = create_simplicial_rectangle(1, 1)[1]
+    tops = findall(isequal(2), lc.dimensions)
+    for trial in 1:4
+        transitions = Vector{Vector{Vector{Int}}}()
+        for direction in 1:2
+            tr = Vector{Vector{Int}}()
+            for c in 1:lc.ncells
+                lc.dimensions[c] == 2 && continue
+                star = lefschetz_openhull(lc, [c])
+                S = filter(_ -> rand01() < 0.3, star)
+                isempty(S) && (S = [randelement(star)])
+                targets = setdiff(lefschetz_openhull(lc, S), [c])
+                push!(tr, vcat([c], targets))
+            end
+            push!(transitions, tr)
+        end
+        fwd, bwd = transitions
+        mvf, dual, info = create_strong_mvf(lc, fwd, bwd, exitcells=Int[], entrancecells=Int[])
+        valid = all_valid_partitions(lc, fwd, bwd)
+        lab = toplabels(lc, mvf, tops)
+        @test lab in valid
+        @test all(refines(lab, v) for v in valid)
+        @test mvf_is_strongly_accumulating(lc, mvf, dual, fwd, bwd, exitcells=Int[],
+                                           entrancecells=Int[])
+    end
+
+    # Larger complexes with random boundary types: agreement with the
+    # reference implementation (and in the plane with the dual merging of
+    # pull request #10), all conditions, idempotence, and monotonicity
+
+    for lc in (create_simplicial_rectangle(4, 4)[1], create_cubical_rectangle(7, 6)[1],
+               create_cubical_box(3, 3, 2)[1])
+        for trial in 1:3
+            fwd, bwd = random_boundary!(lc, height_transitions(lc)...)
+            mvf, dual, info = create_strong_mvf(lc, fwd, bwd)
+            rmvf, rdual, rounds = ConleyDynamics.strong_mvf_reference(lc, fwd, bwd)
+            @test canon(mvf) == canon(rmvf)
+            @test canon(dual) == canon(rdual)
+            if lc.dim == 2
+                @test canon(mvf) == canon(ConleyDynamics.strong_mvf_dual_merging(lc, fwd, bwd))
+            end
+            @test mvf_is_strongly_accumulating(lc, mvf, dual, fwd, bwd)
+
+            # Idempotence: adding the toplex partition of the result as
+            # transitions does not change the result
+
+            groups = [filter(c -> lc.dimensions[c] == lc.dim, V) for V in mvf]
+            seeded = vcat(fwd, filter(g -> length(g) > 1, groups))
+            mvfs, duals, infos = create_strong_mvf(lc, seeded, bwd)
+            @test canon(mvfs) == canon(mvf)
+            @test canon(duals) == canon(dual)
+
+            # Monotonicity: additional transitions lead to a coarser field
+
+            extra = deepcopy(fwd)
+            for t in extra
+                if rand01() < 0.1
+                    tops = filter(x -> lc.dimensions[x] == lc.dim, lefschetz_openhull(lc, [t[1]]))
+                    push!(t, randelement(tops))
+                    unique!(t)
+                end
+            end
+            mvfm, dualm, infom = create_strong_mvf(lc, extra, bwd,
+                                                   exitcells=info["exit cells"],
+                                                   entrancecells=info["entrance cells"])
+            @test all(any(issubset(V, W) for W in mvfm) for V in mvf)
+        end
+    end
+
+    # Local connectedness at dual cells (Lemma dualstar of the paper): For
+    # c in V*, all toplexes of V in the star of c lie in one component of V.
+    # The lemma requires exact transitions, but it holds in these examples.
+
+    function components_of(lc, V)
+        inV = falses(lc.ncells)
+        inV[V] .= true
+        comp = zeros(Int, lc.ncells)
+        ncomp = 0
+        for s in V
+            comp[s] != 0 && continue
+            ncomp += 1
+            comp[s] = ncomp
+            stack = [s]
+            while !isempty(stack)
+                x = pop!(stack)
+                for y in vcat(lefschetz_boundary(lc, x), lefschetz_coboundary(lc, x))
+                    if inV[y] && comp[y] == 0
+                        comp[y] = ncomp
+                        push!(stack, y)
+                    end
+                end
+            end
+        end
+        return comp
+    end
+    function circle_vf(v::Vector{Float64})
+        x, y = v / 5 - [2.0, 2.0]
+        return [-y + x * (x^2 + y^2 - 1.0), x + y * (x^2 + y^2 - 1.0)]
+    end
+    examples = [example_ouroboros(),
+                (create_simplicial_rectangle(8, 8, euclidean=true), x -> [x[1] - 4.0, 4.0 - x[2]]),
+                (create_simplicial_rectangle(20, 20, euclidean=true), circle_vf)]
+    for (ec, vf) in examples
+        lc = euclidean_to_lefschetz(ec)
+        mvf, dual, info = create_planar_strong_mvf(ec, vf)
+        for (j, D) in enumerate(dual)
+            k = info["dual to mvf"][j]
+            k == 0 && continue
+            comp = components_of(lc, mvf[k])
+            inV = falses(lc.ncells)
+            inV[mvf[k]] .= true
+            @test all(length(unique(comp[[t for t in lefschetz_openhull(lc, [c])
+                                          if lc.dimensions[t] == 2 && inV[t]]])) <= 1 for c in D)
+        end
+    end
+
+    # Conley indices over GF(2) and over the rationals: a saddle, and the
+    # circle field with an attracting equilibrium and a repelling periodic
+    # orbit, where the exit set has to be removed first
+
+    for p in (2, 0)
+        ec = create_simplicial_rectangle(2, 2, euclidean=true, p=p)
+        lc = euclidean_to_lefschetz(ec)
+        mvf, dual, info = create_planar_strong_mvf(ec, x -> [x[1] - 1.0, 1.0 - x[2]])
+        center = findfirst(k -> lc.dimensions[k] == 0 && ec.coords[k][1] == [1.0, 1.0], 1:lc.ncells)
+        V = mvf[findfirst(V -> center in V, mvf)]
+        @test conley_index(lc, V) == [0, 1, 0]
+
+        ec = create_simplicial_rectangle(20, 20, euclidean=true, p=p)
+        mvf, dual, info = create_planar_strong_mvf(ec, circle_vf)
+        @test length(info["exit cells"]) == 160
+        @test isempty(info["entrance cells"])
+        lcr, mvfr = remove_exit_set(ec, mvf)
+        indices = sort([conley_index(lcr, M) for M in morse_sets(lcr, mvfr)])
+        @test [1, 0, 0] in indices
+        @test [0, 1, 1] in indices
+        lcr0, mvfr0 = remove_exit_set(ec, create_planar_mvf(ec, circle_vf))
+        @test indices == sort([conley_index(lcr0, M) for M in morse_sets(lcr0, mvfr0)])
+    end
+end

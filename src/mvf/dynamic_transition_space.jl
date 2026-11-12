@@ -108,7 +108,8 @@ end
 
 """
     strong_mvf_dual_merging(lc::AbstractComplex, fwd::Vector{Vector{Int}},
-                            bwd::Vector{Vector{Int}}; maxrounds::Int=1000)
+                            bwd::Vector{Vector{Int}}; maxrounds::Int=1000,
+                            exitcells=nothing, entrancecells=nothing)
 
 Merge multivectors until all duals are locally closed and disjoint.
 
@@ -117,7 +118,10 @@ former function `create_mvf(...; strong_iso=true)`), formulated for
 precomputed forward and backward transitions `fwd` and `bwd`, and with
 three changes. Multivectors whose duals overlap are merged, the duals do
 not contain entrance cells, and a warning is issued if the procedure has
-not converged after `maxrounds` rounds.
+not converged after `maxrounds` rounds. The exit and entrance cells are
+determined as in `create_strong_mvf`, unless they are given, and the
+forward transitions of exit cells and the backward transitions of entrance
+cells are ignored.
 
 Every round forms the smallest multivector field containing the forward
 transitions and all merges so far, and computes the duals of its
@@ -135,12 +139,24 @@ The function returns the multivector field in the format of
 check of the planar case.
 """
 function strong_mvf_dual_merging(lc::AbstractComplex, fwd::Vector{Vector{Int}},
-                                 bwd::Vector{Vector{Int}}; maxrounds::Int=1000)
+                                 bwd::Vector{Vector{Int}}; maxrounds::Int=1000,
+                                 exitcells=nothing, entrancecells=nothing)
     #
     # The dual merging procedure of pull request #10
     #
 
-    base = copy(fwd)
+    # Remove the transitions of the boundary cells
+
+    if (exitcells === nothing) && (entrancecells === nothing)
+        exitcells, entrancecells = strong_mvf_boundary_cells(lc, fwd, bwd)
+    end
+    isexit = falses(lc.ncells)
+    isexit[exitcells] .= true
+    isentr = falses(lc.ncells)
+    isentr[entrancecells] .= true
+    bwd = [t for t in bwd if !isentr[t[1]]]
+
+    base = [t for t in fwd if !isexit[t[1]]]
     toplexes = findall(isequal(lc.dim), lc.dimensions)
     mvf = Vector{Vector{Int}}()
     converged = false
