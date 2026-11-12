@@ -20,6 +20,8 @@ extract_multivectors
 ```@docs
 create_planar_mvf
 create_spatial_mvf
+planar_transitions
+spatial_transitions
 planar_nontransverse_edges
 ```
 

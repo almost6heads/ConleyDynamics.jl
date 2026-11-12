@@ -202,3 +202,60 @@ end
         @test sort(lcr.labels) == sort(ec.labels[setdiff(1:ec.ncells, exitset)])
     end
 end
+
+@testset "Flow transitions" begin
+    #
+    # The transitions reproduce create_planar_mvf and create_spatial_mvf
+    #
+    function pvf(x::Vector{Float64})
+        x1, x2 = x
+        return [x1 * (1.0 - x1*x1 - 3.0*x2*x2), x2 * (1.0 - 3.0*x1*x1 - x2*x2)]
+    end
+    lc, coords = create_simplicial_rectangle(8, 8)
+    coordsN = convert_planar_coordinates(coords, [-2.0,-2.0], [2.0,2.0])
+    fwd = planar_transitions(lc, coordsN, pvf)
+    @test create_mvf_hull(lc, fwd) == create_planar_mvf(lc, coordsN, pvf)
+    @test all(t -> lc.dimensions[t[1]] < 2 && all(lc.dimensions[t[2:end]] .== 2), fwd)
+
+    fwd5 = planar_transitions(lc, coordsN, pvf, npts=5)
+    @test create_mvf_hull(lc, fwd5) == create_planar_mvf(lc, coordsN, pvf, npts=5)
+
+    # The stricter test only enlarges the transitions, and it flags
+    # the same edges for the reversed vector field
+
+    fwdnt = planar_transitions(lc, coordsN, pvf, nontransverse=true)
+    @test length(fwdnt) == length(fwd)
+    @test all(issubset(fwd[k], fwdnt[k]) for k in eachindex(fwd))
+    @test sort(planar_nontransverse_edges(lc, coordsN, pvf)) ==
+          sort(planar_nontransverse_edges(lc, coordsN, x -> -pvf(x)))
+
+    # The EuclideanComplex method agrees with the Lefschetz complex method
+
+    ec = create_simplicial_rectangle(8, 8, euclidean=true)
+    lce = euclidean_to_lefschetz(ec)
+    evf(x) = pvf(x ./ 2.0 .- 2.0)
+    @test create_mvf_hull(lce, planar_transitions(ec, evf)) == create_planar_mvf(ec, evf)
+
+    # The vertex test uses the direction of the vector field directly, so
+    # that a small transverse component is not lost for large coordinates
+
+    lcv, coordsv = create_simplicial_rectangle(2, 2)
+    coordsL = [isempty(c) ? c : c .+ 1.0e6 for c in coordsv]
+    tvf(x) = [1.0, 1.0e-12]
+    v = findfirst(k -> lcv.dimensions[k] == 0 && coordsv[k] == [1.0, 1.0], 1:lcv.ncells)
+    tv = only(filter(t -> t[1] == v, planar_transitions(lcv, coordsL, tvf)))
+    @test length(tv) == 2
+
+    # Spatial transitions
+
+    function svf(x::Vector{Float64})
+        x1, x2, x3 = x
+        return [x1 * (1.0 - x1*x1), -x2, -x3]
+    end
+    lc3, coords3 = create_cubical_box(3, 3, 3)
+    coords3N = convert_spatial_coordinates(coords3, [-1.5,-1.0,-1.0], [1.5,1.0,1.0])
+    fwd3 = spatial_transitions(lc3, coords3N, svf)
+    @test create_mvf_hull(lc3, fwd3) == create_spatial_mvf(lc3, coords3N, svf)
+    @test create_mvf_hull(lc3, spatial_transitions(lc3, coords3N, svf, npts=5)) ==
+          create_spatial_mvf(lc3, coords3N, svf, npts=5)
+end
