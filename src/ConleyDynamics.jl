@@ -111,6 +111,7 @@ include("./mvf/mvf_forward_orbit.jl")
 include("./mvf/mvf_neighborhood.jl")
 include("./mvf/dynamic_transition_space.jl")
 include("./mvf/create_strong_mvf.jl")
+include("./mvf/mvf_is_strongly_accumulating.jl")
 include("./mvf/mvf_cyclic.jl")
 
 include("./ap/construct_ap_space.jl")

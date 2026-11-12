@@ -508,3 +508,88 @@ end
                                                  entrancecells=entrancecells)
     @test_throws ArgumentError create_strong_mvf(lc, fwd[2:end], bwd)
 end
+
+@testset "Checking strongly accumulating multivector fields" begin
+    #
+    # The result of create_strong_mvf passes all checks, while the
+    # accumulating field of the Ouroboros example fails at its dual
+    #
+    ec, vf = example_ouroboros()
+    lc = euclidean_to_lefschetz(ec)
+    fwd = planar_transitions(ec, vf)
+    bwd = planar_transitions(ec, x -> -vf(x))
+    mvf, dual, info = create_strong_mvf(lc, fwd, bwd)
+    ok, report = mvf_is_strongly_accumulating(lc, mvf, dual, fwd, bwd, details=true)
+    @test ok
+    @test all(isempty, values(report))
+    @test mvf_is_strongly_accumulating(lc, mvf, dual, fwd, bwd)
+
+    toplexes = findall(isequal(2), lc.dimensions)
+    mvf0 = create_mvf_hull(lc, fwd)
+    inmv = falses(lc.ncells)
+    for V in mvf0
+        inmv[V] .= true
+    end
+    dual0 = filter(D -> length(D) > 1, mvf_dual(lc, vcat(mvf0, [[t] for t in toplexes if !inmv[t]]), bwd))
+    ok0, report0 = mvf_is_strongly_accumulating(lc, mvf0, dual0, fwd, bwd, details=true)
+    @test !ok0
+    @test length(report0["dual not locally closed"]) == 1
+    @test isempty(report0["toplexes with different partitions"])
+
+    # Merging two adjacent multivectors without changing the dual is detected
+
+    m = findfirst(j -> j != 1 && !isempty(intersect(lefschetz_closure(lc, mvf[j]), mvf[1])), eachindex(mvf))
+    mvf2 = vcat([sort(vcat(mvf[1], mvf[m]))], mvf[setdiff(eachindex(mvf), [1, m])])
+    ok2, report2 = mvf_is_strongly_accumulating(lc, mvf2, dual, fwd, bwd, details=true)
+    @test !ok2
+    @test !isempty(report2["toplexes with different partitions"])
+
+    # A multivector which does not contain its forward transitions
+
+    mvf3 = deepcopy(mvf)
+    k = findfirst(V -> any(c -> lc.dimensions[c] == 1, V), mvf3)
+    e = first(c for c in mvf3[k] if lc.dimensions[c] == 1)
+    mvf3[k] = setdiff(mvf3[k], [e])
+    ok3, report3 = mvf_is_strongly_accumulating(lc, mvf3, dual, fwd, bwd, details=true)
+    @test !ok3
+    @test e in report3["split forward transitions"]
+
+    # Mixed boundary types and three dimensions
+
+    ecT = create_simplicial_rectangle(6, 4, euclidean=true)
+    lcT = euclidean_to_lefschetz(ecT)
+    tvf(x) = [1.0, 0.3]
+    fwdT = planar_transitions(ecT, tvf)
+    bwdT = planar_transitions(ecT, x -> -tvf(x))
+    mvfT, dualT, infoT = create_strong_mvf(lcT, fwdT, bwdT)
+    @test mvf_is_strongly_accumulating(lcT, mvfT, dualT, fwdT, bwdT)
+    @test mvf_is_strongly_accumulating(lcT, mvfT, dualT, fwdT, bwdT,
+                                       exitcells=infoT["exit cells"],
+                                       entrancecells=infoT["entrance cells"])
+
+    lc3, coords3 = create_cubical_box(4, 4, 4)
+    coords3N = convert_spatial_coordinates(coords3, [-1.5,-1.0,-1.0], [1.5,1.0,1.0])
+    v3(x) = [x[1] * (1.0 - x[1]^2) - 0.3*x[2], -x[2] + 0.3*x[1], -x[3]]
+    fwd3 = spatial_transitions(lc3, coords3N, v3)
+    bwd3 = spatial_transitions(lc3, coords3N, x -> -v3(x))
+    mvf3d, dual3d, info3d = create_strong_mvf(lc3, fwd3, bwd3)
+    ok3d, report3d = mvf_is_strongly_accumulating(lc3, mvf3d, dual3d, fwd3, bwd3, details=true)
+    @test ok3d
+    @test isempty(report3d["disconnected"])
+
+    # Isolating blocks: a single multivector, and the union of all of them
+
+    for V in mvf
+        mouth, dualset, dualmouth, islc = strong_isoblock_sets(lc, V, mvf, dual)
+        @test islc
+        @test mouth == sort(setdiff(lefschetz_closure(lc, V), V))
+        @test sort(lefschetz_closure(lc, dualset)) == sort(lefschetz_closure(lc, V))
+        @test sort(union(dualset, dualmouth)) == sort(union(V, mouth))
+    end
+    U = collect(1:lc.ncells)
+    mouth, dualset, dualmouth, islc = strong_isoblock_sets(lc, U, mvf, dual)
+    @test isempty(mouth)
+    @test islc
+    @test sort(dualmouth) == sort(info["entrance cells"])
+    @test_throws ArgumentError strong_isoblock_sets(lc, mvf[1][1:1], mvf, dual)
+end

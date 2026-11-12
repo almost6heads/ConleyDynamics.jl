@@ -28,6 +28,8 @@ mvf_dual
 create_strong_mvf
 create_planar_strong_mvf
 create_spatial_strong_mvf
+mvf_is_strongly_accumulating
+strong_isoblock_sets
 ```
 
 ## Multivector Digraphs and Periodic Orbits
