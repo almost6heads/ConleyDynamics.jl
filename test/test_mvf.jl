@@ -373,3 +373,138 @@ end
     @test cyclic_partition_angular(ec, corners, [1, 2, 3], 4, center=[2.0, 2.5],
                                    clockwise=true) == [4, 2, 1]
 end
+
+@testset "Finest strongly accumulating multivector fields" begin
+    #
+    # The worklist implementation agrees with the iteration in the proof
+    # of the theorem, and in the planar case with the dual merging of
+    # pull request #10. The result is strongly accumulating.
+    #
+    canon(m) = Set(sort.(m))
+
+    function check_strong(lc, fwd, bwd)
+        mvf, dual, info = create_strong_mvf(lc, fwd, bwd)
+        rmvf, rdual, rounds = ConleyDynamics.strong_mvf_reference(lc, fwd, bwd)
+        @test canon(mvf) == canon(rmvf)
+        @test canon(dual) == canon(rdual)
+
+        # Every forward and backward transition lies in one multivector
+
+        isexit = falses(lc.ncells)
+        isexit[info["exit cells"]] .= true
+        isentr = falses(lc.ncells)
+        isentr[info["entrance cells"]] .= true
+        c2m = zeros(Int, lc.ncells)
+        for (k, V) in enumerate(mvf), c in V
+            c2m[c] = k
+        end
+        c2d = zeros(Int, lc.ncells)
+        for (k, V) in enumerate(dual), c in V
+            c2d[c] = k
+        end
+        @test all(t -> isexit[t[1]] || all(c -> c == t[1] || c2m[c] == c2m[t[1]], t) &&
+                       (c2m[t[1]] != 0), fwd)
+        @test all(t -> isentr[t[1]] || all(c -> c == t[1] || c2d[c] == c2d[t[1]], t) &&
+                       (c2d[t[1]] != 0), bwd)
+        @test all(V -> lefschetz_is_locally_closed(lc, V), mvf)
+        @test all(V -> lefschetz_is_locally_closed(lc, V), dual)
+        @test all(V -> !any(isexit[V]), mvf)
+        @test all(V -> !any(isentr[V]), dual)
+
+        # The multivectors and their duals have the same toplexes, and the
+        # duals agree with the characterization via immediate pasts
+
+        tops(V) = filter(c -> lc.dimensions[c] == lc.dim, V)
+        for k in eachindex(mvf)
+            j = info["mvf to dual"][k]
+            if j == 0
+                @test length(tops(mvf[k])) == 1
+            else
+                @test tops(mvf[k]) == tops(dual[j])
+                @test info["dual to mvf"][j] == k
+            end
+        end
+        toplexes = findall(isequal(lc.dim), lc.dimensions)
+        inmv = falses(lc.ncells)
+        for V in mvf
+            inmv[V] .= true
+        end
+        allmvf = vcat(mvf, [[t] for t in toplexes if !inmv[t]])
+        @test canon(filter(D -> length(D) > 1, mvf_dual(lc, allmvf, bwd))) == canon(dual)
+
+        # The result is coarser than the accumulating multivector field
+
+        mvf0 = create_mvf_hull(lc, [t for t in fwd if !isexit[t[1]]])
+        @test all(any(issubset(V0, V) for V in mvf) for V0 in mvf0)
+        return mvf, dual, info, rounds
+    end
+
+    # The Ouroboros example (attractor, all boundary cells are entrance cells)
+
+    ec, vf = example_ouroboros()
+    lc = euclidean_to_lefschetz(ec)
+    fwd = planar_transitions(ec, vf)
+    bwd = planar_transitions(ec, x -> -vf(x))
+    mvf, dual, info, rounds = check_strong(lc, fwd, bwd)
+    @test length(mvf) == 64
+    @test rounds == 1
+    @test isempty(info["exit cells"])
+    @test length(info["entrance cells"]) == 36
+    @test canon(mvf) == canon(ConleyDynamics.strong_mvf_dual_merging(lc, fwd, bwd))
+    mvfw, dualw, infow = create_planar_strong_mvf(ec, vf)
+    @test mvfw == mvf
+    @test dualw == dual
+
+    # A tilted flow with entrance, exit, and tangency cells
+
+    ec = create_simplicial_rectangle(6, 4, euclidean=true)
+    lc = euclidean_to_lefschetz(ec)
+    tvf(x) = [1.0, 0.3]
+    fwd = planar_transitions(ec, tvf)
+    bwd = planar_transitions(ec, x -> -tvf(x))
+    mvf, dual, info, rounds = check_strong(lc, fwd, bwd)
+    @test canon(mvf) == canon(ConleyDynamics.strong_mvf_dual_merging(lc, fwd, bwd))
+    vertex(p) = findfirst(k -> lc.dimensions[k] == 0 && ec.coords[k][1] == p, 1:lc.ncells)
+    tangency = intersect(info["exit cells"], info["entrance cells"])
+    @test sort(tangency) == sort([vertex([6.0, 0.0]), vertex([0.0, 4.0])])
+    @test lefschetz_is_closed(lc, info["exit cells"])
+    @test lefschetz_is_closed(lc, info["entrance cells"])
+
+    # A saddle at the center of the rectangle
+
+    ec = create_simplicial_rectangle(8, 8, euclidean=true)
+    lc = euclidean_to_lefschetz(ec)
+    svf(x) = [x[1] - 4.0, 4.0 - x[2]]
+    fwd = planar_transitions(ec, svf)
+    bwd = planar_transitions(ec, x -> -svf(x))
+    mvf, dual, info, rounds = check_strong(lc, fwd, bwd)
+    @test canon(mvf) == canon(ConleyDynamics.strong_mvf_dual_merging(lc, fwd, bwd))
+
+    # A cubical box in three dimensions
+
+    lc3, coords3 = create_cubical_box(4, 4, 4)
+    coords3N = convert_spatial_coordinates(coords3, [-1.5,-1.0,-1.0], [1.5,1.0,1.0])
+    v3(x) = [x[1] * (1.0 - x[1]^2) - 0.3*x[2], -x[2] + 0.3*x[1], -x[3]]
+    fwd3 = spatial_transitions(lc3, coords3N, v3)
+    bwd3 = spatial_transitions(lc3, coords3N, x -> -v3(x))
+    mvf3, dual3, info3, rounds3 = check_strong(lc3, fwd3, bwd3)
+    mvf3w, dual3w, info3w = create_spatial_strong_mvf(lc3, coords3N, v3)
+    @test mvf3w == mvf3
+
+    # Errors: a flow along the boundary, boundary cells which are not
+    # closed, and cells without transitions
+
+    ec = create_simplicial_rectangle(6, 4, euclidean=true)
+    lc = euclidean_to_lefschetz(ec)
+    hvf(x) = [1.0, 0.0]
+    @test_throws ArgumentError create_planar_strong_mvf(ec, hvf)
+    fwd = planar_transitions(ec, tvf)
+    bwd = planar_transitions(ec, x -> -tvf(x))
+    exitcells, entrancecells = ConleyDynamics.strong_mvf_boundary_cells(lc, fwd, bwd)
+    edge = first(c for c in exitcells if lc.dimensions[c] == 1)
+    @test_throws ArgumentError create_strong_mvf(lc, fwd, bwd, exitcells=[edge],
+                                                 entrancecells=entrancecells)
+    @test_throws ArgumentError create_strong_mvf(lc, fwd, bwd, exitcells=Int[],
+                                                 entrancecells=entrancecells)
+    @test_throws ArgumentError create_strong_mvf(lc, fwd[2:end], bwd)
+end

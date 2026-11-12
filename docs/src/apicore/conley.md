@@ -25,6 +25,9 @@ spatial_transitions
 planar_nontransverse_edges
 mvf_dual_set
 mvf_dual
+create_strong_mvf
+create_planar_strong_mvf
+create_spatial_strong_mvf
 ```
 
 ## Multivector Digraphs and Periodic Orbits
