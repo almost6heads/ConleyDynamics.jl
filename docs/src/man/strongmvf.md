@@ -140,10 +140,10 @@ constructed the following example, see [thorpe:26a](@cite). It is named
 after the Ouroboros, the ancient symbol of a snake which eats its own
 tail.
 
-![The Ouroboros multivector of the accumulating multivector field](img/ouroborosacc.png)
+![Left: the Ouroboros multivector of the accumulating multivector field. Right: the merged multivector of the strongly accumulating multivector field](img/ouroboros.png)
 
-The image shows two multivectors of the accumulating multivector field
-`mvf` from above. The large multivector in yellow is a curved strip which
+The left panel of the image shows two multivectors of the accumulating
+multivector field `mvf` from above. The large multivector in yellow is a curved strip which
 winds around the center of the rectangle, and its head touches its tail at
 a single vertex. The small multivector in dark green lies just in front of
 its head. The vector field is directed toward the center, so that the flow
@@ -285,13 +285,12 @@ info["couplings"]
 There are no exit cells, since the flow enters the rectangle everywhere,
 and the 36 entrance cells form its boundary. Compared to the accumulating
 multivector field, there is one multivector less: The yellow and the dark
-green multivectors in the image above have been merged into the single
-multivector shown in the following image, and its closure is a strong
+green multivectors in the left panel of the image in
+[The Ouroboros Example](@ref) have been merged into the single multivector
+shown in its right panel, and the closure of this multivector is a strong
 isolating block. The number of *couplings* counts how often the merging
 of two groups of toplexes in one of the two multivector fields had to be
 transferred to the other one.
-
-![The merged multivector of the strongly accumulating multivector field](img/ouroborosstrong.png)
 
 The implementation keeps one union-find structure for each of the two
 multivector fields, and it restores local closedness incrementally after
@@ -718,10 +717,10 @@ ms = morse_sets(ec, mvf);
 ```
 
 The first Morse set contains the periodic orbit, and the second one the
-unstable focus. Since [`cyclic_partition_angular`](@ref) is restricted to
-the plane, we compute the angle of the barycenter of every multivector
-directly, and we use it both for the labels and for the search for small
-cycles:
+unstable focus. The angular partition of the previous example is only
+available in the plane. We therefore compute the angle of the barycenter
+of every multivector directly, and we use it both for the labels and for
+the search for small cycles:
 
 ```julia
 full = mvf_with_singletons(ec, mvf);
