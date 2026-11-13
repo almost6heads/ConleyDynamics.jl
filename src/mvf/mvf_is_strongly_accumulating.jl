@@ -5,7 +5,7 @@ export mvf_is_strongly_accumulating, strong_isoblock_sets
                                  dualmvf::Vector{Vector{Int}},
                                  fwd::Vector{Vector{Int}}, bwd::Vector{Vector{Int}};
                                  exitcells=nothing, entrancecells=nothing,
-                                 details::Bool=false)
+                                 merge=Vector{Vector{Int}}(), details::Bool=false)
 
 Check whether a multivector field is strongly accumulating with dual
 `dualmvf`, with respect to the forward transitions `fwd` and the backward
@@ -30,6 +30,8 @@ singletons. The following conditions are checked:
   the cells whose forward transitions meet `V*`. These sets are computed
   independently with `mvf_dual`.
 * The closures of `V` and `V*` agree.
+* Every set in `merge` contains no exit cells and lies in a single
+  multivector of `mvf`, see `create_strong_mvf`.
 
 The function returns `true` if all conditions hold. If `details=true`, it
 returns a tuple `(ok, report)`, where `report` is a dictionary which lists
@@ -44,6 +46,7 @@ function mvf_is_strongly_accumulating(lc::AbstractComplex, mvf::Vector{Vector{In
                                       dualmvf::Vector{Vector{Int}},
                                       fwd::Vector{Vector{Int}}, bwd::Vector{Vector{Int}};
                                       exitcells=nothing, entrancecells=nothing,
+                                      merge::Vector{Vector{Int}}=Vector{Vector{Int}}(),
                                       details::Bool=false)
     #
     # Check whether a multivector field is strongly accumulating
@@ -107,6 +110,11 @@ function mvf_is_strongly_accumulating(lc::AbstractComplex, mvf::Vector{Vector{In
         splittransitions(fwd, c2m, isexit)
     report["split backward transitions"], report["missing backward transitions"] =
         splittransitions(bwd, c2d, isentr)
+    report["split merge sets"] = [k for k in 1:length(merge)
+                                  if any(c -> isexit[c], merge[k]) ||
+                                     (length(merge[k]) > 1 &&
+                                      (c2m[merge[k][1]] == 0 ||
+                                       any(c -> c2m[c] != c2m[merge[k][1]], merge[k])))]
 
     # Both fields induce the same partition of the toplexes. Singletons
     # get the negative toplex as their label.

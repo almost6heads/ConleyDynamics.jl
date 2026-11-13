@@ -5,7 +5,8 @@ export create_strong_mvf, create_planar_strong_mvf, create_spatial_strong_mvf
                                            fwd::Vector{Vector{Int}},
                                            bwd::Vector{Vector{Int}};
                                            exitcells=nothing,
-                                           entrancecells=nothing)
+                                           entrancecells=nothing,
+                                           merge=Vector{Vector{Int}}())
 
 Create the finest strongly accumulating multivector field for given
 forward and backward transitions.
@@ -39,6 +40,18 @@ listed. The dictionary `info` contains the following entries:
 * `"forward merges"`, `"backward merges"`, `"couplings"`, `"time"`:
   Statistics of the computation.
 
+The optional keyword `merge` is a list of sets of cells, each of which has
+to lie in a single multivector of `mvf`. The function then returns the
+finest strongly accumulating multivector field with this additional
+property, together with its dual. The sets must not contain exit cells,
+and they are only imposed on `mvf`, i.e., the dual field contains the
+toplexes of each set in a single multivector, but not necessarily its
+other cells. If every set is connected, then all multivectors of the
+result are connected (up to the sampling of the transitions). This can be
+used to remove combinatorial artifacts of a mesh, for example a small
+cycle in the multivector digraph (see `mvf_digraph`) which does not
+reflect the dynamics, by merging the union of its multivectors.
+
 The boundary of the domain is described by the *exit cells*, through
 which the flow leaves the domain, and the *entrance cells*, through which
 it enters. Cells at which the flow touches the boundary from outside belong
@@ -59,8 +72,8 @@ transition, or if a cell outside the entrance cells has no backward
 transition. The last two conditions are sampled versions of the
 assumption that every cell can be left in forward and in backward time.
 
-The construction is Theorem "Finest strongly accumulating multivector
-field" of the paper *Global dynamics via multivector fields on Lefschetz
+The construction, including the keyword `merge`, is Theorem "Finest
+strongly accumulating multivector field" of the paper *Global dynamics via multivector fields on Lefschetz
 complexes*. It formalizes the merging procedure of Justin Thorpe in his
 dissertation *Periodic Orbits in the Setting of Combinatorial Dynamics*
 (George Mason University, 2026), which was implemented in pull request #10.
@@ -74,7 +87,8 @@ required properties.
 """
 function create_strong_mvf(lc::AbstractComplex, fwd::Vector{Vector{Int}},
                            bwd::Vector{Vector{Int}};
-                           exitcells=nothing, entrancecells=nothing)
+                           exitcells=nothing, entrancecells=nothing,
+                           merge::Vector{Vector{Int}}=Vector{Vector{Int}}())
     #
     # Create the finest strongly accumulating multivector field
     #
@@ -115,6 +129,17 @@ function create_strong_mvf(lc::AbstractComplex, fwd::Vector{Vector{Int}},
     isentr[entrancecells] .= true
     if any(c -> (dims[c] == lc.dim) && (isexit[c] || isentr[c]), 1:ncells)
         throw(ArgumentError("create_strong_mvf: toplexes cannot be boundary cells"))
+    end
+
+    # The prescribed merge sets must not contain exit cells
+
+    for S in merge
+        all(c -> 1 <= c <= ncells, S) ||
+            throw(ArgumentError("create_strong_mvf: a merge set contains an invalid cell index"))
+        if any(c -> isexit[c], S)
+            throw(ArgumentError("create_strong_mvf: the merge set starting with cell " *
+                                "$(S[1]) contains exit cells"))
+        end
     end
 
     # Check that every cell can be left in forward and in backward time
@@ -272,6 +297,14 @@ function create_strong_mvf(lc::AbstractComplex, fwd::Vector{Vector{Int}},
         end
     end
 
+    # Enter the prescribed merge sets into the forward field
+
+    for S in merge
+        for m in 2:length(S)
+            push!(queue, (1, S[1], S[m]))
+        end
+    end
+
     # Process merges and local closedness checks until nothing changes
 
     while true
@@ -344,7 +377,8 @@ end
     mvf, dualmvf, info = create_planar_strong_mvf(lc::AbstractComplex,
                              coords::Vector{<:Vector{<:Real}}, vf;
                              npts::Int=10, nontransverse::Bool=false,
-                             exitcells=nothing, entrancecells=nothing)
+                             exitcells=nothing, entrancecells=nothing,
+                             merge=Vector{Vector{Int}}())
 
 Create the finest strongly accumulating multivector field for a planar
 vector field.
@@ -353,23 +387,25 @@ The arguments `lc`, `coords`, and `vf` are as in `create_planar_mvf`. The
 forward and backward transitions are computed by `planar_transitions` for
 the vector field `vf` and for the reversed field `x -> -vf(x)`, with the
 same keywords `npts` and `nontransverse`, and they are passed to
-`create_strong_mvf`, together with the optional boundary cells. See
+`create_strong_mvf`, together with the optional boundary cells and merge sets. See
 `create_strong_mvf` for a description of the result.
 """
 function create_planar_strong_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf;
                                   npts::Int=10, nontransverse::Bool=false,
-                                  exitcells=nothing, entrancecells=nothing)
+                                  exitcells=nothing, entrancecells=nothing,
+                                  merge::Vector{Vector{Int}}=Vector{Vector{Int}}())
     fwd = planar_transitions(lc, coords, vf, npts=npts, nontransverse=nontransverse)
     bwd = planar_transitions(lc, coords, x -> -vf(x), npts=npts,
                              nontransverse=nontransverse)
     return create_strong_mvf(lc, fwd, bwd, exitcells=exitcells,
-                             entrancecells=entrancecells)
+                             entrancecells=entrancecells, merge=merge)
 end
 
 """
     mvf, dualmvf, info = create_planar_strong_mvf(ec::EuclideanComplex, vf;
                              npts::Int=10, nontransverse::Bool=false,
-                             exitcells=nothing, entrancecells=nothing)
+                             exitcells=nothing, entrancecells=nothing,
+                             merge=Vector{Vector{Int}}())
 
 Create the finest strongly accumulating multivector field for a planar
 vector field on a `EuclideanComplex`, see the method for Lefschetz
@@ -377,20 +413,21 @@ complexes.
 """
 function create_planar_strong_mvf(ec::EuclideanComplex, vf; npts::Int=10,
                                   nontransverse::Bool=false,
-                                  exitcells=nothing, entrancecells=nothing)
+                                  exitcells=nothing, entrancecells=nothing,
+                                  merge::Vector{Vector{Int}}=Vector{Vector{Int}}())
     _check_coords2d(ec, "create_planar_strong_mvf",
                     "For complexes in three dimensions, use create_spatial_strong_mvf.")
     lc = euclidean_to_lefschetz(ec)
     return create_planar_strong_mvf(lc, euclidean_vertex_coords(ec), vf, npts=npts,
                                     nontransverse=nontransverse, exitcells=exitcells,
-                                    entrancecells=entrancecells)
+                                    entrancecells=entrancecells, merge=merge)
 end
 
 """
     mvf, dualmvf, info = create_spatial_strong_mvf(lc::AbstractComplex,
                              coords::Vector{<:Vector{<:Real}}, vf;
                              npts::Int=3, exitcells=nothing,
-                             entrancecells=nothing)
+                             entrancecells=nothing, merge=Vector{Vector{Int}}())
 
 Create the finest strongly accumulating multivector field for a vector
 field in three dimensions.
@@ -403,28 +440,31 @@ with the optional boundary cells. See `create_strong_mvf` for a
 description of the result.
 """
 function create_spatial_strong_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf;
-                                   npts::Int=3, exitcells=nothing, entrancecells=nothing)
+                                   npts::Int=3, exitcells=nothing, entrancecells=nothing,
+                                   merge::Vector{Vector{Int}}=Vector{Vector{Int}}())
     fwd = spatial_transitions(lc, coords, vf, npts=npts)
     bwd = spatial_transitions(lc, coords, x -> -vf(x), npts=npts)
     return create_strong_mvf(lc, fwd, bwd, exitcells=exitcells,
-                             entrancecells=entrancecells)
+                             entrancecells=entrancecells, merge=merge)
 end
 
 """
     mvf, dualmvf, info = create_spatial_strong_mvf(ec::EuclideanComplex, vf;
                              npts::Int=3, exitcells=nothing,
-                             entrancecells=nothing)
+                             entrancecells=nothing, merge=Vector{Vector{Int}}())
 
 Create the finest strongly accumulating multivector field for a vector
 field in three dimensions on a `EuclideanComplex`, see the method for
 Lefschetz complexes.
 """
 function create_spatial_strong_mvf(ec::EuclideanComplex, vf; npts::Int=3,
-                                   exitcells=nothing, entrancecells=nothing)
+                                   exitcells=nothing, entrancecells=nothing,
+                                   merge::Vector{Vector{Int}}=Vector{Vector{Int}}())
     _check_spatial_complex(ec, "create_spatial_strong_mvf")
     lc = euclidean_to_lefschetz(ec)
     return create_spatial_strong_mvf(lc, euclidean_vertex_coords(ec), vf, npts=npts,
-                                     exitcells=exitcells, entrancecells=entrancecells)
+                                     exitcells=exitcells, entrancecells=entrancecells,
+                                     merge=merge)
 end
 
 ###############################################################################
@@ -489,7 +529,8 @@ end
 
 function strong_mvf_reference(lc::AbstractComplex, fwd::Vector{Vector{Int}},
                               bwd::Vector{Vector{Int}};
-                              exitcells=nothing, entrancecells=nothing)
+                              exitcells=nothing, entrancecells=nothing,
+                              merge::Vector{Vector{Int}}=Vector{Vector{Int}}())
     #
     # Reference implementation of the finest strongly accumulating
     # multivector field, which follows the iteration in the proof of
@@ -506,7 +547,7 @@ function strong_mvf_reference(lc::AbstractComplex, fwd::Vector{Vector{Int}},
     isexit[exitcells] .= true
     isentr = falses(lc.ncells)
     isentr[entrancecells] .= true
-    fwdX = [t for t in fwd if !isexit[t[1]]]
+    fwdX = vcat([t for t in fwd if !isexit[t[1]]], merge)
     bwdX = [t for t in bwd if !isentr[t[1]]]
     toplexes = findall(isequal(lc.dim), lc.dimensions)
 
