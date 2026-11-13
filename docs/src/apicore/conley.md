@@ -32,6 +32,14 @@ mvf_is_strongly_accumulating
 strong_isoblock_sets
 ```
 
+The following internal function is not exported. It implements the
+original merging procedure of Justin Thorpe, and it serves as an
+independent cross-check of [`create_strong_mvf`](@ref) in the tests.
+
+```@docs
+ConleyDynamics.strong_mvf_dual_merging
+```
+
 ## Multivector Digraphs and Periodic Orbits
 
 ```@docs
