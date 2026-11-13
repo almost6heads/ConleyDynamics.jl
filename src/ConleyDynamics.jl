@@ -113,6 +113,7 @@ include("./mvf/dynamic_transition_space.jl")
 include("./mvf/create_strong_mvf.jl")
 include("./mvf/mvf_is_strongly_accumulating.jl")
 include("./mvf/mvf_cyclic.jl")
+include("./mvf/mvf_periodic.jl")
 
 include("./ap/construct_ap_space.jl")
 include("./ap/construct_ap_stratum.jl")

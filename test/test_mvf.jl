@@ -787,6 +787,93 @@ end
         end
     end
 
+    # Prescribed merge sets (part (b) of the theorem): brute-force
+    # minimality on small complexes, agreement with the reference
+    # implementation, the checking function, and connectedness for
+    # connected merge sets
+
+    function all_valid_partitions_merge(lc, fwd, bwd, merge)
+        tops = findall(isequal(lc.dim), lc.dimensions)
+        n = length(tops)
+        valid = Vector{Vector{Int}}()
+        a = zeros(Int, n)
+        function visit(i, maxlabel)
+            if i > n
+                groups = Dict{Int,Vector{Int}}()
+                for k in 1:n
+                    push!(get!(groups, a[k], Int[]), tops[k])
+                end
+                T = [g for g in values(groups) if length(g) > 1]
+                V = create_mvf_hull(lc, vcat(fwd, merge, T))
+                W = create_mvf_hull(lc, vcat(bwd, T))
+                if toplabels(lc, V, tops) == a && toplabels(lc, W, tops) == a
+                    push!(valid, copy(a))
+                end
+                return
+            end
+            for v in 0:(maxlabel + 1)
+                a[i] = v
+                visit(i + 1, max(maxlabel, v))
+            end
+        end
+        a[1] = 0
+        visit(2, 0)
+        return valid
+    end
+
+    # A connected merge set: a toplex, a facet, and the other toplex at it
+
+    function random_pair(lc)
+        facets = [c for c in 1:lc.ncells if lc.dimensions[c] == lc.dim - 1 &&
+                                            length(lefschetz_coboundary(lc, c)) == 2]
+        f = randelement(facets)
+        return sort(vcat([f], lefschetz_coboundary(lc, f)))
+    end
+
+    for lc in (create_simplicial_rectangle(1, 2)[1], create_cubical_rectangle(2, 4)[1])
+        tops = findall(isequal(lc.dim), lc.dimensions)
+        for trial in 1:3
+            fwd, bwd = height_transitions(lc)
+            merge = [random_pair(lc)]
+            mvf, dual, info = create_strong_mvf(lc, fwd, bwd, exitcells=Int[],
+                                                entrancecells=Int[], merge=merge)
+            valid = all_valid_partitions_merge(lc, fwd, bwd, merge)
+            lab = toplabels(lc, mvf, tops)
+            @test lab in valid
+            @test all(refines(lab, v) for v in valid)
+            @test any(issubset(merge[1], V) for V in mvf)
+        end
+    end
+
+    for lc in (create_simplicial_rectangle(4, 4)[1], create_cubical_box(3, 3, 2)[1])
+        for trial in 1:3
+            fwd, bwd = random_boundary!(lc, height_transitions(lc)...)
+            mvf0, dual0, info0 = create_strong_mvf(lc, fwd, bwd)
+            bc = (exitcells=info0["exit cells"], entrancecells=info0["entrance cells"])
+            isexit = falses(lc.ncells)
+            isexit[bc.exitcells] .= true
+            merge = filter(S -> !any(c -> isexit[c], S), [random_pair(lc) for _ in 1:3])
+            mvf, dual, info = create_strong_mvf(lc, fwd, bwd; bc..., merge=merge)
+            rmvf, rdual, rounds = ConleyDynamics.strong_mvf_reference(lc, fwd, bwd; bc...,
+                                                                      merge=merge)
+            @test canon(mvf) == canon(rmvf)
+            @test canon(dual) == canon(rdual)
+            @test all(S -> any(issubset(S, V) for V in mvf), merge)
+            @test all(any(issubset(V, W) for W in mvf) for V in mvf0)
+            @test mvf_is_strongly_accumulating(lc, mvf, dual, fwd, bwd; bc..., merge=merge)
+            @test !mvf_is_strongly_accumulating(lc, mvf0, dual0, fwd, bwd; bc...,
+                                                merge=merge) || all(S -> any(issubset(S, V)
+                                                for V in mvf0), merge)
+        end
+    end
+
+    lc = create_cubical_rectangle(3, 3)[1]
+    fwd, bwd = random_boundary!(lc, height_transitions(lc)...)
+    ex = ConleyDynamics.strong_mvf_boundary_cells(lc, fwd, bwd)[1]
+    if !isempty(ex)
+        @test_throws ArgumentError create_strong_mvf(lc, fwd, bwd, merge=[[ex[1]]])
+    end
+
     # Local connectedness at dual cells (Lemma dualstar of the paper): For
     # c in V*, all toplexes of V in the star of c lie in one component of V.
     # The lemma requires exact transitions, but it holds in these examples.
@@ -820,6 +907,25 @@ end
     examples = [example_ouroboros(),
                 (create_simplicial_rectangle(8, 8, euclidean=true), x -> [x[1] - 4.0, 4.0 - x[2]]),
                 (create_simplicial_rectangle(20, 20, euclidean=true), circle_vf)]
+
+    # Connected merge sets lead to connected multivectors (part (b) of the
+    # theorem), for transitions which are computed from vector fields
+
+    for (ec, vf) in examples[2:3]
+        lc = euclidean_to_lefschetz(ec)
+        mvf0, dual0, info0 = create_planar_strong_mvf(ec, vf)
+        isexit = falses(lc.ncells)
+        isexit[info0["exit cells"]] .= true
+        merge = filter(S -> !any(c -> isexit[c], S), [random_pair(lc) for _ in 1:6])
+        mvf, dual, info = create_planar_strong_mvf(ec, vf, merge=merge)
+        fwd = planar_transitions(ec, vf)
+        bwd = planar_transitions(ec, x -> -vf(x))
+        ok, rep = mvf_is_strongly_accumulating(lc, mvf, dual, fwd, bwd, merge=merge,
+                                               details=true)
+        @test ok
+        @test isempty(rep["disconnected"])
+        @test all(S -> any(issubset(S, V) for V in mvf), merge)
+    end
     for (ec, vf) in examples
         lc = euclidean_to_lefschetz(ec)
         mvf, dual, info = create_planar_strong_mvf(ec, vf)
@@ -857,4 +963,138 @@ end
         lcr0, mvfr0 = remove_exit_set(ec, create_planar_mvf(ec, circle_vf))
         @test indices == sort([conley_index(lcr0, M) for M in morse_sets(lcr0, mvfr0)])
     end
+end
+
+@testset "Periodic-orbit checks" begin
+    #
+    # An attracting periodic orbit, the circle of radius 1 around the
+    # center of the square [-2,2]^2, which is mapped to [0,n]^2
+    #
+    function cycle_vf(v::Vector{Float64}, n)
+        x, y = 4 * v / n - [2.0, 2.0]
+        r2 = x^2 + y^2
+        return [-y - x * (r2 - 1.0), x - y * (r2 - 1.0)]
+    end
+
+    # (C4) by brute force: a start state is bad if a maximal path through
+    # non-good states exists, i.e., if the non-good states reachable from
+    # it contain a dead end or a cycle
+
+    function c4_bruteforce(out, mvf, C, labels, p, moU)
+        nC = length(C)
+        pos = Dict(v => k for (k, v) in enumerate(C))
+        succ = [[pos[w] for w in out[C[k]] if haskey(pos, w)] for k in 1:nC]
+        moinU = [all(c -> c in moU, setdiff(lefschetz_closure(ec, mvf[v]), mvf[v])) for v in C]
+        fails = zeros(Int, p)
+        for i in 1:p
+            good(k, f) = moinU[k] || (labels[k] == mod1(i + 1, p) && f == 0)
+            nxt(k, f) = [(l, (f == 1 || labels[l] == mod1(i + 2, p)) ? 1 : 0) for l in succ[k]]
+            for k0 in 1:nC
+                labels[k0] == i || continue
+                good(k0, 0) && continue
+                seen = Set([(k0, 0)])
+                stack = [(k0, 0)]
+                bad = false
+                while !isempty(stack)
+                    s = pop!(stack)
+                    isempty(succ[s[1]]) && (bad = true)
+                    for t in nxt(s...)
+                        good(t...) && continue
+                        t in seen || (push!(seen, t); push!(stack, t))
+                    end
+                end
+                if !bad
+                    # cycle in the non-good states reachable from the start
+                    S = collect(seen)
+                    idx = Dict(s => j for (j, s) in enumerate(S))
+                    indeg = zeros(Int, length(S))
+                    for s in S, t in nxt(s...)
+                        haskey(idx, t) && (indeg[idx[t]] += 1)
+                    end
+                    queue = [j for j in 1:length(S) if indeg[j] == 0]
+                    removed = 0
+                    while !isempty(queue)
+                        j = pop!(queue); removed += 1
+                        for t in nxt(S[j]...)
+                            haskey(idx, t) || continue
+                            indeg[idx[t]] -= 1
+                            indeg[idx[t]] == 0 && push!(queue, idx[t])
+                        end
+                    end
+                    bad = removed < length(S)
+                end
+                bad && (fails[i] += 1)
+            end
+        end
+        return fails
+    end
+
+    n = 20
+    ec = create_simplicial_rectangle(n, n, euclidean=true)
+    vf = v -> cycle_vf(v, n)
+    mvf, dual, info = create_planar_strong_mvf(ec, vf)
+    ms = morse_sets(ec, mvf)
+    ci = [conley_index(ec, M) for M in ms]
+    @test [1, 1, 0] in ci
+    @test [0, 0, 1] in ci
+    full = mvf_with_singletons(ec, mvf)
+    @test full[1:length(mvf)] == mvf
+    @test sort(reduce(vcat, full)) == collect(1:ec.ncells)
+    out, c2m, mouths = mvf_digraph(ec, full)
+    C = sort(unique(c2m[ms[findfirst(isequal([1, 1, 0]), ci)]]))
+    Ucells = reduce(vcat, full[C])
+    moU = Set(setdiff(lefschetz_closure(ec, Ucells), Ucells))
+
+    for p in (3, 4, 6)
+        lab = cyclic_partition_angular(ec, full, C, p; center=[n / 2, n / 2])
+        r = check_cyclic_conditions(ec, full, C, lab, p; out=out, mouths=mouths)
+        @test r.C2 && r.C3 && r.C4
+        @test r == check_cyclic_conditions(ec, full, C, lab, p)
+        @test sum(r.sizes) == length(C)
+        labr = cyclic_partition_angular(ec, full, C, p; center=[n / 2, n / 2], clockwise=true)
+        rr = check_cyclic_conditions(ec, full, C, labr, p; out=out, mouths=mouths)
+        @test !rr.C4
+        @test rr.fails == c4_bruteforce(out, full, C, labr, p, moU)
+    end
+
+    # Random labels: agreement of (C4) with the brute-force check
+
+    rngstate = Ref(UInt64(17))
+    function rand01()
+        rngstate[] += 0x9e3779b97f4a7c15
+        z = rngstate[]
+        z = (z ⊻ (z >> 30)) * 0xbf58476d1ce4e5b9
+        z = (z ⊻ (z >> 27)) * 0x94d049bb133111eb
+        z = z ⊻ (z >> 31)
+        return (z >> 11) / 2.0^53
+    end
+    for p in (3, 4, 5)
+        base = cyclic_partition_angular(ec, full, C, p; center=[n / 2, n / 2])
+        for trial in 1:3
+            lab = [rand01() < 0.1 ? 1 + floor(Int, rand01() * p) : l for l in base]
+            r = check_cyclic_conditions(ec, full, C, lab, p; out=out, mouths=mouths)
+            @test r.fails == c4_bruteforce(out, full, C, lab, p, moU)
+        end
+    end
+    @test_throws ArgumentError check_cyclic_conditions(ec, full, C, ones(Int, length(C)), 2)
+
+    # The direction test: positive on the periodic orbit, -1 at the
+    # repelling focus, and exactly 1 for a constant vector field
+
+    vals, diam = check_brick_lyapunov(ec, full, C, vf)
+    valm, _ = check_brick_lyapunov(ec, full, C, vf; method=:mean)
+    @test minimum(vals) > 0.9
+    @test all(vals .>= valm .- 1e-12)
+    @test maximum(diam) <= sqrt(2) + 1e-12
+    Ceq = sort(unique(c2m[ms[findfirst(isequal([0, 0, 1]), ci)]]))
+    @test any(isequal(-1.0), check_brick_lyapunov(ec, full, Ceq, vf)[1])
+    valc, _ = check_brick_lyapunov(ec, full, C, v -> [1.0, 0.0]; method=:mean)
+    @test all(x -> isapprox(x, 1.0), valc)
+
+    # Local cycles: a short cycle is found, a cycle around the circle is not
+
+    outs = [[2], [3], [1], [5], [6], [4]]
+    param = [0.10, 0.11, 0.12, 0.0, 0.33, 0.66]
+    @test cyclic_local_cycles(outs, collect(1:6), param; width=0.05) == [[1, 2, 3]]
+    @test isempty(cyclic_local_cycles(outs, collect(4:6), param[4:6]; width=0.05))
 end

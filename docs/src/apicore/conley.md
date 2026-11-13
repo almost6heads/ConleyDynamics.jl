@@ -38,6 +38,10 @@ strong_isoblock_sets
 mvf_digraph
 cyclic_partition_bfs
 cyclic_partition_angular
+mvf_with_singletons
+check_cyclic_conditions
+check_brick_lyapunov
+cyclic_local_cycles
 ```
 
 ## Conley Index Computations
