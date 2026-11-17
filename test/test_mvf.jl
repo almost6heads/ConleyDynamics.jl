@@ -363,6 +363,32 @@ end
         @test sort(dg[k]) == [m for m in eachindex(allmvf) if m != k && !isempty(intersect(mo, allmvf[m]))]
     end
 
+    # The digraph requires a complete multivector field: missing
+    # singletons and overlapping sets lead to an error
+
+    @test mvf_digraph(lc, mvf_with_singletons(lc, mvf)) == (dg, cell2mv, mouths)
+    incomplete = allmvf[2:end]
+    @test_throws ArgumentError mvf_digraph(lc, incomplete)
+    msg = try mvf_digraph(lc, incomplete); "" catch err; err.msg end
+    @test occursin("not complete", msg) && occursin("mvf_with_singletons", msg)
+    overlapping = vcat(allmvf, [[allmvf[1][1]]])
+    @test_throws ArgumentError mvf_digraph(lc, overlapping)
+    msg = try mvf_digraph(lc, overlapping); "" catch err; err.msg end
+    @test occursin("more than one multivector", msg)
+    @test_throws ArgumentError mvf_digraph(lc, vcat(allmvf, [[lc.ncells + 1]]))
+
+    # The same check in check_cyclic_conditions, also if the digraph is given
+
+    Call = collect(eachindex(allmvf))
+    lab3 = [mod1(k, 3) for k in Call]
+    @test_throws ArgumentError check_cyclic_conditions(lc, incomplete, [1, 2, 3],
+                                                       [1, 2, 3], 3)
+    @test_throws ArgumentError check_cyclic_conditions(lc, incomplete, [1, 2, 3],
+                                                       [1, 2, 3], 3; out=dg, mouths=mouths)
+    @test_throws ArgumentError check_cyclic_conditions(lc, overlapping, Call, lab3, 3;
+                                                       out=dg, mouths=mouths)
+    @test check_cyclic_conditions(lc, allmvf, Call, lab3, 3; out=dg, mouths=mouths) isa NamedTuple
+
     # Angular sectors around the center of the rectangle
 
     labels = cyclic_partition_angular(ec, allmvf, collect(eachindex(allmvf)), 4, center=[2.0, 2.5])
@@ -383,7 +409,7 @@ end
     canon(m) = Set(sort.(m))
 
     function check_strong(lc, fwd, bwd)
-        mvf, dual, info = create_strong_mvf(lc, fwd, bwd)
+        mvf, dual, info = create_strong_mvf(lc, fwd, bwd, details=true)
         rmvf, rdual, rounds = ConleyDynamics.strong_mvf_reference(lc, fwd, bwd)
         @test canon(mvf) == canon(rmvf)
         @test canon(dual) == canon(rdual)
@@ -451,9 +477,22 @@ end
     @test isempty(info["exit cells"])
     @test length(info["entrance cells"]) == 36
     @test canon(mvf) == canon(ConleyDynamics.strong_mvf_dual_merging(lc, fwd, bwd))
-    mvfw, dualw, infow = create_planar_strong_mvf(ec, vf)
+    mvfw, dualw = create_planar_strong_mvf(ec, vf)
     @test mvfw == mvf
     @test dualw == dual
+
+    # The dictionary info is only returned with details=true
+
+    res = create_strong_mvf(lc, fwd, bwd)
+    @test length(res) == 2
+    @test res == (mvf, dual)
+    res = create_strong_mvf(lc, fwd, bwd, details=true)
+    @test length(res) == 3
+    @test res[1] == mvf && res[2] == dual && res[3] isa Dict
+    resw = create_planar_strong_mvf(ec, vf, details=true)
+    @test length(resw) == 3
+    @test resw[1] == mvf && resw[2] == dual
+    @test resw[3]["entrance cells"] == res[3]["entrance cells"]
 
     # A tilted flow with entrance, exit, and tangency cells
 
@@ -488,7 +527,7 @@ end
     fwd3 = spatial_transitions(lc3, coords3N, v3)
     bwd3 = spatial_transitions(lc3, coords3N, x -> -v3(x))
     mvf3, dual3, info3, rounds3 = check_strong(lc3, fwd3, bwd3)
-    mvf3w, dual3w, info3w = create_spatial_strong_mvf(lc3, coords3N, v3)
+    mvf3w, dual3w = create_spatial_strong_mvf(lc3, coords3N, v3)
     @test mvf3w == mvf3
 
     # Errors: a flow along the boundary, boundary cells which are not
@@ -518,7 +557,7 @@ end
     lc = euclidean_to_lefschetz(ec)
     fwd = planar_transitions(ec, vf)
     bwd = planar_transitions(ec, x -> -vf(x))
-    mvf, dual, info = create_strong_mvf(lc, fwd, bwd)
+    mvf, dual, info = create_strong_mvf(lc, fwd, bwd, details=true)
     ok, report = mvf_is_strongly_accumulating(lc, mvf, dual, fwd, bwd, details=true)
     @test ok
     @test all(isempty, values(report))
@@ -561,7 +600,7 @@ end
     tvf(x) = [1.0, 0.3]
     fwdT = planar_transitions(ecT, tvf)
     bwdT = planar_transitions(ecT, x -> -tvf(x))
-    mvfT, dualT, infoT = create_strong_mvf(lcT, fwdT, bwdT)
+    mvfT, dualT, infoT = create_strong_mvf(lcT, fwdT, bwdT, details=true)
     @test mvf_is_strongly_accumulating(lcT, mvfT, dualT, fwdT, bwdT)
     @test mvf_is_strongly_accumulating(lcT, mvfT, dualT, fwdT, bwdT,
                                        exitcells=infoT["exit cells"],
@@ -572,7 +611,7 @@ end
     v3(x) = [x[1] * (1.0 - x[1]^2) - 0.3*x[2], -x[2] + 0.3*x[1], -x[3]]
     fwd3 = spatial_transitions(lc3, coords3N, v3)
     bwd3 = spatial_transitions(lc3, coords3N, x -> -v3(x))
-    mvf3d, dual3d, info3d = create_strong_mvf(lc3, fwd3, bwd3)
+    mvf3d, dual3d = create_strong_mvf(lc3, fwd3, bwd3)
     ok3d, report3d = mvf_is_strongly_accumulating(lc3, mvf3d, dual3d, fwd3, bwd3, details=true)
     @test ok3d
     @test isempty(report3d["disconnected"])
@@ -704,7 +743,7 @@ end
         tops = findall(isequal(lc.dim), lc.dimensions)
         for trial in 1:4
             fwd, bwd = height_transitions(lc)
-            mvf, dual, info = create_strong_mvf(lc, fwd, bwd, exitcells=Int[], entrancecells=Int[])
+            mvf, dual = create_strong_mvf(lc, fwd, bwd, exitcells=Int[], entrancecells=Int[])
             valid = all_valid_partitions(lc, fwd, bwd)
             lab = toplabels(lc, mvf, tops)
             @test lab in valid
@@ -735,7 +774,7 @@ end
             push!(transitions, tr)
         end
         fwd, bwd = transitions
-        mvf, dual, info = create_strong_mvf(lc, fwd, bwd, exitcells=Int[], entrancecells=Int[])
+        mvf, dual = create_strong_mvf(lc, fwd, bwd, exitcells=Int[], entrancecells=Int[])
         valid = all_valid_partitions(lc, fwd, bwd)
         lab = toplabels(lc, mvf, tops)
         @test lab in valid
@@ -752,7 +791,7 @@ end
                create_cubical_box(3, 3, 2)[1])
         for trial in 1:3
             fwd, bwd = random_boundary!(lc, height_transitions(lc)...)
-            mvf, dual, info = create_strong_mvf(lc, fwd, bwd)
+            mvf, dual, info = create_strong_mvf(lc, fwd, bwd, details=true)
             rmvf, rdual, rounds = ConleyDynamics.strong_mvf_reference(lc, fwd, bwd)
             @test canon(mvf) == canon(rmvf)
             @test canon(dual) == canon(rdual)
@@ -766,7 +805,7 @@ end
 
             groups = [filter(c -> lc.dimensions[c] == lc.dim, V) for V in mvf]
             seeded = vcat(fwd, filter(g -> length(g) > 1, groups))
-            mvfs, duals, infos = create_strong_mvf(lc, seeded, bwd)
+            mvfs, duals = create_strong_mvf(lc, seeded, bwd)
             @test canon(mvfs) == canon(mvf)
             @test canon(duals) == canon(dual)
 
@@ -780,7 +819,7 @@ end
                     unique!(t)
                 end
             end
-            mvfm, dualm, infom = create_strong_mvf(lc, extra, bwd,
+            mvfm, dualm = create_strong_mvf(lc, extra, bwd,
                                                    exitcells=info["exit cells"],
                                                    entrancecells=info["entrance cells"])
             @test all(any(issubset(V, W) for W in mvfm) for V in mvf)
@@ -835,7 +874,7 @@ end
         for trial in 1:3
             fwd, bwd = height_transitions(lc)
             merge = [random_pair(lc)]
-            mvf, dual, info = create_strong_mvf(lc, fwd, bwd, exitcells=Int[],
+            mvf, dual = create_strong_mvf(lc, fwd, bwd, exitcells=Int[],
                                                 entrancecells=Int[], merge=merge)
             valid = all_valid_partitions_merge(lc, fwd, bwd, merge)
             lab = toplabels(lc, mvf, tops)
@@ -848,12 +887,12 @@ end
     for lc in (create_simplicial_rectangle(4, 4)[1], create_cubical_box(3, 3, 2)[1])
         for trial in 1:3
             fwd, bwd = random_boundary!(lc, height_transitions(lc)...)
-            mvf0, dual0, info0 = create_strong_mvf(lc, fwd, bwd)
+            mvf0, dual0, info0 = create_strong_mvf(lc, fwd, bwd, details=true)
             bc = (exitcells=info0["exit cells"], entrancecells=info0["entrance cells"])
             isexit = falses(lc.ncells)
             isexit[bc.exitcells] .= true
             merge = filter(S -> !any(c -> isexit[c], S), [random_pair(lc) for _ in 1:3])
-            mvf, dual, info = create_strong_mvf(lc, fwd, bwd; bc..., merge=merge)
+            mvf, dual = create_strong_mvf(lc, fwd, bwd; bc..., merge=merge)
             rmvf, rdual, rounds = ConleyDynamics.strong_mvf_reference(lc, fwd, bwd; bc...,
                                                                       merge=merge)
             @test canon(mvf) == canon(rmvf)
@@ -913,11 +952,11 @@ end
 
     for (ec, vf) in examples[2:3]
         lc = euclidean_to_lefschetz(ec)
-        mvf0, dual0, info0 = create_planar_strong_mvf(ec, vf)
+        mvf0, dual0, info0 = create_planar_strong_mvf(ec, vf, details=true)
         isexit = falses(lc.ncells)
         isexit[info0["exit cells"]] .= true
         merge = filter(S -> !any(c -> isexit[c], S), [random_pair(lc) for _ in 1:6])
-        mvf, dual, info = create_planar_strong_mvf(ec, vf, merge=merge)
+        mvf, dual = create_planar_strong_mvf(ec, vf, merge=merge)
         fwd = planar_transitions(ec, vf)
         bwd = planar_transitions(ec, x -> -vf(x))
         ok, rep = mvf_is_strongly_accumulating(lc, mvf, dual, fwd, bwd, merge=merge,
@@ -928,7 +967,7 @@ end
     end
     for (ec, vf) in examples
         lc = euclidean_to_lefschetz(ec)
-        mvf, dual, info = create_planar_strong_mvf(ec, vf)
+        mvf, dual, info = create_planar_strong_mvf(ec, vf, details=true)
         for (j, D) in enumerate(dual)
             k = info["dual to mvf"][j]
             k == 0 && continue
@@ -947,13 +986,13 @@ end
     for p in (2, 0)
         ec = create_simplicial_rectangle(2, 2, euclidean=true, p=p)
         lc = euclidean_to_lefschetz(ec)
-        mvf, dual, info = create_planar_strong_mvf(ec, x -> [x[1] - 1.0, 1.0 - x[2]])
+        mvf, dual = create_planar_strong_mvf(ec, x -> [x[1] - 1.0, 1.0 - x[2]])
         center = findfirst(k -> lc.dimensions[k] == 0 && ec.coords[k][1] == [1.0, 1.0], 1:lc.ncells)
         V = mvf[findfirst(V -> center in V, mvf)]
         @test conley_index(lc, V) == [0, 1, 0]
 
         ec = create_simplicial_rectangle(20, 20, euclidean=true, p=p)
-        mvf, dual, info = create_planar_strong_mvf(ec, circle_vf)
+        mvf, dual, info = create_planar_strong_mvf(ec, circle_vf, details=true)
         @test length(info["exit cells"]) == 160
         @test isempty(info["entrance cells"])
         lcr, mvfr = remove_exit_set(ec, mvf)
@@ -1032,7 +1071,7 @@ end
     n = 20
     ec = create_simplicial_rectangle(n, n, euclidean=true)
     vf = v -> cycle_vf(v, n)
-    mvf, dual, info = create_planar_strong_mvf(ec, vf)
+    mvf, dual = create_planar_strong_mvf(ec, vf)
     ms = morse_sets(ec, mvf)
     ci = [conley_index(ec, M) for M in ms]
     @test [1, 1, 0] in ci

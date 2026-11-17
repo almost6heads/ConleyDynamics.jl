@@ -20,6 +20,15 @@ the multivector of the dual multivector field with the same toplexes, and
 the mouth of `mv*` describes the entry set of the strong isolating block
 given by the closure of `mv`.
 
+Since the transitions list only toplexes as targets, the function in fact
+returns the cells whose immediate past contains a toplex of `mv`. If `mv`
+is a multivector of an accumulating multivector field, this is the same
+set: If a cell `ρ` of `mv` which is not a toplex lies in `Ipt(c)`, then
+`mv` contains a toplex of `Ift(ρ)`, which lies in the star of `ρ`, and
+therefore also in the open set `Ipt(c)`. For other sets `mv`, however,
+cells whose immediate past meets `mv` only in cells of lower dimension
+are not included.
+
 The dual was introduced by Justin Thorpe in his dissertation *Periodic
 Orbits in the Setting of Combinatorial Dynamics* (George Mason University,
 2026) as the union of the interior of `mv` with the cells on its boundary

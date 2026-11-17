@@ -35,12 +35,55 @@ singletons. The following conditions are checked:
 
 The function returns `true` if all conditions hold. If `details=true`, it
 returns a tuple `(ok, report)`, where `report` is a dictionary which lists
-the violations of every condition. In addition, the entries
-`"disconnected"` and `"dual disconnected"` list the multivectors which are
-not connected. The theory guarantees connectedness only if the transitions
-over-approximate the immediate futures and pasts, so a disconnected
-multivector indicates that the sampling missed some transitions. This
-diagnostic does not affect the result `ok`.
+the violations of every condition. Every entry is a vector, which is empty
+if and only if the corresponding condition is satisfied, and `ok` is `true`
+if and only if all entries except the last two are empty. Cells and
+multivectors are given by their indices, where multivector indices refer
+to the positions in `mvf` or `dualmvf`. The dictionary has the following
+keys:
+
+* `"overlapping cells"`, `"dual overlapping cells"`: The cells which lie
+  in more than one multivector of `mvf` or `dualmvf`, respectively.
+* `"not locally closed"`, `"dual not locally closed"`: The multivectors of
+  `mvf` or `dualmvf`, respectively, which are not locally closed.
+* `"exit cells in mvf"`: The exit cells which lie in a multivector of
+  `mvf`.
+* `"entrance cells in dual"`: The entrance cells which lie in a
+  multivector of `dualmvf`.
+* `"split forward transitions"`: The cells which are not exit cells, and
+  whose forward transition does not lie in a single multivector of `mvf`.
+  This includes cells which are singletons of `mvf`, but which have a
+  nontrivial forward transition.
+* `"split backward transitions"`: The analogous cells for the backward
+  transitions, the entrance cells, and `dualmvf`.
+* `"missing forward transitions"`: The cells which are neither toplexes
+  nor exit cells, and which have no forward transition.
+* `"missing backward transitions"`: The cells which are neither toplexes
+  nor entrance cells, and which have no backward transition.
+* `"split merge sets"`: The indices of the sets in `merge` which contain
+  an exit cell, or which do not lie in a single multivector of `mvf`.
+* `"toplexes with different partitions"`: The toplexes at which the
+  partitions of the toplexes induced by `mvf` and `dualmvf` differ.
+* `"duals not given by immediate pasts"`: The multivectors `V` for which
+  the dual computed with `mvf_dual` differs from the multivector of
+  `dualmvf` which contains the same toplexes. Here the indices refer to
+  the list which consists of `mvf`, followed by the singletons of `mvf`
+  which are toplexes, in increasing order.
+* `"multivectors not given by immediate futures"`: The analogous check in
+  the reverse direction. The indices refer to the list which consists of
+  `dualmvf`, followed by the singletons of `dualmvf` which are toplexes,
+  in increasing order. If the multivectors overlap, then these two
+  entries are not computed, and they contain the string `"not checked,
+  since the multivectors overlap"` instead.
+* `"closures differ"`: The multivectors of `mvf` which contain a toplex,
+  and whose closure differs from the closure of the corresponding
+  multivector of `dualmvf`.
+* `"disconnected"`, `"dual disconnected"`: The multivectors of `mvf` or
+  `dualmvf`, respectively, which are not connected. The theory guarantees
+  connectedness only if the transitions over-approximate the immediate
+  futures and pasts, so a disconnected multivector indicates that the
+  sampling missed some transitions. This diagnostic does not affect the
+  result `ok`.
 """
 function mvf_is_strongly_accumulating(lc::AbstractComplex, mvf::Vector{Vector{Int}},
                                       dualmvf::Vector{Vector{Int}},

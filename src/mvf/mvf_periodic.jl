@@ -34,7 +34,9 @@ end
 Check the combinatorial hypotheses for the existence of a periodic orbit.
 
 The multivector field `mvf` has to contain all multivectors, including
-the singletons, see `mvf_with_singletons`. The vector `C` contains the
+the singletons, see `mvf_with_singletons`. As in `mvf_digraph`, this is
+checked, and an `ArgumentError` is raised if a cell lies in no set or in
+more than one set of `mvf`. The vector `C` contains the
 indices of the multivectors of a locally closed and `mvf`-compatible set
 `U`, for example a Morse set, and `labels[k]` is the number between `1`
 and `p` of the subcollection `C_i` which contains the multivector
@@ -81,6 +83,8 @@ function check_cyclic_conditions(lc::AbstractComplex, mvf::Vector{Vector{Int}},
         throw(ArgumentError("check_cyclic_conditions: the labels have to lie between 1 and p"))
     if (out === nothing) || (mouths === nothing)
         out, _, mouths = mvf_digraph(lc, mvf)
+    else
+        complete_mvf_index(lc, mvf, "check_cyclic_conditions")
     end
     nC = length(C)
 
@@ -181,9 +185,11 @@ samples. For `method=:optimal`, it is the direction of the point of
 smallest norm in the convex hull of the normalized samples, which is
 approximated by the Frank-Wolfe (Gilbert) iteration with at most `iters`
 steps. This direction maximizes the smallest inner product, and the value
-is `-1` if the convex hull contains the origin. The vector `diameters`
-contains the diameters of the vertex sets of the multivectors, i.e., of
-the sets `B_V`.
+is `-1` if the convex hull contains the origin. The function returns two
+vectors of the same length as `C`. The entry `values[k]` is the smallest
+inner product described above for the multivector `mvf[C[k]]`, and
+`diameters[k]` is the Euclidean diameter of the set of vertices of its
+closure, i.e., of the set `B_V`.
 
 The test is not rigorous, since the vector field is only evaluated at
 finitely many points.
@@ -270,9 +276,12 @@ is a parameter in `[0,1)` of the vertex `C[k]`, for example the relative
 position along a periodic orbit. For each of the `nwindows` windows of
 length `width`, which start at the points `w / nwindows`, the function
 computes the strongly connected components of the subgraph induced by
-the vertices of `C` with parameter in the window. It returns the
-components with more than one vertex, as sorted vectors of vertices,
-without repetitions. Such a component is a cycle in the digraph along
+the vertices of `C` with parameter in the window. It returns the vector
+`cycles` of the components with more than one vertex, without
+repetitions. Every component is a sorted vector of vertices of the
+digraph, i.e., of elements of `C` such as multivector indices, and not of
+positions in `C`. The components are sorted by their smallest vertex, and
+the result is empty if there are no such cycles. Such a component is a cycle in the digraph along
 which the parameter does not advance, and it prevents hypothesis (C4) of
 `check_cyclic_conditions`. If it is an artifact of the mesh, the union
 of its multivectors can be passed to `create_strong_mvf` as a merge set.

@@ -8,25 +8,29 @@ Compute the multivector digraph of a multivector field.
 The vertices of the digraph are the indices of the multivectors in `mvf`,
 and there is an edge from `k` to `m != k` if the mouth of `mvf[k]`, i.e.,
 the set `cl(mvf[k]) ∖ mvf[k]`, intersects `mvf[m]`. The function returns
-the adjacency lists `out`, where `out[k]` contains the targets of all edges
-starting at `k`, the vector `cell2mv` which gives for every cell the index
-of the multivector containing it (or zero), and the mouths of all
-multivectors.
+three vectors:
 
-Only the sets in `mvf` are used. In order to obtain the full multivector
-digraph, the multivector field has to contain all multivectors, including
-the singletons, which are usually omitted.
+* `out`: The adjacency lists of the digraph, i.e., `out[k]` contains the
+  indices of the targets of all edges starting at `k`, without
+  repetitions and in no particular order. Loops are not included.
+* `cell2mv`: A vector of length `lc.ncells`, whose entry for a cell is
+  the index of the multivector in `mvf` which contains it.
+* `mouths`: The vector of the mouths of all multivectors, i.e.,
+  `mouths[k]` contains the cells of `cl(mvf[k]) ∖ mvf[k]`.
+
+The multivector field `mvf` has to be complete, i.e., it has to contain
+all multivectors, including the singletons, which are usually omitted, see
+`mvf_with_singletons`. In other words, every cell of `lc` has to lie in
+exactly one set of `mvf`. This is checked, and an `ArgumentError` is
+raised if a cell is missing, or if it lies in more than one set. Without
+this check, a missing singleton would silently remove all edges into it
+from the digraph.
 """
 function mvf_digraph(lc::AbstractComplex, mvf::Vector{Vector{Int}})
     #
     # Compute the multivector digraph
     #
-    cell2mv = zeros(Int, lc.ncells)
-    for k in 1:length(mvf)
-        for c in mvf[k]
-            cell2mv[c] = k
-        end
-    end
+    cell2mv = complete_mvf_index(lc, mvf, "mvf_digraph")
 
     out    = [Vector{Int}() for _ in 1:length(mvf)]
     mouths = [Vector{Int}() for _ in 1:length(mvf)]
@@ -166,4 +170,38 @@ function cyclic_partition_angular(ec::EuclideanComplex,
     lc = euclidean_to_lefschetz(ec)
     return cyclic_partition_angular(lc, euclidean_vertex_coords(ec), mvf, C, p,
                                     center=center, clockwise=clockwise)
+end
+
+function complete_mvf_index(lc::AbstractComplex, mvf::Vector{Vector{Int}}, fname::String)
+    #
+    # Check that mvf is a complete multivector field, i.e., that every cell
+    # of lc lies in exactly one of its sets, and return for every cell the
+    # index of the set containing it
+    #
+    ncells = lc.ncells
+    cell2mv = zeros(Int, ncells)
+    multiple = Vector{Int}()
+    for k in 1:length(mvf)
+        for c in mvf[k]
+            if !(1 <= c <= ncells)
+                throw(ArgumentError(fname * ": the multivector field contains the " *
+                                    "index $c, which is not a cell of the complex"))
+            end
+            cell2mv[c] == 0 ? (cell2mv[c] = k) : push!(multiple, c)
+        end
+    end
+    if !isempty(multiple)
+        multiple = sort(unique(multiple))
+        throw(ArgumentError(fname * ": $(length(multiple)) cells lie in more than " *
+                            "one multivector, for example the cells " *
+                            "$(multiple[1:min(5,end)])"))
+    end
+    uncovered = findall(iszero, cell2mv)
+    if !isempty(uncovered)
+        throw(ArgumentError(fname * ": the multivector field is not complete, " *
+                            "$(length(uncovered)) cells lie in no multivector, for " *
+                            "example the cells $(uncovered[1:min(5,end)]). Use " *
+                            "mvf_with_singletons to add the singletons"))
+    end
+    return cell2mv
 end
