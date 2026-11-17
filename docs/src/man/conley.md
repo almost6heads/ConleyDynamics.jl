@@ -217,7 +217,7 @@ fields on Lefschetz complexes:
   multivectors are strong isolating blocks of the flow. These functions,
   the associated checking functions, and the tools for proving the
   existence of periodic orbits are described in detail in the section
-  [Strong Isolating Blocks and Periodic Orbits](@ref).
+  [Strong Isolation and Periodicity](@ref).
 
 All of these functions will be illustrated in more detail in the
 examples which are presented later in this section. See also the

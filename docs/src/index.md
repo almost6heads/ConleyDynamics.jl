@@ -89,7 +89,7 @@ the following three sections, which cover Lefschetz complexes, homology,
 and Conley theory, including connection matrices and algorithms for their
 computation. The section [Flow Examples](@ref) applies these tools to
 ordinary differential equations, and the section
-[Strong Isolating Blocks and Periodic Orbits](@ref) describes strongly
+[Strong Isolation and Periodicity](@ref) describes strongly
 accumulating multivector fields and how they can be used to prove the
 existence of periodic orbits. After a number of further examples in the
 section [Further Examples](@ref), the chapters

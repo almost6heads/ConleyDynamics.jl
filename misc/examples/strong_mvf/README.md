@@ -8,6 +8,7 @@ dissertation *Periodic Orbits in the Setting of Combinatorial Dynamics*
 | File | Content |
 |---|---|
 | `example_ouroboros.jl` | The Ouroboros example: forward merging, dual sets, and dual merging on a 4x5 rectangle, with plots of every stage |
+| `ouroboros_figure.jl` | Creates the Ouroboros figure `docs/src/man/img/ouroboros.png` of the manual with the current package functions (needs Plots.jl) |
 | `example_2d_circle_periodicity.jl` | A planar field with a repelling periodic orbit: multivector digraph, strongly connected components, and a split into pieces |
 | `example_vdp_periodicity.jl` | The van der Pol equation on a curvature-adapted mesh |
 | `example_vector_fields.jl` | The vector fields used by the scripts |
