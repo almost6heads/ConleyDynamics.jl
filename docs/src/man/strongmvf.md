@@ -776,9 +776,12 @@ computation then proceeds in the following steps:
 The order in which the pairs are taken from the to-do list does not
 affect the result, since a pair is marked as safe exactly when all of its
 successors have been marked, regardless of the order in which this
-happens. Every pair enters the to-do list at most once, and every edge is
-processed at most once, so that the cost of the iteration is linear in
-the size of the digraph. Pairs on a cycle which never reaches a goal wait
+happens. Every pair enters the to-do list at most once, and therefore
+every edge between pairs is processed at most once. Since every edge of
+the multivector digraph gives exactly two edges between pairs, the cost
+of the iteration is linear in the size of the multivector digraph, i.e.,
+proportional to the number of multivectors in ``\mathcal{C}`` plus the
+number of edges between them, for every index ``i``. Pairs on a cycle which never reaches a goal wait
 for each other, their counters never reach zero, and they are correctly
 classified as not safe. Similarly, a pair without successors which is not
 a goal starts with the counter zero, but since it never enters the to-do
