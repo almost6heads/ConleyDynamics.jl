@@ -13,6 +13,10 @@ description, etc.
 
 Release notes:
 
+## v0.8.2 (November 20, 2026)
+
+Bug fix release
+
 ## v0.8.1 (November 5, 2026)
 
 Faster `create_mvf_hull` and `remove_exit_set`
