@@ -39,7 +39,7 @@ function mvf_neighborhood(lc::AbstractComplex, mvf::CellSubsets,
 
     # Append the missing singletons to the mvf
 
-    critical = setdiff(collect(1:lc.ncells), reduce(vcat, mvfI))
+    critical = setdiff(collect(1:lc.ncells), reduce(vcat, mvfI; init=Int[]))
     for k in critical
         push!(mvfI, [k])
     end

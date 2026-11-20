@@ -58,10 +58,14 @@ function morse_sets(lc::AbstractComplex, mvf::CellSubsets; poset::Bool=false)
         push!(r,mv[1])
     end
 
-    # Create the edge list and the digraph
+    # Create the digraph with one vertex for every cell. Building it
+    # from the edge list alone would drop cells with larger indices
+    # than any cell incident to an edge.
 
-    edgelist = Edge.([(c[k],r[k]) for k in 1:length(c)])
-    dg = SimpleDiGraph(edgelist)
+    dg = SimpleDiGraph(nc)
+    for k in 1:length(c)
+        add_edge!(dg, c[k], r[k])
+    end
 
     # Apply Tarjan's algorithm
     

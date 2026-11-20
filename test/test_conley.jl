@@ -270,3 +270,30 @@ end
     @test !lefschetz_is_locally_closed(lc, nlc)
     @test_throws ErrorException restrict_dynamics(lc, mvf, nlc)
 end
+
+@testset "Cells without arcs in the flow digraph" begin
+    # The cells a and bc of a triangle form a Lefschetz complex without
+    # any facet relations. With the trivial multivector field, no cell is
+    # incident to an arc of the flow digraph, but both are Morse sets.
+    lc = create_simplicial_complex(["a","b","c"], [["a","b","c"]])
+    i = lc.indices
+    lcr, mvfr = restrict_dynamics(lc, Vector{Vector{Int}}(), [i["a"], i["bc"]])
+    @test lcr.ncells == 2 && isempty(mvfr)
+    @test sort(morse_sets(lcr, mvfr)) == [[1], [2]]
+    @test sort(morse_sets(lcr, [[1], [2]])) == [[1], [2]]
+    ms, hasse = morse_sets(lcr, mvfr; poset=true)
+    @test length(ms) == 2 && size(hasse) == (2, 2)
+    @test morse_interval(lcr, mvfr, [[2]]) == [2]
+    cm = connection_matrix(lcr, mvfr)
+    @test sort(cm.morse) == [["a"], ["bc"]]            # Morse sets are returned as labels
+    @test sum(cm.conley) == [1, 1]
+    # A single open edge
+    lce, mvfe = restrict_dynamics(lc, Vector{Vector{Int}}(), [i["ab"]])
+    @test morse_sets(lce, mvfe) == [[1]]
+    @test connection_matrix(lce, mvfe).conley == [[0, 1]]
+    # The last cell (the triangle) is only incident to its facet arcs, and
+    # a field which pairs it with an edge must not lose any cell
+    mvf = [[i["bc"], i["abc"]]]
+    @test sort(reduce(vcat, morse_sets(lc, mvf))) ==
+          sort(reduce(vcat, morse_sets(lc, vcat(mvf, [[c] for c in 1:lc.ncells if !(c in mvf[1])]))))
+end
