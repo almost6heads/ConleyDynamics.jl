@@ -22,6 +22,9 @@ Morse theory in a discrete combinatorial setting.
 - Classical Forman combinatorial vector fields and multivector fields are
   supported.
 - Computation of Conley indices, connection matrices, and Conley-Morse graphs.
+- Multivector fields induced by planar and spatial vector fields, including
+  strongly accumulating multivector fields whose multivectors are strong
+  isolating blocks, and a combinatorial criterion for periodic orbits.
 - Basic homology algorithms over finite fields and the rationals, including
   persistent homology and relative homology.
 - Algorithms rely on a built-in sparse matrix implementation which is geared
@@ -84,8 +87,12 @@ The [Tutorial](@ref) briefly explains how to get started with
 More details, including on the underlying mathematics, are provided in
 the following three sections, which cover Lefschetz complexes, homology,
 and Conley theory, including connection matrices and algorithms for their
-computation. After discussing a number of examples in the sections
-[Flow Examples](@ref) and [Further Examples](@ref), the chapters
+computation. The section [Flow Examples](@ref) applies these tools to
+ordinary differential equations, and the section
+[Strong Isolation and Periodicity](@ref) describes strongly
+accumulating multivector fields and how they can be used to prove the
+existence of periodic orbits. After a number of further examples in the
+section [Further Examples](@ref), the chapters
 [Two-Dimensional Meshes](@ref) and [Three-Dimensional Meshes](@ref)
 explain how meshes of planar and spatial domains are created, and the
 chapter [Visualization](@ref) describes the plotting functions. The
@@ -99,6 +106,7 @@ Pages = [
     "man/homology.md",
     "man/conley.md",
     "man/flowexamples.md",
+    "man/strongmvf.md",
     "man/examples.md",
     "man/meshing2d.md",
     "man/meshing3d.md",

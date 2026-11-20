@@ -204,6 +204,20 @@ fields on Lefschetz complexes:
   from the original position in the cubical lattice, as long as the
   overall structure of the complex stays intact. In that case, the
   faces are interpreted as Bezier surfaces with straight edges.
+* The functions [`planar_transitions`](@ref) and
+  [`spatial_transitions`](@ref) return the dynamical transitions on which
+  the previous two functions are based, i.e., for every cell the
+  top-dimensional cells which the flow can enter from it. Applied to the
+  reversed vector field, they approximate the immediate past of the cells.
+  The function [`create_mvf_hull`](@ref) turns the transitions into the
+  smallest multivector field which contains them.
+* The function [`create_strong_mvf`](@ref), as well as its variants
+  [`create_planar_strong_mvf`](@ref) and [`create_spatial_strong_mvf`](@ref),
+  create the finest *strongly accumulating* multivector field, whose
+  multivectors are strong isolating blocks of the flow. These functions,
+  the associated checking functions, and the tools for proving the
+  existence of periodic orbits are described in detail in the section
+  [Strong Isolation and Periodicity](@ref).
 
 All of these functions will be illustrated in more detail in the
 examples which are presented later in this section. See also the

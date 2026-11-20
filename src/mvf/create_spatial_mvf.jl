@@ -1,7 +1,8 @@
 export create_spatial_mvf
 
 """
-    create_spatial_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf)
+    create_spatial_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf;
+                       npts::Int=3)
 
 Create a spatial multivector field from a regular vector field.
 
@@ -12,6 +13,13 @@ function `vf(z::Vector{Float64})::Vector{Float64}`, where both the input
 and output vectors have length three. The function `create_spatial_mvf`
 returns a multivector field `mvf` on `lc`, which can then be further
 analyzed using for example the function `connection_matrix`.
+
+The multivector field is the smallest one which contains all dynamical
+transitions computed by `spatial_transitions`, i.e., every vertex, edge,
+and face is grouped with the regions which the flow can enter from it.
+The keyword `npts` determines the number of sample points on edges and
+faces, see `spatial_transitions`. Since all of this is based on finitely
+many evaluations of the vector field, the result is not rigorous.
 
 The input data `lc` and `coords` has to be of one of the following
 two types:
@@ -69,71 +77,22 @@ full_from_sparse(cm.matrix)
 finally show that this vector field gives rise to a Morse decomposition
 with three Morse sets, and two connecting orbits.
 """
-function create_spatial_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf)
+function create_spatial_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf;
+                            npts::Int=3)
     #
     # Create a spatial multivector field from a regular vector field
     #
 
-    # Find the indices for the vertices, the edges, and the faces
+    # The multivector field is the smallest one which contains all
+    # sampled dynamical transitions, see spatial_transitions
 
-    vi = findall(isequal(0), lc.dimensions)
-    ei = findall(isequal(1), lc.dimensions)
-    fi = findall(isequal(2), lc.dimensions)
-
-    # Find the vertex to region map
-
-    v2r = [Vector{Int}() for _ in 1:length(vi)]
-
-    Threads.@threads for k = 1:length(vi)
-        v2r[k] = spatial_mvf_vertex2region(vi[k],lc,coords,vf)
-    end
-
-    # Find the edge to region map
-
-    e2r = [Vector{Int}() for _ in 1:length(ei)]
-
-    Threads.@threads for k = 1:length(ei)
-        e2r[k] = spatial_mvf_edge2region(ei[k],lc,coords,vf)
-    end
-
-    # Find the face to region map
-
-    f2r = [Vector{Int}() for _ in 1:length(fi)]
-
-    Threads.@threads for k = 1:length(fi)
-        f2r[k] = spatial_mvf_face2region(fi[k],lc,coords,vf)
-    end
-
-    # Create the multivector field base
-
-    mvfbase = Vector{Vector{Int}}()
-
-    for k in 1:length(v2r)
-        if length(v2r[k]) > 0
-            push!(mvfbase, vcat([vi[k]], v2r[k]))
-        end
-    end
-
-    for k in 1:length(e2r)
-        if length(e2r[k]) > 0
-            push!(mvfbase, vcat([ei[k]], e2r[k]))
-        end
-    end
-
-    for k in 1:length(f2r)
-        if length(f2r[k]) > 0
-            push!(mvfbase, vcat([fi[k]], f2r[k]))
-        end
-    end
-
-    # Create the multivector field
-
-    mvf = create_mvf_hull(lc, mvfbase)
+    transitions = spatial_transitions(lc, coords, vf, npts=npts)
+    mvf = create_mvf_hull(lc, transitions)
     return mvf
 end
 
 """
-    create_spatial_mvf(ec::EuclideanComplex, vf)
+    create_spatial_mvf(ec::EuclideanComplex, vf; npts::Int=3)
 
 Create a spatial multivector field from a `EuclideanComplex` and a regular
 vector field `vf`.
@@ -146,25 +105,23 @@ such as a tetrahedral mesh created by `tetgen_to_simplicial` or
 Otherwise, an `ArgumentError` is raised. In particular, triangulated
 surfaces in three dimensions are not supported.
 """
-function create_spatial_mvf(ec::EuclideanComplex, vf)
+function create_spatial_mvf(ec::EuclideanComplex, vf; npts::Int=3)
+    _check_spatial_complex(ec, "create_spatial_mvf")
+    lc = euclidean_to_lefschetz(ec)
+    return create_spatial_mvf(lc, euclidean_vertex_coords(ec), vf, npts=npts)
+end
+
+function _check_spatial_complex(ec::EuclideanComplex, fname::String)
+    #
+    # Check that a complex is three-dimensional and embedded in three dimensions
+    #
     if (ec.ncells == 0) || (length(ec.coords[1][1]) != 3) || (ec.dim != 3)
-        throw(ArgumentError("create_spatial_mvf: the complex needs to be " *
+        throw(ArgumentError(fname * ": the complex needs to be " *
                             "three-dimensional and embedded in three dimensions, " *
                             "such as a tetrahedral mesh or a cubical box. For " *
                             "planar complexes, use create_planar_mvf."))
     end
-
-    #
-    # Build a coords_by_index vector (indexed by cell index, vertex cells filled)
-    #
-    lc = euclidean_to_lefschetz(ec)
-    coords_by_index = [Vector{Float64}() for _ in 1:ec.ncells]
-    for k in 1:ec.ncells
-        if ec.dimensions[k] == 0
-            coords_by_index[k] = ec.coords[k][1]
-        end
-    end
-    return create_spatial_mvf(lc, coords_by_index, vf)
+    return nothing
 end
 
 ############################
@@ -225,12 +182,14 @@ end
 ###############################################################################
 
 function spatial_mvf_edge2region(eindex::Int, lc::AbstractComplex,
-                                 coords::Vector{<:Vector{<:Real}}, vf)
+                                 coords::Vector{<:Vector{<:Real}}, vf;
+                                 npts::Int=3)
     #
     # Find the 3d regions which can be entered from an edge
     #
+    # The flow is sampled at npts points in the interior of the edge
+    #
 
-    npts = 3   # Look at npts points along the edge interior to determine the flow
     nptsf = Float64(npts)
 
     # Determine the boundary of the edge
@@ -345,12 +304,16 @@ end
 ###############################################################################
 
 function spatial_mvf_face2region(findex::Int, lc::AbstractComplex,
-                                 coords::Vector{<:Vector{<:Real}}, vf)
+                                 coords::Vector{<:Vector{<:Real}}, vf;
+                                 npts::Int=3)
     #
     # Find the 3d regions which can be entered from a face
     #
+    # The flow is sampled on a grid with spacing 1/(npts+1), i.e., at
+    # npts*(npts+1)/2 points of a triangle, and at npts^2 interior
+    # points of a quadrilateral
+    #
 
-    npts = 3   # Look at npts points along the edge interior to determine the flow
     nptsf = Float64(npts)
     targetregions = Vector{Int}()
 

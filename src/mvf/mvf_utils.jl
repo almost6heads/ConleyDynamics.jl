@@ -34,3 +34,18 @@ function sets_containing(c2s::Vector{Vector{Int}}, cells::Vector{Int}, nsets::In
     end
     return findall(isset)
 end
+
+function euclidean_vertex_coords(ec::EuclideanComplex)
+    #
+    # Return a coordinate vector indexed by cell, in which the entries
+    # of the vertices contain their coordinates, and all other entries
+    # are empty, as expected by create_planar_mvf and create_spatial_mvf
+    #
+    coords = [Vector{Float64}() for _ in 1:ec.ncells]
+    for k in 1:ec.ncells
+        if ec.dimensions[k] == 0
+            coords[k] = ec.coords[k][1]
+        end
+    end
+    return coords
+end

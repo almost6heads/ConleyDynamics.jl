@@ -20,7 +20,36 @@ extract_multivectors
 ```@docs
 create_planar_mvf
 create_spatial_mvf
+planar_transitions
+spatial_transitions
 planar_nontransverse_edges
+mvf_dual_set
+mvf_dual
+create_strong_mvf
+create_planar_strong_mvf
+create_spatial_strong_mvf
+mvf_is_strongly_accumulating
+strong_isoblock_sets
+```
+
+The following internal function is not exported. It implements the
+original merging procedure of Justin Thorpe, and it serves as an
+independent cross-check of [`create_strong_mvf`](@ref) in the tests.
+
+```@docs
+ConleyDynamics.strong_mvf_dual_merging
+```
+
+## Multivector Digraphs and Periodic Orbits
+
+```@docs
+mvf_digraph
+cyclic_partition_bfs
+cyclic_partition_angular
+mvf_with_singletons
+check_cyclic_conditions
+check_brick_lyapunov
+cyclic_local_cycles
 ```
 
 ## Conley Index Computations

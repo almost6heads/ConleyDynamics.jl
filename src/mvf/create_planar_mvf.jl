@@ -1,7 +1,8 @@
 export create_planar_mvf
 
 """
-    create_planar_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf)
+    create_planar_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf;
+                      npts::Int=10, nontransverse::Bool=false)
 
 Create a planar multivector field from a regular vector field.
 
@@ -12,6 +13,15 @@ function `vf(z::Vector{Float64})::Vector{Float64}`, where both the input
 and output vectors have length two. The function `create_planar_mvf` returns
 a multivector field `mvf` on `lc`, which can then be further analyzed
 using for example the function `connection_matrix`.
+
+The multivector field is the smallest one which contains all dynamical
+transitions computed by `planar_transitions`, i.e., every vertex and edge
+is grouped with the regions which the flow can enter from it. The keyword
+`npts` gives the number of sample points in the interior of every edge,
+and `nontransverse=true` adds the stricter test `planar_nontransverse_edges`,
+which joins edges with a tangency to both adjacent regions. Since all of
+this is based on finitely many evaluations of the vector field, the result
+is not rigorous.
 
 The input data `lc` and `coords` can be generated using one of the following
 methods:
@@ -111,56 +121,24 @@ plot_planar_cubical_morse(lc2, fname2, cm2.morse, pv=true)
 In this case, one obtains three Morse sets: One is a stable equilibrium,
 one is an unstable periodic orbit, and the last is a stable periodic orbit.
 """
-function create_planar_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf)
+function create_planar_mvf(lc::AbstractComplex, coords::Vector{<:Vector{<:Real}}, vf;
+                           npts::Int=10, nontransverse::Bool=false)
     #
     # Create a planar multivector field from a regular vector field
     #
 
-    # Find the indices for the vertices and the edges
+    # The multivector field is the smallest one which contains all
+    # sampled dynamical transitions, see planar_transitions
 
-    vi = findall(isequal(0), lc.dimensions)
-    ei = findall(isequal(1), lc.dimensions)
-
-    # Find the vertex to region map
-
-    v2r = [Vector{Int}() for _ in 1:length(vi)]
-
-    Threads.@threads for k = 1:length(vi)
-        v2r[k] = planar_mvf_vertex2region(vi[k],lc,coords,vf)
-    end
-
-    # Find the edge to region map
-
-    e2r = [Vector{Int}() for _ in 1:length(ei)]
-
-    Threads.@threads for k = 1:length(ei)
-        e2r[k] = planar_mvf_edge2region(ei[k],lc,coords,vf)
-    end
-
-    # Create the multivector field base
-
-    mvfbase = Vector{Vector{Int}}()
-
-    for k in 1:length(v2r)
-        if length(v2r[k]) > 0
-            push!(mvfbase, vcat([vi[k]], v2r[k]))
-        end
-    end
-
-    for k in 1:length(e2r)
-        if length(e2r[k]) > 0
-            push!(mvfbase, vcat([ei[k]], e2r[k]))
-        end
-    end
-
-    # Create the multivector field
-
-    mvf = create_mvf_hull(lc, mvfbase)
+    transitions = planar_transitions(lc, coords, vf, npts=npts,
+                                     nontransverse=nontransverse)
+    mvf = create_mvf_hull(lc, transitions)
     return mvf
 end
 
 """
-    create_planar_mvf(ec::EuclideanComplex, vf)
+    create_planar_mvf(ec::EuclideanComplex, vf; npts::Int=10,
+                      nontransverse::Bool=false)
 
 Create a planar multivector field from a `EuclideanComplex` and a regular
 vector field `vf`.
@@ -171,21 +149,13 @@ The complex has to be embedded in two dimensions, otherwise an
 `ArgumentError` is raised. For complexes in three dimensions, use
 `create_spatial_mvf`.
 """
-function create_planar_mvf(ec::EuclideanComplex, vf)
+function create_planar_mvf(ec::EuclideanComplex, vf; npts::Int=10,
+                           nontransverse::Bool=false)
     _check_coords2d(ec, "create_planar_mvf",
                     "For complexes in three dimensions, use create_spatial_mvf.")
-
-    #
-    # Build a coords_by_index vector (indexed by cell index, vertex cells filled)
-    #
     lc = euclidean_to_lefschetz(ec)
-    coords_by_index = [Vector{Float64}() for _ in 1:ec.ncells]
-    for k in 1:ec.ncells
-        if ec.dimensions[k] == 0
-            coords_by_index[k] = ec.coords[k][1]
-        end
-    end
-    return create_planar_mvf(lc, coords_by_index, vf)
+    return create_planar_mvf(lc, euclidean_vertex_coords(ec), vf, npts=npts,
+                             nontransverse=nontransverse)
 end
 
 ############################
@@ -194,11 +164,24 @@ end
 #                          #
 ############################
 
-function planar_mvf_vertex2region(vindex::Int, lc::AbstractComplex,
-                                  coords::Vector{<:Vector{<:Real}}, vf)
+function planar_mvf_vertex2region(vindex::Int,
+                                  lc::AbstractComplex,
+                                  coords::Vector{<:Vector{<:Real}},
+                                  vf;
+                                  vf_rev::Bool=false)
     #
     # Find the 2d regions which can be entered from a vertex
     #
+    # The keyword vf_rev reverses the vector field, which gives the
+    # immediate past instead of the immediate future. It was added by
+    # Justin Thorpe in pull request #10.
+    #
+
+    if vf_rev
+        vf_sign = -1
+    else
+        vf_sign = 1
+    end
 
     # Determine the adjacent edges and regions
 
@@ -212,13 +195,16 @@ function planar_mvf_vertex2region(vindex::Int, lc::AbstractComplex,
 
     adverts = setdiff(lefschetz_skeleton(lc, adedges, 0), [vindex])
 
-    # Loop through the regions, compute the barycentric
-    # coordinates, and add the relevant regions
+    # Loop through the regions, compute the coordinates of the vector
+    # field direction with respect to the two edges of the region at
+    # the vertex, and add the relevant regions. The direction is used
+    # directly, and not through the point c0 + vf(c0), since adding a
+    # small vector to large coordinates can lose its components and
+    # turn a transverse direction into one along an edge.
 
     targetregions = Vector{Int}()
     c0 = coords[vindex]
-    vfc0 = vf(c0)
-    tc0 = c0 .+ vfc0
+    vfc0 = vf_sign*vf(c0)
 
     for k in adregns
 
@@ -227,10 +213,10 @@ function planar_mvf_vertex2region(vindex::Int, lc::AbstractComplex,
         regionvertices = lefschetz_skeleton(lc, [k], 0)
         adregionvertices = intersect(regionvertices, adverts)
 
-        # Determine the barycentric coordinates
+        # Determine the coordinates of the direction
 
         p1, p2 = adregionvertices
-        c1, c2 = planar_barycentric_coords(tc0, coords[p1], coords[p2], c0)
+        c1, c2 = planar_cone_coords(vfc0, coords[p1] .- c0, coords[p2] .- c0)
 
         # Add the face if necessary
 
@@ -246,13 +232,24 @@ end
 
 ###############################################################################
 
-function planar_mvf_edge2region(eindex::Int, lc::AbstractComplex,
-                                coords::Vector{<:Vector{<:Real}}, vf)
+function planar_mvf_edge2region(eindex::Int,
+                                lc::AbstractComplex,
+                                coords::Vector{<:Vector{<:Real}},
+                                vf;
+                                vf_rev::Bool=false,
+                                npts::Int=10)
     #
     # Find the 2d regions which can be entered from an edge
     #
+    # The flow is sampled at npts points in the interior of the edge.
+    # The keyword vf_rev reverses the vector field, see above.
+    #
 
-    npts = 10   # Look at npts points along the edge interior to determine the flow
+    if vf_rev
+        vf_sign = -1
+    else
+        vf_sign = 1
+    end
 
     # Determine the boundary of the edge
 
@@ -277,7 +274,7 @@ function planar_mvf_edge2region(eindex::Int, lc::AbstractComplex,
     p0 = coords[v1]
     for k = 1:npts
         pc = p0 .+ ((k / (nptsf+1.0)) .* pvec)
-        pvf = vf(pc)
+        pvf = vf_sign*vf(pc)
         dprod = pvf[1]*nvec[1] + pvf[2]*nvec[2]
         if dprod > 0.0
             dp_is_p = true
@@ -330,22 +327,19 @@ end
 
 ###############################################################################
 
-function planar_barycentric_coords(p::Vector{<:Real},p1::Vector{<:Real},
-                                   p2::Vector{<:Real},p3::Vector{<:Real})
+function planar_cone_coords(d::Vector{<:Real}, q1::Vector{<:Real},
+                            q2::Vector{<:Real})
     #
-    # Compute the barycentric coordinate in the representation
+    # Compute the coefficients in the representation
     #
-    #    p = a * (p1-p3) + b * (p2-p3) + p3
+    #    d = a * q1 + b * q2
+    #
+    # Only their signs are used, so that the direction d is never
+    # added to a point, which could lose small components of d
 
-    x,  y  = p
-    x1, y1 = p1
-    x2, y2 = p2
-    x3, y3 = p3
-
-    a = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) /
-        ((y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3))
-    b = ((y3 - y1)*(x - x3) + (x1 - x3)*(y - y3)) /
-        ((y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3))
+    det = q1[1]*q2[2] - q1[2]*q2[1]
+    a   = (d[1]*q2[2] - d[2]*q2[1]) / det
+    b   = (q1[1]*d[2] - q1[2]*d[1]) / det
 
     return a, b
 end

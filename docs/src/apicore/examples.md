@@ -26,5 +26,6 @@ example_nonunique
 example_clorenz
 example_dunce_chaos
 example_torsion_chaos
+example_ouroboros
 ```
 
