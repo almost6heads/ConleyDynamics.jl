@@ -389,6 +389,12 @@ end
                                                        out=dg, mouths=mouths)
     @test check_cyclic_conditions(lc, allmvf, Call, lab3, 3; out=dg, mouths=mouths) isa NamedTuple
 
+    # An empty collection C: the unions U_i are empty, so (C2) fails and
+    # (C3) and (C4) hold vacuously
+
+    res = check_cyclic_conditions(lc, allmvf, Int[], Int[], 3; out=dg, mouths=mouths)
+    @test res == (C2=false, C3=true, C4=true, fails=[0, 0, 0], sizes=[0, 0, 0])
+
     # Angular sectors around the center of the rectangle
 
     labels = cyclic_partition_angular(ec, allmvf, collect(eachindex(allmvf)), 4, center=[2.0, 2.5])

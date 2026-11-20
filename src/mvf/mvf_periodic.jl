@@ -90,7 +90,7 @@ function check_cyclic_conditions(lc::AbstractComplex, mvf::Vector{Vector{Int}},
 
     # (C2) and (C3): closures of the unions of the subcollections
 
-    Ucells = reduce(vcat, mvf[C])
+    Ucells = reduce(vcat, mvf[C]; init=Int[])
     moU = Set(setdiff(lefschetz_closure(lc, Ucells), Ucells))
     cls = [Set(lefschetz_closure(lc, reduce(vcat, mvf[C[labels .== i]]; init=Int[])))
            for i in 1:p]
