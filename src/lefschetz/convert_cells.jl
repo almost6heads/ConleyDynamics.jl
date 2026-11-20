@@ -98,7 +98,7 @@ function cellsubsets_to_cells(lc::AbstractComplex, css::CellSubsets)
 
     # Merge the sets
 
-    csI = sort(unique(reduce(vcat, cssI)))
+    csI = sort(unique(reduce(vcat, cssI; init=Int[])))
 
     # Return the result
 

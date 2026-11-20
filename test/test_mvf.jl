@@ -202,3 +202,20 @@ end
         @test sort(lcr.labels) == sort(ec.labels[setdiff(1:ec.ncells, exitset)])
     end
 end
+
+@testset "Empty multivector fields in the multivector graph functions" begin
+    # An empty field is the trivial field, so the results have to agree
+    # with the ones for the field which lists all singletons explicitly
+    lc = create_simplicial_complex(["a","b","c","d"], [["a","b","c"], ["c","d"]])
+    triv = [[c] for c in 1:lc.ncells]
+    empt = Vector{Vector{Int}}()
+    for src in ([1], [lc.indices["abc"]], [lc.indices["cd"], lc.indices["b"]])
+        for n in 0:2
+            @test sort(mvf_neighborhood(lc, empt, src, n)) == sort(mvf_neighborhood(lc, triv, src, n))
+            @test sort(mvf_forward_orbit(lc, empt, src, n)) == sort(mvf_forward_orbit(lc, triv, src, n))
+            @test sort(mvf_backward_orbit(lc, empt, src, n)) == sort(mvf_backward_orbit(lc, triv, src, n))
+        end
+    end
+    @test cellsubsets_to_cells(lc, empt) == Int[]
+    @test cellsubsets_to_cells(lc, Vector{Vector{String}}()) == String[]
+end
